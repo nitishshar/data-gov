@@ -1,0 +1,259 @@
+/* Main container styling for the form builder */
+::ng-deep .form-builder {
+  max-width: 100%;
+  margin: 10px auto;
+  padding: 8px;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Container for form groups arranged side by side */
+::ng-deep .form-group-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+/* Styling for each form group card */
+::ng-deep .form-group-card {
+  flex: 1 1 calc(33.33% - 8px);
+  max-width: 100%;
+  background-color: var(--mdc-theme-surface);
+  border: 1px solid var(--mdc-theme-outline);
+  border-radius: 4px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: background-color 0.3s ease;
+}
+
+::ng-deep .form-group-card:hover {
+  background-color: #f1f1f1;
+}
+
+/* Field card styling with 50% width limit */
+::ng-deep .field-card {
+  background-color: var(--mdc-theme-surface);
+  border: 1px solid var(--mdc-theme-outline);
+  border-radius: 4px;
+  margin-bottom: 6px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: box-shadow 0.3s ease;
+  flex: 1 1 50%; /* Fields limited to 50% of the width */
+  max-width: 50%; /* Ensures that no field exceeds 50% width */
+}
+
+::ng-deep .field-card:hover {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+::ng-deep .full-width {
+  width: 100%;
+}
+
+/* MDC form field adjustments */
+::ng-deep .mat-mdc-form-field {
+  margin: 3px 0 !important;
+  font-size: 11px !important;
+  padding: 0 !important;
+  height: 35px !important;
+  min-height: 35px !important;
+  display: flex;
+  align-items: center;
+}
+
+::ng-deep .mat-mdc-form-field-wrapper {
+  padding: 0 4px !important;
+  height: 35px !important;
+  min-height: 35px !important;
+  display: flex;
+  align-items: center;
+}
+
+::ng-deep .mat-mdc-form-field-flex {
+  height: 35px !important;
+  min-height: 35px !important;
+  display: flex;
+  align-items: center;
+  padding: 0 !important;
+}
+
+::ng-deep .mat-mdc-form-field-infix {
+  height: 33px !important;
+  min-height: 33px !important;
+  padding: 0 2px !important;
+  display: flex;
+  align-items: center;
+  line-height: 1 !important;
+}
+
+/* Adjust the MDC text field */
+::ng-deep .mdc-text-field {
+  height: 35px !important;
+  min-height: 35px !important;
+  padding: 0 !important;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+/* Adjust floating label for both normal and focused states */
+::ng-deep .mdc-floating-label,
+::ng-deep .mat-mdc-floating-label {
+  font-size: 11px !important;
+  transform: translateY(12px) scale(1) !important;
+  transform-origin: left top !important;
+  transition: transform 0.2s ease-in-out, font-size 0.2s ease-in-out;
+  top: 0px !important;
+  left: 8px !important;
+}
+
+/* Fix for when input has a value or is focused */
+::ng-deep .mat-mdc-form-field.mat-mdc-form-field-should-float .mat-mdc-floating-label,
+::ng-deep .mdc-text-field--focused .mdc-floating-label,
+::ng-deep .mdc-text-field:not(.mdc-text-field--invalid):not(.mdc-text-field--focused):not(.mdc-text-field--disabled) .mdc-floating-label--float-above {
+  transform: translateY(-18px) scale(0.75) !important;
+  font-size: 10px !important;
+  top: 0px !important;
+}
+
+/* Input element adjustments */
+::ng-deep .mat-mdc-input-element {
+  height: 100% !important;
+  min-height: 30px !important;
+  padding: 0 2px !important;
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+}
+
+/* Adjust checkboxes and radio buttons */
+::ng-deep .mat-mdc-checkbox,
+::ng-deep .mat-mdc-radio-button {
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 35px !important;
+  min-height: 35px !important;
+  display: flex;
+  align-items: center;
+}
+
+::ng-deep button {
+  font-size: 0.75rem;
+  padding: 4px 6px;
+}
+
+::ng-deep .mat-mdc-card-title {
+  font-size: 0.85em;
+  font-weight: 600;
+  color: var(--mdc-theme-on-surface);
+  margin: 0;
+}
+
+::ng-deep h4 {
+  margin-top: 2px;
+  margin-bottom: 1px;
+  color: var(--mdc-theme-primary);
+  font-size: 0.75rem;
+}
+
+::ng-deep .mat-mdc-form-field-error {
+  color: var(--mdc-theme-error) !important;
+  font-size: 0.65em;
+  margin-top: 1px;
+}
+
+::ng-deep .validation-group {
+  padding: 2px;
+  border: 1px dashed var(--mdc-theme-outline);
+  margin-bottom: 2px;
+  background-color: #fefefe;
+  border-radius: 4px;
+}
+
+::ng-deep .validation-group:hover {
+  background-color: #f8f8f8;
+}
+
+/* Align delete buttons to the right */
+::ng-deep .align-end {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Material Ripple Effect */
+::ng-deep .mat-mdc-button-ripple {
+  --mdc-ripple-fg-opacity: 0.1;
+}
+
+::ng-deep .mat-mdc-checkbox {
+  --mdc-checkbox-ripple-size: 10px;
+}
+
+::ng-deep .mat-mdc-select {
+  --mdc-select-idle-line-color: var(--mdc-theme-primary);
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+}
+
+/* Adjust the font style of the selected value in mat-select */
+::ng-deep .mat-mdc-select-value {
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+  padding: 0 !important;
+  font-family: inherit !important;
+  color: inherit !important;
+}
+
+/* Adjust dropdown options */
+::ng-deep .mat-mdc-select-panel .mat-mdc-option {
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+  padding: 4px 8px !important;
+  font-family: inherit !important;
+}
+
+/* Adjust dropdown option selected state */
+::ng-deep .mat-mdc-option.mat-mdc-option-selected {
+  background-color: rgba(0, 123, 255, 0.1) !important;
+  color: var(--mdc-theme-primary);
+}
+
+/* Adjustments for responsiveness */
+@media (max-width: 1200px) {
+  ::ng-deep .form-group-card {
+    flex: 1 1 calc(50% - 8px);
+  }
+}
+
+@media (max-width: 900px) {
+  ::ng-deep .form-group-card {
+    flex: 1 1 100%;
+  }
+
+  ::ng-deep .form-group-container {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 600px) {
+  ::ng-deep .form-builder {
+    padding: 4px;
+  }
+
+  ::ng-deep .mat-mdc-form-field {
+    margin-bottom: 2px !important;
+  }
+}

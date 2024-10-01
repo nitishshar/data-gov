@@ -1,0 +1,136 @@
+<mat-card class="config-builder">
+  <mat-card-title>Create Your Form Configuration</mat-card-title>
+
+  <form [formGroup]="configForm()" (ngSubmit)="generateJsonConfig()" fxLayout="column" fxLayoutGap="8px">
+    <!-- Form Title Input -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Form Title</mat-label>
+      <input matInput formControlName="formTitle" placeholder="Enter Form Title" />
+    </mat-form-field>
+
+    <!-- Form Groups Section with the Flex container to allow side-by-side display -->
+    <div formArrayName="formGroups" class="form-group-container">
+      <div *ngFor="let group of formGroups.controls; let i = index" [formGroupName]="i" class="form-group-card">
+        <div class="align-end">
+          <mat-card-title>Form Group {{ i + 1 }}</mat-card-title>
+          <button mat-icon-button color="warn" (click)="removeFormGroup(i)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+
+        <!-- Group Name Input -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Group Name</mat-label>
+          <input matInput formControlName="groupName" placeholder="Enter Group Name" />
+        </mat-form-field>
+
+        <!-- Fields Section within the Form Group -->
+        <div formArrayName="fields">
+          <div *ngFor="let field of getFieldControls(i).controls; let j = index" [formGroupName]="j" class="field-card">
+            <div class="align-end">
+              <mat-card-title>Field {{ j + 1 }}</mat-card-title>
+              <button mat-icon-button color="warn" (click)="removeField(i, j)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+
+            <!-- Field Type -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Type</mat-label>
+              <mat-select formControlName="type">
+                <mat-option *ngFor="let type of fieldTypes" [value]="type">{{ type }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <!-- Field Label -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Label</mat-label>
+              <input matInput formControlName="label" placeholder="Enter Label" />
+            </mat-form-field>
+
+            <!-- Field Name -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Name</mat-label>
+              <input matInput formControlName="name" placeholder="Enter Name" />
+            </mat-form-field>
+
+            <!-- Placeholder -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Placeholder</mat-label>
+              <input matInput formControlName="placeholder" placeholder="Enter Placeholder" />
+            </mat-form-field>
+
+            <!-- Required Checkbox -->
+            <mat-checkbox formControlName="required">Required</mat-checkbox>
+
+            <!-- Description -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Description</mat-label>
+              <textarea matInput formControlName="description" placeholder="Enter Description"></textarea>
+            </mat-form-field>
+
+            <!-- Owner -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Owner</mat-label>
+              <input matInput formControlName="owner" placeholder="Enter Owner" />
+            </mat-form-field>
+
+            <!-- Options Section (Only for dropdown, multi-select, and radio types) -->
+            <div *ngIf="['dropdown', 'multi-select', 'radio'].includes(field.get('type')?.value)">
+              <h4>Options</h4>
+              <div formArrayName="options">
+                <div class="align-end" *ngFor="let option of getOptionsControls(i, j).controls; let k = index">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Option {{ k + 1 }}</mat-label>
+                    <input matInput [formControlName]="k" placeholder="Option {{ k + 1 }}" />
+                  </mat-form-field>
+                  <button mat-icon-button color="warn" (click)="removeOption(i, j, k)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+                <button mat-raised-button color="primary" (click)="addOption(i, j)">Add Option</button>
+              </div>
+            </div>
+
+            <!-- Validations Section -->
+            <h4>Validations</h4>
+            <div formArrayName="validations">
+              <div *ngFor="let validation of getValidationsControls(i, j).controls; let v = index" [formGroupName]="v" class="validation-group align-end">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Validator</mat-label>
+                  <mat-select formControlName="validator">
+                    <mat-option *ngFor="let validator of validatorTypes" [value]="validator.value">{{ validator.label }}</mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <!-- Validation Value Input (Not required for 'required' or 'requiredTrue') -->
+                <mat-form-field *ngIf="validation.get('validator')?.value !== 'required' && validation.get('validator')?.value !== 'requiredTrue'" appearance="outline" class="full-width">
+                  <mat-label>Value</mat-label>
+                  <input matInput formControlName="value" />
+                </mat-form-field>
+
+                <!-- Validation Message -->
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Error Message</mat-label>
+                  <input matInput formControlName="message" placeholder="Error Message" />
+                </mat-form-field>
+
+                <button mat-icon-button color="warn" (click)="removeValidation(i, j, v)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+              <button mat-raised-button color="primary" (click)="addValidation(i, j)">Add Validation</button>
+            </div>
+          </div>
+          <button mat-raised-button color="accent" (click)="addField(i)">Add Field</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div fxLayout="row" fxLayoutAlign="end" fxLayoutGap="16px">
+      <button mat-raised-button color="primary" (click)="addFormGroup()">Add Form Group</button>
+      <button mat-raised-button color="accent" type="submit">Generate JSON Config</button>
+    </div>
+  </form>
+</mat-card>

@@ -1,0 +1,182 @@
+{
+  "formTitle": "Comprehensive Survey Form with Validations",
+  "formGroups": [
+    {
+      "groupName": "Personal Information",
+      "fields": [
+        {
+          "type": "text",
+          "label": "First Name",
+          "name": "firstName",
+          "placeholder": "Enter your first name",
+          "required": true,
+          "validations": [
+            { "name": "required", "validator": "required", "message": "First Name is required" },
+            { "name": "minLength", "validator": "minLength", "value": 2, "message": "Must be at least 2 characters long" }
+          ]
+        },
+        {
+          "type": "text",
+          "label": "Last Name",
+          "name": "lastName",
+          "placeholder": "Enter your last name",
+          "required": true,
+          "validations": [
+            { "name": "required", "validator": "required", "message": "Last Name is required" },
+            { "name": "minLength", "validator": "minLength", "value": 2, "message": "Must be at least 2 characters long" }
+          ]
+        },
+        {
+          "type": "email",
+          "label": "Email Address",
+          "name": "email",
+          "placeholder": "Enter your email address",
+          "required": true,
+          "validations": [
+            { "name": "required", "validator": "required", "message": "Email is required" },
+            { "name": "pattern", "validator": "pattern", "value": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$", "message": "Invalid email format" }
+          ]
+        },
+        {
+          "type": "dropdown",
+          "label": "Country",
+          "name": "country",
+          "options": ["USA", "Canada", "UK", "Australia", "India"],
+          "required": true,
+          "validations": [
+            { "name": "required", "validator": "required", "message": "Country selection is required" }
+          ]
+        }
+      ]
+    },
+    {
+      "groupName": "Work Information",
+      "fields": [
+        {
+          "type": "text",
+          "label": "Job Title",
+          "name": "jobTitle",
+          "placeholder": "Enter your job title",
+          "required": true,
+          "validations": [
+            { "name": "required", "validator": "required", "message": "Job Title is required" }
+          ]
+        },
+        {
+          "type": "dropdown",
+          "label": "Department",
+          "name": "department",
+          "options": ["HR", "IT", "Finance", "Marketing", "Sales"],
+          "required": true,
+          "validations": [
+            { "name": "required", "validator": "required", "message": "Department selection is required" }
+          ]
+        },
+        {
+          "type": "textarea",
+          "label": "Job Responsibilities",
+          "name": "jobResponsibilities",
+          "placeholder": "Describe your job responsibilities",
+          "required": true,
+          "validations": [
+            { "name": "required", "validator": "required", "message": "Job Responsibilities are required" }
+          ]
+        }
+      ]
+    },
+    {
+      "groupName": "Preferences",
+      "fields": [
+        {
+          "type": "multi-select",
+          "label": "Skills",
+          "name": "skills",
+          "options": ["JavaScript", "Angular", "React", "Vue", "Node.js", "Python"],
+          "required": true,
+          "validations": [
+            { "name": "required", "validator": "required", "message": "At least one skill is required" }
+          ]
+        },
+        {
+          "type": "checkbox",
+          "label": "Subscribe to Newsletter",
+          "name": "newsletter",
+          "required": true,
+          "validations": [
+            { "name": "requiredTrue", "validator": "requiredTrue", "message": "You must agree to subscribe" }
+          ]
+        },
+        {
+          "type": "radio",
+          "label": "Preferred Contact Method",
+          "name": "contactMethod",
+          "options": ["Email", "Phone", "Text Message"],
+          "required": true,
+          "validations": [
+            { "name": "required", "validator": "required", "message": "Please select a contact method" }
+          ]
+        }
+      ]
+    },
+    {
+      "groupName": "Feedback",
+      "fields": [
+        {
+          "type": "text",
+          "label": "Referral Source",
+          "name": "referralSource",
+          "placeholder": "How did you hear about us?",
+          "required": true,
+          "validations": [
+            { "name": "required", "validator": "required", "message": "Referral Source is required" }
+          ]
+        },
+        {
+          "type": "textarea",
+          "label": "Suggestions for Improvement",
+          "name": "suggestions",
+          "placeholder": "Provide your suggestions",
+          "required": false
+        },
+        {
+          "type": "rich-text",
+          "label": "Detailed Feedback",
+          "name": "detailedFeedback",
+          "required": true,
+          "validations": [
+            { "name": "required", "validator": "required", "message": "Detailed Feedback is required" }
+          ]
+        }
+      ]
+    },
+    {
+      "groupName": "Additional Information",
+      "fields": [
+        {
+          "type": "text",
+          "label": "LinkedIn Profile",
+          "name": "linkedin",
+          "placeholder": "Enter your LinkedIn URL",
+          "validations": [
+            { "name": "pattern", "validator": "pattern", "value": "^(https?:\\/\\/)?(www\\.)?linkedin.com\\/.*$", "message": "Invalid LinkedIn URL" }
+          ]
+        },
+        {
+          "type": "text",
+          "label": "GitHub Profile",
+          "name": "github",
+          "placeholder": "Enter your GitHub URL",
+          "validations": [
+            { "name": "pattern", "validator": "pattern", "value": "^(https?:\\/\\/)?(www\\.)?github.com\\/.*$", "message": "Invalid GitHub URL" }
+          ]
+        },
+        {
+          "type": "checkbox",
+          "label": "Interested in Volunteering",
+          "name": "volunteeringInterest",
+          "required": false
+        }
+      ]
+    }
+  ]
+}
