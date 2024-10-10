@@ -6,6 +6,25 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <!-- JavaScript for Dynamic Gradient Background -->
+    <script>
+      window.addEventListener('scroll', function() {
+        const scrollPos = window.scrollY;
+        const body = document.body;
+    
+        if (scrollPos < 300) {
+          body.style.background = "linear-gradient(135deg, #6dd5fa, #2980b9)";
+        } else if (scrollPos >= 300 && scrollPos < 600) {
+          body.style.background = "linear-gradient(135deg, #74ebd5, #ACB6E5)";
+        } else if (scrollPos >= 600 && scrollPos < 900) {
+          body.style.background = "linear-gradient(135deg, #ff9a9e, #fecfef)";
+        } else if (scrollPos >= 900 && scrollPos < 1200) {
+          body.style.background = "linear-gradient(135deg, #a18cd1, #fbc2eb)";
+        } else {
+          body.style.background = "linear-gradient(135deg, #fad0c4, #ffd1ff)";
+        }
+      });
+    </script>
 </head>
 <body>
   <app-root></app-root>

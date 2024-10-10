@@ -19,8 +19,14 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
-import { FormConfig, FormField, FormGroupConfig, ValidationRule } from '../models/form-config.model';
+import {
+  FormConfig,
+  FormField,
+  FormGroupConfig,
+  ValidationRule,
+} from '../models/form-config.model';
 import { FlexLayoutModule } from '@angular/flex-layout';
+import { MatExpansionModule } from '@angular/material/expansion';
 @Component({
   selector: 'app-form-builder',
   standalone: true,
@@ -38,6 +44,7 @@ import { FlexLayoutModule } from '@angular/flex-layout';
     MatFormFieldModule,
     MatListModule,
     FlexLayoutModule,
+    MatExpansionModule,
   ],
   templateUrl: './form-builder.component.html',
   styleUrl: './form-builder.component.scss',
@@ -51,17 +58,18 @@ export class FormBuilderComponent implements OnInit {
   isEditMode: boolean = false;
   originalValues: FormConfig | null = null;
   constructor(private http: HttpClient, private fb: FormBuilder) {
-    this.form = signal(this.fb.group({
-      groups: this.fb.array([]) // Initialize with an empty form array for groups
-    }));
+    this.form = signal(
+      this.fb.group({
+        groups: this.fb.array([]), // Initialize with an empty form array for groups
+      })
+    );
   }
 
   ngOnInit() {
     // Load JSON configuration from assets
-    
 
-     // Initialize with a blank form or load a default configuration
-     this.loadFormConfiguration();
+    // Initialize with a blank form or load a default configuration
+    this.loadFormConfiguration();
   }
 
   // Load existing form values for editing
@@ -78,10 +86,12 @@ export class FormBuilderComponent implements OnInit {
       // };
       // this.formConfig.set(initialConfig);
       // this.buildFormGroups(initialConfig.formGroups);
-      this.http.get<FormConfig>('/assets/form-config.json').subscribe((config) => {
-        this.formConfig.set(config);
-        this.buildFormGroups(config.formGroups);
-      });
+      this.http
+        .get<FormConfig>('/assets/form-config.json')
+        .subscribe((config) => {
+          this.formConfig.set(config);
+          this.buildFormGroups(config.formGroups);
+        });
     }
   }
 
@@ -89,9 +99,9 @@ export class FormBuilderComponent implements OnInit {
   buildFormGroups(groups: FormGroupConfig[]) {
     const formGroupsArray = this.fb.array([]); // Create a new form array
 
-    groups.forEach(group => {
+    groups.forEach((group) => {
       const groupForm = this.fb.group({}); // Create a form group for each config group
-      group.fields.forEach(field => {
+      group.fields.forEach((field) => {
         const control = this.fb.control(
           field.value || '',
           this.applyValidations(field.validations)
@@ -109,7 +119,7 @@ export class FormBuilderComponent implements OnInit {
     const validatorFns: ValidatorFn[] = [];
 
     if (validations) {
-      validations.forEach(validation => {
+      validations.forEach((validation) => {
         switch (validation.validator) {
           case 'required':
             validatorFns.push(Validators.required);
@@ -144,48 +154,47 @@ export class FormBuilderComponent implements OnInit {
     }
   }
 
-   // Cancel editing and revert changes
-   cancelEdit() {
+  // Cancel editing and revert changes
+  cancelEdit() {
     if (this.originalValues) {
       this.loadFormConfiguration(this.originalValues);
     }
     this.isEditMode = false;
   }
 
-
-
-
-  
   // Helper to access form groups in the template
   get formGroupsArray(): FormArray {
     return this.form().get('groups') as FormArray;
   }
 
   // Helper to access individual group controls
-  public getGroupControls(index: number): FormGroup {
-    return this.formGroupsArray.at(index) as FormGroup;
+  public getGroupControls(index: number): FormGroup | null {
+    const group = this.formGroupsArray.at(index) as FormGroup;
+    return group ? group : null;
   }
 
-  
-  removeFormGroup(index: number) {
-    this.formGroupsArray.removeAt(index);
+  removeFormGroup(index: number, event: Event) {
+    event.stopPropagation();
+    const formGroups = this.form().get('groups') as FormArray;
+
+    if (formGroups && formGroups.length > index) {
+      formGroups.removeAt(index);
+    }
   }
-
-
 
   removeFieldFromGroup(groupIndex: number, fieldName: string) {
     const group = this.getGroupControls(groupIndex);
-    group.removeControl(fieldName);
+    group!.removeControl(fieldName);
   }
 
   // Method to get error message for a specific field
   getErrorMessage(fieldName: string, groupIndex: number): string | null {
     const group = this.getGroupControls(groupIndex);
-    const field = group.get(fieldName);
+    const field = group!.get(fieldName);
 
     if (field && this.formConfig()) {
       const groupConfig = this.formConfig()?.formGroups[groupIndex];
-      const fieldConfig = groupConfig!.fields.find(f => f.name === fieldName);
+      const fieldConfig = groupConfig!.fields.find((f) => f.name === fieldName);
 
       if (fieldConfig && fieldConfig.validations) {
         for (const validation of fieldConfig.validations) {

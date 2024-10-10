@@ -1,0 +1,63 @@
+{
+    "missionStatement": "Our fleet is dedicated to innovation, excellence, and teamwork...",
+    "leadership": "Meet our leadership team guiding the fleet toward success...",
+    "objectives": [
+      {
+        "title": "Optimize Fleet Performance",
+        "image": "optimize-performance.jpg",
+        "link": "optimize-link"
+      },
+      {
+        "title": "Environmental Sustainability",
+        "image": "environmental-sustainability.jpg",
+        "link": "sustainability-link"
+      },
+      {
+        "title": "Enhance Collaboration",
+        "image": "collaboration.jpg",
+        "link": "collaboration-link"
+      },
+      {
+        "title": "Increase Safety Standards",
+        "image": "safety.jpg",
+        "link": "safety-link"
+      }
+    ],
+    "tools": [
+      {
+        "title": "AI Fleet Management",
+        "image": "ai-fleet.jpg",
+        "link": "ai-link"
+      },
+      {
+        "title": "IoT Solutions",
+        "image": "iot.jpg",
+        "link": "iot-link"
+      }
+    ],
+    "programs": [
+      {
+        "title": "Fleet Optimization",
+        "image": "fleet-optimization.jpg",
+        "link": "program1-link"
+      },
+      {
+        "title": "Sustainability Program",
+        "image": "sustainability-program.jpg",
+        "link": "program2-link"
+      }
+    ],
+    "squads": [
+      {
+        "title": "Engineering Squad",
+        "image": "engineering-squad.jpg",
+        "link": "squad1-link"
+      },
+      {
+        "title": "Operations Squad",
+        "image": "operations-squad.jpg",
+        "link": "squad2-link"
+      }
+    ]
+  }
+  

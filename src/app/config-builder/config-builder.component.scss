@@ -122,8 +122,8 @@
 ::ng-deep .mat-mdc-form-field.mat-mdc-form-field-should-float .mat-mdc-floating-label,
 ::ng-deep .mdc-text-field--focused .mdc-floating-label,
 ::ng-deep .mdc-text-field:not(.mdc-text-field--invalid):not(.mdc-text-field--focused):not(.mdc-text-field--disabled) .mdc-floating-label--float-above {
-  transform: translateY(-18px) scale(0.75) !important; /* Adjusted translateY to bring it closer */
-  font-size: 10px !important; /* Ensure the font size reduces correctly */
+  transform: translateY(-5px) scale(0.75) !important; /* Adjusted translateY to bring it closer */
+  font-size: 12px !important; /* Ensure the font size reduces correctly */
   top: 0px !important; /* Corrected top position */
 }
 

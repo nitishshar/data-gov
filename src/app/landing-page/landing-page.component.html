@@ -1,0 +1,99 @@
+<div class="container">
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Mission Statement Section -->
+      <mat-card class="mission-section">
+        <mat-card-header>
+          <mat-card-title>Fleet Mission Statement</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p>{{ fleetData().missionStatement }}</p>
+        </mat-card-content>
+      </mat-card>
+  
+      <!-- Objectives Section -->
+      <div class="objectives-section">
+        <h2>Fleet Objectives</h2>
+        <mat-card *ngFor="let objective of fleetData().objectives" class="objective-card">
+          <mat-card-header>
+            <mat-card-title>{{ objective.name }}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <p>{{ objective.description }}</p>
+            <a [href]="objective.link" mat-raised-button color="accent">Learn More</a>
+          </mat-card-content>
+        </mat-card>
+      </div>
+  
+      <!-- Tools Section -->
+      <div class="tools-section">
+        <h2>Tools Developed by the Fleet</h2>
+        <mat-card *ngFor="let tool of fleetData().tools" class="tool-card">
+          <mat-card-header>
+            <mat-card-title>{{ tool.name }}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <p>{{ tool.description }}</p>
+            <a [href]="tool.link" mat-raised-button color="accent">Learn More</a>
+          </mat-card-content>
+        </mat-card>
+      </div>
+  
+      <!-- Programs Section -->
+      <div class="programs-section">
+        <h2>Fleet Programs</h2>
+        <mat-card *ngFor="let program of fleetData().programs" class="program-card">
+          <mat-card-header>
+            <mat-card-title>{{ program.name }}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <p>{{ program.description }}</p>
+            <a [href]="program.link" mat-raised-button color="accent">View Program</a>
+          </mat-card-content>
+        </mat-card>
+      </div>
+  
+      <!-- Squads Section -->
+      <div class="squads-section">
+        <h2>Squads</h2>
+        <mat-card *ngFor="let squad of fleetData().squads" class="squad-card">
+          <mat-card-header>
+            <mat-card-title>{{ squad.name }}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <p>{{ squad.description }}</p>
+            <a [href]="squad.link" mat-raised-button color="accent">View Squad</a>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  
+    <!-- Sidebar Section -->
+    <div class="sidebar">
+      <!-- Leadership Section -->
+      <div class="leadership-section">
+        <h2>Leadership</h2>
+        <mat-card *ngFor="let leader of fleetData().leadership" class="leader-card">
+          <mat-card-header>
+            <img [src]="leader.image" [alt]="leader.name" class="leader-image" />
+            <mat-card-title>{{ leader.name }}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <p>{{ leader.title }}</p>
+            <p>{{ leader.description }}</p>
+          </mat-card-content>
+        </mat-card>
+      </div>
+  
+      <!-- Resources Section -->
+      <div class="resources-section">
+        <h2>Downloaded Resources</h2>
+        <ul>
+          <li *ngFor="let resource of fleetData().resources">
+            <a [href]="resource.link">{{ resource.name }}</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  

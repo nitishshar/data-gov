@@ -1,88 +1,84 @@
 <mat-card *ngIf="formConfig() as config" class="form-builder">
   <mat-card-title>{{ isEditMode ? 'Edit Form' : config.formTitle }}</mat-card-title>
-  <mat-card-subtitle *ngIf="isEditMode">You are currently editing this form. Make changes and click 'Save Changes' when you're done.</mat-card-subtitle>
+  <mat-card-subtitle *ngIf="isEditMode">
+    You are currently editing this form. Make changes and click 'Save Changes' when you're done.
+  </mat-card-subtitle>
 
   <form [formGroup]="form()" (ngSubmit)="onSubmit()" fxLayout="column" fxLayoutGap="16px">
     <div formArrayName="groups">
-      <!-- Loop through each form group -->
-      <div *ngFor="let group of config.formGroups; let i = index" [formGroupName]="i">
-        <mat-card class="form-group-card">
-          <mat-card-header fxLayout="row" fxLayoutAlign="space-between center">
-            <mat-card-title>{{ group.groupName }}</mat-card-title>
-            <button mat-icon-button color="warn" (click)="removeFormGroup(i)">
+      <mat-accordion multi>
+        <!-- Loop through each form group -->
+        <mat-expansion-panel *ngFor="let group of config.formGroups; let i = index" [formGroupName]="i" expanded>
+          <mat-expansion-panel-header fxLayout="row" fxLayoutAlign="space-between center">
+            <div fxFlex>
+              <mat-panel-title>{{ group.groupName }}</mat-panel-title>
+              <mat-panel-description>Group {{ i + 1 }}</mat-panel-description>
+            </div>
+            <!-- Delete Button Aligned to the Right -->
+            <button mat-icon-button color="warn" (click)="removeFormGroup(i,$event)">
               <mat-icon>delete</mat-icon>
             </button>
-          </mat-card-header>
-          
-          <mat-card-content fxLayout="row wrap" fxLayoutGap="16px">
-            <!-- Loop through each field in the group -->
-            <div *ngFor="let field of group.fields" fxFlex="1 1 calc(33% - 16px)" class="form-field">
-              
-              <!-- Text Input -->
-              <mat-form-field appearance="outline" class="full-width" *ngIf="field.type === 'text'">
-                <mat-label>{{ field.label }}</mat-label>
-                <input matInput formControlName="{{field.name}}" placeholder="{{field.placeholder}}" />
-                <mat-error *ngIf="getGroupControls(i).get(field.name)?.hasError('required')">{{ field.label }} is required</mat-error>
-              </mat-form-field>
+          </mat-expansion-panel-header>
 
-              <!-- Textarea Input -->
-              <mat-form-field appearance="outline" class="full-width" *ngIf="field.type === 'textarea'">
-                <mat-label>{{ field.label }}</mat-label>
-                <textarea matInput formControlName="{{field.name}}" placeholder="{{field.placeholder}}"></textarea>
-              </mat-form-field>
+          <mat-card class="form-group-card">
+            <mat-card-content fxLayout="row wrap" fxLayoutGap="16px">
+              <!-- Loop through each field in the group -->
+              <div *ngFor="let field of group.fields" fxFlex="1 1 calc(33% - 16px)" class="form-field">
+                
+                <!-- Text Input -->
+                <mat-form-field appearance="outline" class="full-width" *ngIf="field.type === 'text'">
+                  <mat-label>{{ field.label }}</mat-label>
+                  <input matInput formControlName="{{field.name}}" placeholder="{{field.placeholder}}" />
+                  <mat-error *ngIf="getGroupControls(i)?.get(field.name)?.hasError('required')">
+                    {{ field.label }} is required
+                  </mat-error>
+                </mat-form-field>
 
-              <!-- Dropdown Select -->
-              <mat-form-field appearance="outline" class="full-width" *ngIf="field.type === 'dropdown'">
-                <mat-label>{{ field.label }}</mat-label>
-                <mat-select formControlName="{{field.name}}">
-                  <mat-option *ngFor="let option of field.options" [value]="option">{{ option }}</mat-option>
-                </mat-select>
-              </mat-form-field>
+                <!-- Textarea Input -->
+                <mat-form-field appearance="outline" class="full-width" *ngIf="field.type === 'textarea'">
+                  <mat-label>{{ field.label }}</mat-label>
+                  <textarea matInput formControlName="{{field.name}}" placeholder="{{field.placeholder}}"></textarea>
+                </mat-form-field>
 
-              <!-- Multi-Select Dropdown -->
-              <mat-form-field appearance="outline" class="full-width" *ngIf="field.type === 'multi-select'">
-                <mat-label>{{ field.label }}</mat-label>
-                <mat-select formControlName="{{field.name}}" multiple>
-                  <mat-option *ngFor="let option of field.options" [value]="option">{{ option }}</mat-option>
-                </mat-select>
-              </mat-form-field>
+                <!-- Dropdown Select -->
+                <mat-form-field appearance="outline" class="full-width" *ngIf="field.type === 'dropdown'">
+                  <mat-label>{{ field.label }}</mat-label>
+                  <mat-select formControlName="{{field.name}}">
+                    <mat-option *ngFor="let option of field.options" [value]="option">{{ option }}</mat-option>
+                  </mat-select>
+                </mat-form-field>
 
-              <!-- Radio Buttons -->
-              <div *ngIf="field.type === 'radio'" class="full-width">
-                <label>{{ field.label }}</label>
-                <mat-radio-group formControlName="{{field.name}}">
-                  <mat-radio-button *ngFor="let option of field.options" [value]="option">{{ option }}</mat-radio-button>
-                </mat-radio-group>
+                <!-- Multi-Select Dropdown -->
+                <mat-form-field appearance="outline" class="full-width" *ngIf="field.type === 'multi-select'">
+                  <mat-label>{{ field.label }}</mat-label>
+                  <mat-select formControlName="{{field.name}}" multiple>
+                    <mat-option *ngFor="let option of field.options" [value]="option">{{ option }}</mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <!-- Radio Buttons -->
+                <div *ngIf="field.type === 'radio'" class="full-width">
+                  <label>{{ field.label }}</label>
+                  <mat-radio-group formControlName="{{field.name}}">
+                    <mat-radio-button *ngFor="let option of field.options" [value]="option">{{ option }}</mat-radio-button>
+                  </mat-radio-group>
+                </div>
+
+                <!-- Checkbox -->
+                <div *ngIf="field.type === 'checkbox'" class="full-width">
+                  <mat-checkbox formControlName="{{field.name}}">{{ field.label }}</mat-checkbox>
+                </div>
+
+                <!-- Rich Textbox (Using regular textarea for simplicity) -->
+                <mat-form-field appearance="outline" class="full-width" *ngIf="field.type === 'rich-text'">
+                  <mat-label>{{ field.label }}</mat-label>
+                  <textarea matInput formControlName="{{field.name}}" placeholder="{{field.placeholder}}"></textarea>
+                </mat-form-field>
               </div>
-
-              <!-- Checkbox -->
-              <div *ngIf="field.type === 'checkbox'" class="full-width">
-                <mat-checkbox formControlName="{{field.name}}">{{ field.label }}</mat-checkbox>
-              </div>
-
-              <!-- Rich Textbox (Using regular textarea for simplicity) -->
-              <mat-form-field appearance="outline" class="full-width" *ngIf="field.type === 'rich-text'">
-                <mat-label>{{ field.label }}</mat-label>
-                <textarea matInput formControlName="{{field.name}}" placeholder="{{field.placeholder}}"></textarea>
-              </mat-form-field>
-              
-              <!-- Validation Errors -->
-              <mat-error *ngIf="getGroupControls(i).get(field.name)?.hasError('required') && getGroupControls(i).get(field.name)?.touched">
-                {{ field.label }} is required
-              </mat-error>
-              <mat-error *ngIf="getGroupControls(i).get(field.name)?.hasError('minlength') && getGroupControls(i).get(field.name)?.touched">
-                {{ field.label }} must be at least {{ getGroupControls(i).get(field.name)?.errors?.['minlength'].requiredLength }} characters long
-              </mat-error>
-              <mat-error *ngIf="getGroupControls(i).get(field.name)?.hasError('maxlength') && getGroupControls(i).get(field.name)?.touched">
-                {{ field.label }} cannot exceed {{ getGroupControls(i).get(field.name)?.errors?.['maxlength'].requiredLength }} characters
-              </mat-error>
-              <mat-error *ngIf="getGroupControls(i).get(field.name)?.hasError('pattern') && getGroupControls(i).get(field.name)?.touched">
-                Invalid {{ field.label }} format
-              </mat-error>
-            </div>
-          </mat-card-content>
-        </mat-card>
-      </div>
+            </mat-card-content>
+          </mat-card>
+        </mat-expansion-panel>
+      </mat-accordion>
     </div>
 
     <!-- Action Buttons at the bottom -->
