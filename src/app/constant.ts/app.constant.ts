@@ -72,51 +72,8 @@ export const FLEET_DATA: any = {
       description: 'Oversees the smooth operation of fleet activities.',
       image: 'jane-smith.jpg',
     },
-    {
-      name: 'Richard Roe',
-      title: 'Logistics Manager',
-      description: 'Manages logistics and coordination within the fleet.',
-      image: 'richard-roe.jpg',
-    },
-    {
-      name: 'Emily White',
-      title: 'Safety Officer',
-      description:
-        'Ensures compliance with safety standards across all operations.',
-      image: 'emily-white.jpg',
-    },
-    {
-      name: 'Michael Green',
-      title: 'Technical Lead',
-      description:
-        'Leads technical innovations and AI integrations for fleet optimization.',
-      image: 'michael-green.jpg',
-    },
-    {
-      name: 'Olivia Brown',
-      title: 'Fleet Operations Specialist',
-      description: 'Specializes in optimizing day-to-day fleet operations.',
-      image: 'olivia-brown.jpg',
-    },
-    {
-      name: 'David Black',
-      title: 'Financial Officer',
-      description:
-        'Manages financial planning and budgeting for fleet expenses.',
-      image: 'david-black.jpg',
-    },
-    {
-      name: 'Sophia Taylor',
-      title: 'HR Manager',
-      description: 'Oversees recruitment and training for all fleet staff.',
-      image: 'sophia-taylor.jpg',
-    },
-    {
-      name: 'William Gray',
-      title: 'Public Relations Officer',
-      description: 'Manages fleet communications and public relations.',
-      image: 'william-gray.jpg',
-    },
+  
+    
   ],
   tools: [
     {
