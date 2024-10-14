@@ -1,7 +1,7 @@
 <div class="page-container">
     <!-- Fleet Mission Section -->
     <div class="main-content">
-      <div class="custom-card large-card">
+      <div class="custom-card large-card" [ngClass]="'color-'+ random()">
         <div class="card-image">
           <img src="assets/fleet-mission.jpg" alt="Fleet Mission Image" />
         </div>
@@ -14,7 +14,7 @@
       <!-- Fleet Objectives Section -->
       <h2>Fleet Objectives</h2>
       <div class="objectives-section">
-        <div *ngFor="let objective of fleetData().objectives" class="custom-card objective-card">
+        <div *ngFor="let objective of fleetData().objectives; index as i" class="custom-card objective-card" [ngClass]="'color-'+ (i%5===0?random(): i%5)">
           <div class="card-image">
             <img src="assets/objective-{{ objective.id }}.jpg" alt="{{ objective.name }}" />
           </div>
@@ -28,7 +28,7 @@
       <!-- Tools Section -->
       <h2>Tools Developed by the Fleet</h2>
       <div class="tools-section">
-        <div *ngFor="let tool of fleetData().tools" class="custom-card small-card">
+        <div *ngFor="let tool of fleetData().tools; index as i" class="custom-card small-card" [ngClass]="'color-'+ (i%5===0?random(): i%5)">
           <div class="card-image">
             <img src="assets/tool-{{ tool.id }}.jpg" alt="{{ tool.name }}" />
           </div>
@@ -42,7 +42,7 @@
       <!-- Fleet Programs Section -->
       <h2>Fleet Programs</h2>
       <div class="programs-section">
-        <div *ngFor="let program of fleetData().programs" class="custom-card small-card">
+        <div *ngFor="let program of fleetData().programs; index as i" class="custom-card small-card" [ngClass]="'color-'+ (i%5===0?random(): i%5)">
           <div class="card-image">
             <img src="assets/program-{{ program.id }}.jpg" alt="{{ program.name }}" />
           </div>
@@ -56,7 +56,7 @@
       <!-- Squads Section -->
       <h2>Squads</h2>
       <div class="squads-section">
-        <div *ngFor="let squad of fleetData().squads" class="custom-card small-card">
+        <div *ngFor="let squad of fleetData().squads; index as i" class="custom-card small-card" [ngClass]="'color-'+ (i%5===0?random(): i%5)">
           <div class="card-image">
             <img src="assets/squad-{{ squad.id }}.jpg" alt="{{ squad.name }}" />
           </div>
@@ -73,7 +73,7 @@
         <!-- Leadership Section -->
         <h2>Leadership</h2>
         <div class="leadership-section">
-          <div *ngFor="let leader of fleetData().leadership" class="custom-card small-card">
+          <div *ngFor="let leader of fleetData().leadership; index as i" class="custom-card small-card" [ngClass]="'color-'+ (i%5===0?random(): i%5)">
             <div class="card-image">
               <img src="{{ leader.image }}" alt="{{ leader.name }}" />
             </div>
