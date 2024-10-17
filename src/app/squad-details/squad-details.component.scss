@@ -353,3 +353,76 @@
     max-width: 200px;
   }
 }
+
+@media (max-width: 1200px) {
+  .objective-card {
+    width: calc(50% - 1.25rem); // 2 per row on medium screens
+  }
+}
+
+@media (max-width: 768px) {
+  .custom-card,
+  .objective-card {
+    width: 100%; // Full width on mobile
+  }
+}
+
+// New styles for objective cards
+.objectives .grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  gap: 2rem;
+}
+
+.objective-card {
+  width: 100%;
+  min-height: 120px; // Reduced height
+}
+
+.objective-card .card-inner {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 1.5rem;
+  height: 100%;
+}
+
+.objective-card mat-icon {
+  font-size: 2.5rem;
+  height: 2.5rem;
+  width: 2.5rem;
+  color: var(--accent-color);
+  margin-right: 1.5rem;
+  flex-shrink: 0;
+}
+
+.objective-card p {
+  font-size: 1rem;
+  line-height: 1.4;
+  margin: 0;
+  text-align: left;
+}
+
+@media (max-width: 768px) {
+  .objectives .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .objective-card {
+    min-height: auto;
+  }
+
+  .objective-card .card-inner {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .objective-card mat-icon {
+    margin-right: 0;
+    margin-bottom: 1rem;
+  }
+
+  .objective-card p {
+    text-align: center;
+  }
+}
