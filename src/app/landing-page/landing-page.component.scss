@@ -173,3 +173,23 @@ h3 {
     grid-template-columns: 1fr;
   }
 }
+.resources-section {
+  ul {
+    list-style-type: none;
+    padding: 0;
+  }
+
+  li {
+    margin-bottom: 0.5rem;
+  }
+
+  a {
+    color: var(--text-color);
+    text-decoration: none;
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: var(--accent-color);
+    }
+  }
+}
