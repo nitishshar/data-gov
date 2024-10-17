@@ -116,6 +116,11 @@ h3 {
   gap: 20px;
 }
 
+/* Specific style for objectives section to make cards wider */
+.objectives-section {
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+}
+
 /* Leadership Section */
 .leadership-section {
   display: grid;
@@ -163,12 +168,8 @@ h3 {
 }
 
 /* Responsive Design */
-@media (max-width: 1200px) {
-  .page-container {
+@media (max-width: 1000px) {
+  .objectives-section {
     grid-template-columns: 1fr;
-  }
-  
-  .sidebar {
-    order: -1;
   }
 }
