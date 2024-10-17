@@ -1,0 +1,86 @@
+{
+  "name": "Innovation Squad",
+  "missionStatement": "Driving innovation and pushing the boundaries of what's possible in our organization.",
+  "leader": {
+    "name": "Jane Doe",
+    "title": "Squad Leader",
+    "image": "assets/images/jane-doe.jpg"
+  },
+  "objectives": [
+    "Identify and explore emerging technologies",
+    "Develop proof-of-concept projects",
+    "Foster a culture of innovation across the organization",
+    "Collaborate with other teams to implement innovative solutions"
+  ],
+  "helpAndSupport": "For any questions or support regarding innovation projects, please contact our squad lead or visit our internal innovation portal.",
+  "members": [
+    {
+      "name": "John Smith",
+      "title": "Senior Developer",
+      "image": "assets/images/john-smith.jpg"
+    },
+    {
+      "name": "Alice Johnson",
+      "title": "UX Designer",
+      "image": "assets/images/alice-johnson.jpg"
+    },
+    {
+      "name": "Bob Williams",
+      "title": "Data Scientist",
+      "image": "assets/images/bob-williams.jpg"
+    },
+    {
+      "name": "Emma Brown",
+      "title": "Product Manager",
+      "image": "assets/images/emma-brown.jpg"
+    }
+  ],
+  "recentDocuments": [
+    {
+      "name": "Q2 Innovation Report",
+      "type": "pdf",
+      "author": "Jane Doe",
+      "time": "2023-06-15T14:30:00Z"
+    },
+    {
+      "name": "AI Project Proposal",
+      "type": "doc",
+      "author": "John Smith",
+      "time": "2023-06-10T09:15:00Z"
+    },
+    {
+      "name": "Innovation Budget",
+      "type": "xls",
+      "author": "Bob Williams",
+      "time": "2023-06-05T11:45:00Z"
+    },
+    {
+      "name": "UX Research Findings",
+      "type": "ppt",
+      "author": "Alice Johnson",
+      "time": "2023-06-20T10:00:00Z"
+    }
+  ],
+  "projects": [
+    {
+      "name": "AI-Powered Customer Service",
+      "description": "Developing an AI chatbot to improve customer service efficiency and satisfaction.",
+      "link": "/projects/ai-customer-service"
+    },
+    {
+      "name": "Blockchain for Supply Chain",
+      "description": "Exploring the use of blockchain technology to enhance transparency and traceability in our supply chain.",
+      "link": "/projects/blockchain-supply-chain"
+    },
+    {
+      "name": "VR Training Program",
+      "description": "Creating a virtual reality training program for new employees to improve onboarding and skill development.",
+      "link": "/projects/vr-training"
+    },
+    {
+      "name": "IoT-Enabled Smart Office",
+      "description": "Implementing Internet of Things devices to create a more efficient and comfortable work environment.",
+      "link": "/projects/iot-smart-office"
+    }
+  ]
+}

@@ -1,3 +1,52 @@
 /* You can add global styles to this file, and also import other style files */
-@import '@angular/material/prebuilt-themes/indigo-pink.css';
-@import 'material-icons/iconfont/material-icons.css';
+
+/* Material Icons */
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;  /* Preferred icon size */
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+
+  /* Support for all WebKit browsers. */
+  -webkit-font-smoothing: antialiased;
+  /* Support for Safari and Chrome. */
+  text-rendering: optimizeLegibility;
+
+  /* Support for Firefox. */
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Support for IE. */
+  font-feature-settings: 'liga';
+}
+
+/* Your existing CSS variables */
+:root {
+  --primary-color: rgba(63, 81, 181, 0.8);  // Semi-transparent indigo
+  --primary-color-hover: rgba(63, 81, 181, 0.9);  // Slightly less transparent for hover
+  --accent-color: rgba(255, 64, 129, 0.8);  // Semi-transparent pink
+  --accent-color-hover: rgba(255, 64, 129, 0.9);  // Slightly less transparent for hover
+  --text-color: #333;
+  --background-color: #f0f2f5;
+  --white: #ffffff;
+  --glass-background: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  padding: 0;
+}
+
+// Add any other global styles here

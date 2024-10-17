@@ -1,0 +1,70 @@
+<div class="squad-details-container" *ngIf="squadData">
+  <header class="hero">
+    <div class="hero-content">
+      <div class="squad-info">
+        <h1>{{ squadData.name }}</h1>
+        <p class="mission-statement">{{ squadData.missionStatement }}</p>
+      </div>
+      <div class="squad-leader">
+        <img [src]="squadData.leader.image" [alt]="squadData.leader.name">
+        <div class="leader-info">
+          <h3>{{ squadData.leader.name }}</h3>
+          <p>{{ squadData.leader.title }}</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="objectives">
+    <h2>Our Objectives</h2>
+    <div class="objectives-grid">
+      <div class="objective-card" *ngFor="let objective of squadData.objectives">
+        <mat-icon>check_circle</mat-icon>
+        <p>{{ objective }}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="squad-members">
+    <h2>Squad Members</h2>
+    <div class="member-grid">
+      <div class="member-card" *ngFor="let member of squadData.members">
+        <img [src]="member.image" [alt]="member.name">
+        <h3>{{ member.name }}</h3>
+        <p>{{ member.title }}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="recent-documents">
+    <h2>Recent Documents</h2>
+    <div class="document-grid">
+      <div class="document-card" *ngFor="let doc of squadData.recentDocuments">
+        <mat-icon>{{ getDocumentIcon(doc.type) }}</mat-icon>
+        <h3>{{ doc.name }}</h3>
+        <p>{{ doc.author }} - {{ formatDate(doc.time) }}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="projects" *ngIf="squadData">
+    <h2>Our Projects</h2>
+    <div class="project-grid">
+      <div class="project-card" *ngFor="let project of squadData.projects">
+        <h3>{{ project.name }}</h3>
+        <p>{{ project.description }}</p>
+        <a [href]="project.link" class="button">Learn More</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="help-support" *ngIf="squadData">
+    <h2>Help and Support</h2>
+    <p>{{ squadData.helpAndSupport }}</p>
+    <button class="button" (click)="contactUs()">Contact Us</button>
+  </section>
+</div>
+
+<div *ngIf="!squadData" class="loading">
+  Loading squad data...
+</div>
