@@ -1,79 +1,101 @@
 <div class="page-container">
+  <div class="main-content">
     <!-- Fleet Mission Section -->
-    <div class="main-content">
+    <div class="section">
+      <h2>Fleet Mission</h2>
       <div class="custom-card large-card" [ngClass]="'color-'+ random()">
-        <div class="card-image">
-          <img src="assets/fleet-mission.jpg" alt="Fleet Mission Image" />
-        </div>
-        <div class="card-content">
-          <h3>Fleet Mission Statement</h3>
-          <p>{{ fleetData().missionStatement }}</p>
-        </div>
-      </div>
-  
-      <!-- Fleet Objectives Section -->
-      <h2>Fleet Objectives</h2>
-      <div class="objectives-section">
-        <div *ngFor="let objective of fleetData().objectives; index as i" class="custom-card objective-card" [ngClass]="'color-'+ (i%5===0?random(): i%5)">
+        <div class="card-inner">
           <div class="card-image">
-            <img src="assets/objective-{{ objective.id }}.jpg" alt="{{ objective.name }}" />
+            <img src="assets/fleet-mission.jpg" alt="Fleet Mission Image" />
           </div>
           <div class="card-content">
-            <h3>{{ objective.name }}</h3>
-            <p>{{ objective.description }}</p>
-          </div>
-        </div>
-      </div>
-  
-      <!-- Tools Section -->
-      <h2>Tools Developed by the Fleet</h2>
-      <div class="tools-section">
-        <div *ngFor="let tool of fleetData().tools; index as i" class="custom-card small-card" [ngClass]="'color-'+ (i%5===0?random(): i%5)">
-          <div class="card-image">
-            <img src="assets/tool-{{ tool.id }}.jpg" alt="{{ tool.name }}" />
-          </div>
-          <div class="card-content">
-            <h3>{{ tool.name }}</h3>
-            <p>{{ tool.description }}</p>
-          </div>
-        </div>
-      </div>
-  
-      <!-- Fleet Programs Section -->
-      <h2>Fleet Programs</h2>
-      <div class="programs-section">
-        <div *ngFor="let program of fleetData().programs; index as i" class="custom-card small-card" [ngClass]="'color-'+ (i%5===0?random(): i%5)">
-          <div class="card-image">
-            <img src="assets/program-{{ program.id }}.jpg" alt="{{ program.name }}" />
-          </div>
-          <div class="card-content">
-            <h3>{{ program.name }}</h3>
-            <p>{{ program.description }}</p>
-          </div>
-        </div>
-      </div>
-  
-      <!-- Squads Section -->
-      <h2>Squads</h2>
-      <div class="squads-section">
-        <div *ngFor="let squad of fleetData().squads; index as i" class="custom-card small-card" [ngClass]="'color-'+ (i%5===0?random(): i%5)">
-          <div class="card-image">
-            <img src="assets/squad-{{ squad.id }}.jpg" alt="{{ squad.name }}" />
-          </div>
-          <div class="card-content">
-            <h3>{{ squad.name }}</h3>
-            <p>{{ squad.description }}</p>
+            <h3>Fleet Mission Statement</h3>
+            <p>{{ fleetData().missionStatement }}</p>
           </div>
         </div>
       </div>
     </div>
-  
-    <!-- Sidebar Section -->
-    <div class="sidebar">
-        <!-- Leadership Section -->
-        <h2>Leadership</h2>
-        <div class="leadership-section">
-          <div *ngFor="let leader of fleetData().leadership; index as i" class="custom-card small-card" [ngClass]="'color-'+ (i%5===0?random(): i%5)">
+
+    <!-- Fleet Objectives Section -->
+    <div class="section">
+      <h2>Fleet Objectives</h2>
+      <div class="objectives-section">
+        <div *ngFor="let objective of fleetData().objectives; index as i" class="custom-card" [ngClass]="'color-'+ (i%5===0?random(): i%5)">
+          <div class="card-inner">
+            <div class="card-image">
+              <img src="assets/objective-{{ objective.id }}.jpg" alt="{{ objective.name }}" />
+            </div>
+            <div class="card-content">
+              <h3>{{ objective.name }}</h3>
+              <p>{{ objective.description }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tools Section -->
+    <div class="section">
+      <h2>Tools Developed by the Fleet</h2>
+      <div class="tools-section">
+        <div *ngFor="let tool of fleetData().tools; index as i" class="custom-card" [ngClass]="'color-'+ (i%5===0?random(): i%5)">
+          <div class="card-inner">
+            <div class="card-image">
+              <img src="assets/tool-{{ tool.id }}.jpg" alt="{{ tool.name }}" />
+            </div>
+            <div class="card-content">
+              <h3>{{ tool.name }}</h3>
+              <p>{{ tool.description }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fleet Programs Section -->
+    <div class="section">
+      <h2>Fleet Programs</h2>
+      <div class="programs-section">
+        <div *ngFor="let program of fleetData().programs; index as i" class="custom-card" [ngClass]="'color-'+ (i%5===0?random(): i%5)">
+          <div class="card-inner">
+            <div class="card-image">
+              <img src="assets/program-{{ program.id }}.jpg" alt="{{ program.name }}" />
+            </div>
+            <div class="card-content">
+              <h3>{{ program.name }}</h3>
+              <p>{{ program.description }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Squads Section -->
+    <div class="section">
+      <h2>Squads</h2>
+      <div class="squads-section">
+        <div *ngFor="let squad of fleetData().squads; index as i" class="custom-card" [ngClass]="'color-'+ (i%5===0?random(): i%5)">
+          <div class="card-inner">
+            <div class="card-image">
+              <img src="assets/squad-{{ squad.id }}.jpg" alt="{{ squad.name }}" />
+            </div>
+            <div class="card-content">
+              <h3>{{ squad.name }}</h3>
+              <p>{{ squad.description }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <!-- Leadership Section -->
+    <div class="section">
+      <h2>Leadership</h2>
+      <div class="leadership-section">
+        <div *ngFor="let leader of fleetData().leadership; index as i" class="custom-card leadership-card" [ngClass]="'color-'+ (i%5===0?random(): i%5)">
+          <div class="card-inner">
             <div class="card-image">
               <img src="{{ leader.image }}" alt="{{ leader.name }}" />
             </div>
@@ -84,11 +106,13 @@
             </div>
           </div>
         </div>
-      
-  
-      <!-- Resources Section -->
+      </div>
+    </div>
+
+    <!-- Resources Section -->
+    <div class="section">
+      <h2>Downloaded Resources</h2>
       <div class="resources-section">
-        <h2>Downloaded Resources</h2>
         <ul>
           <li *ngFor="let resource of fleetData().resources">
             <a [href]="resource.link">{{ resource.name }}</a>
@@ -97,4 +121,4 @@
       </div>
     </div>
   </div>
-  
+</div>

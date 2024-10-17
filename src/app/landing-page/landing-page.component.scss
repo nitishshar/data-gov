@@ -1,133 +1,174 @@
+/* Global Styles */
+:root {
+  --primary-color: #2c3e50;
+  --secondary-color: #34495e;
+  --accent-color: #3498db;
+  --light-bg: #ecf0f1;
+  --card-bg: rgba(255, 255, 255, 0.9);
+  --text-color: #333333;
+  --text-light: #7f8c8d;
+}
+
+body {
+  background: linear-gradient(135deg, var(--light-bg) 0%, #bdc3c7 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--text-color);
+  line-height: 1.6;
+}
+
 /* Application Background */
 .page-container {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.7),
-    rgba(240, 240, 240, 0.5)
-  );
-  backdrop-filter: blur(15px);
-  color: black;
-  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 20px;
   display: grid;
-  grid-template-columns: 3fr 1fr; /* Main content takes 3/4, sidebar takes 1/4 */
-  gap: 20px;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  grid-template-columns: 3fr 1fr;
+  gap: 40px;
 }
 
-/* Main Content Area (Glassy Theme) */
-.main-content {
-  display: flex;
-  flex-direction: column;
-  gap: 40px; /* Space between sections */
+/* Section Styles */
+.section {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Section Titles */
+/* Typography */
 h2 {
-  margin-bottom: 20px;
-  font-size: 24px;
-  font-weight: bold;
-  color: black;
+  font-size: 28px;
+  font-weight: 600;
+  color: #009bda;
+  margin-bottom: 25px;
+  border-bottom: 2px solid #009bda;
+  padding-bottom: 10px;
 }
 
-/* Light Glassy Card Style */
-/* General Glassy Card Styles (Base) */
+h3 {
+  font-size: 22px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.section:hover h2::after {
+  width: 100px;
+}
+
+h3 {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--secondary-color);
+  margin-bottom: 15px;
+}
+
+/* Card Styles */
 .custom-card {
-  background: rgba(255, 255, 255, 0.2); /* Default light transparency */
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: var(--card-bg);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  transition: transform 0.3s, box-shadow 0.3s;
-  text-align: left;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  transition: all 0.3s ease;
 }
 
-/* Hover Effect */
 .custom-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Color Variations for Cards */
-.custom-card.color-1 {
-  background: rgba(0, 155, 218, 0.2); /* Light blue glass */
-}
-
-.custom-card.color-2 {
-  background: rgba(255, 99, 71, 0.2); /* Light red glass */
-}
-
-.custom-card.color-3 {
-  background: rgba(34, 139, 34, 0.2); /* Light green glass */
-}
-
-.custom-card.color-4 {
-  background: rgba(238, 130, 238, 0.2); /* Light violet glass */
-}
-
-.custom-card.color-5 {
-  background: rgba(255, 215, 0, 0.2); /* Light gold glass */
-}
-
-/* Fleet Objectives Section: 2 Cards per Row */
-.objectives-section {
+.card-inner {
   display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
+  align-items: flex-start;
 }
 
-.objective-card {
-  flex: 1 1 calc(46% - 20px); /* Two cards per row */
-  min-width: 300px;
-  max-width: calc(46% - 20px);
+.card-image {
+  flex: 0 0 120px;
+  margin-right: 20px;
 }
 
-/* Tools, Programs, Squads Section: 3 Cards per Row */
+.card-image img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.card-content {
+  flex: 1;
+}
+
+/* Color Variations */
+.color-1 { background: rgba(52, 152, 219, 0.1); }
+.color-2 { background: rgba(46, 204, 113, 0.1); }
+.color-3 { background: rgba(155, 89, 182, 0.1); }
+.color-4 { background: rgba(241, 196, 15, 0.1); }
+.color-5 { background: rgba(230, 126, 34, 0.1); }
+
+/* Sections Layout */
+.objectives-section,
 .tools-section,
 .programs-section,
 .squads-section {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 20px;
 }
 
-.small-card {
-  flex: 1 1 calc(29% - 20px); /* Three cards per row */
-  min-width: 250px;
-  max-width: calc(29% - 20px);
+/* Leadership Section */
+.leadership-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
 }
 
-/* Leadership Section (Light-Themed Glassy Circular Cards) */
-.leadership-section .custom-card {
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  padding: 15px;
-  // background: rgba(255, 255, 255, 0.2); /* Light glassy effect */
-  display: flex;
+.leadership-card .card-inner {
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   text-align: center;
 }
 
-/* Leadership Circular Image */
-.leadership-section .card-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
+.leadership-card .card-image {
+  flex: 0 0 auto;
+  margin-right: 0;
+  margin-bottom: 15px;
 }
 
-/* Sidebar Background (Light-Themed Glassy) */
-.sidebar {
-  backdrop-filter: blur(15px); /* Apply blur to the sidebar background */
-  background: rgba(255, 255, 255, 0.3); /* Lighter glassy theme */
-  padding: 20px;
-  border-radius: 15px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+.leadership-card .card-image img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
 }
-a {
-  color: #009bda;
+
+/* Resources Section */
+.resources-section ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.resources-section li {
+  margin-bottom: 10px;
+}
+
+.resources-section a {
+  color: var(--accent-color);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.resources-section a:hover {
+  color: var(--secondary-color);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .page-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .sidebar {
+    order: -1;
+  }
 }
