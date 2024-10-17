@@ -1,86 +1,188 @@
 {
   "name": "Innovation Squad",
-  "missionStatement": "Driving innovation and pushing the boundaries of what's possible in our organization.",
+  "missionStatement": "Driving technological advancements and fostering a culture of innovation within our organization.",
   "leader": {
-    "name": "Jane Doe",
+    "name": "Alex Johnson",
     "title": "Squad Leader",
-    "image": "assets/images/jane-doe.jpg"
+    "image": "assets/alex-johnson.jpg"
   },
   "objectives": [
-    "Identify and explore emerging technologies",
-    "Develop proof-of-concept projects",
-    "Foster a culture of innovation across the organization",
-    "Collaborate with other teams to implement innovative solutions"
+    "Develop cutting-edge software solutions",
+    "Implement AI and machine learning technologies",
+    "Enhance cybersecurity measures",
+    "Optimize cloud infrastructure",
+    "Improve user experience across all platforms",
+    "Foster open-source contributions",
+    "Streamline development processes",
+    "Increase automation in testing and deployment",
+    "Explore emerging technologies",
+    "Reduce technical debt"
   ],
-  "helpAndSupport": "For any questions or support regarding innovation projects, please contact our squad lead or visit our internal innovation portal.",
   "members": [
     {
-      "name": "John Smith",
+      "name": "Emily Chen",
       "title": "Senior Developer",
-      "image": "assets/images/john-smith.jpg"
+      "image": "assets/emily-chen.jpg"
     },
     {
-      "name": "Alice Johnson",
+      "name": "Michael Lee",
       "title": "UX Designer",
-      "image": "assets/images/alice-johnson.jpg"
+      "image": "assets/michael-lee.jpg"
     },
     {
-      "name": "Bob Williams",
+      "name": "Sarah Brown",
       "title": "Data Scientist",
-      "image": "assets/images/bob-williams.jpg"
+      "image": "assets/sarah-brown.jpg"
     },
     {
-      "name": "Emma Brown",
+      "name": "David Kim",
+      "title": "DevOps Engineer",
+      "image": "assets/david-kim.jpg"
+    },
+    {
+      "name": "Lisa Wang",
       "title": "Product Manager",
-      "image": "assets/images/emma-brown.jpg"
+      "image": "assets/lisa-wang.jpg"
+    },
+    {
+      "name": "John Smith",
+      "title": "Backend Developer",
+      "image": "assets/john-smith.jpg"
+    },
+    {
+      "name": "Rachel Green",
+      "title": "Frontend Developer",
+      "image": "assets/rachel-green.jpg"
+    },
+    {
+      "name": "Tom Wilson",
+      "title": "QA Engineer",
+      "image": "assets/tom-wilson.jpg"
+    },
+    {
+      "name": "Emma Davis",
+      "title": "Machine Learning Engineer",
+      "image": "assets/emma-davis.jpg"
+    },
+    {
+      "name": "Chris Taylor",
+      "title": "Security Specialist",
+      "image": "assets/chris-taylor.jpg"
     }
   ],
   "recentDocuments": [
     {
-      "name": "Q2 Innovation Report",
+      "name": "Q2 Project Roadmap",
       "type": "pdf",
-      "author": "Jane Doe",
+      "author": "Alex Johnson",
       "time": "2023-06-15T14:30:00Z"
     },
     {
-      "name": "AI Project Proposal",
-      "type": "doc",
+      "name": "AI Implementation Strategy",
+      "type": "docx",
+      "author": "Sarah Brown",
+      "time": "2023-06-14T10:15:00Z"
+    },
+    {
+      "name": "User Interface Mockups",
+      "type": "psd",
+      "author": "Michael Lee",
+      "time": "2023-06-13T16:45:00Z"
+    },
+    {
+      "name": "Code Review Guidelines",
+      "type": "md",
+      "author": "Emily Chen",
+      "time": "2023-06-12T09:00:00Z"
+    },
+    {
+      "name": "Cloud Migration Plan",
+      "type": "xlsx",
+      "author": "David Kim",
+      "time": "2023-06-11T11:30:00Z"
+    },
+    {
+      "name": "Sprint Retrospective Notes",
+      "type": "txt",
+      "author": "Lisa Wang",
+      "time": "2023-06-10T17:00:00Z"
+    },
+    {
+      "name": "Security Audit Report",
+      "type": "pdf",
+      "author": "Chris Taylor",
+      "time": "2023-06-09T14:20:00Z"
+    },
+    {
+      "name": "API Documentation",
+      "type": "html",
       "author": "John Smith",
-      "time": "2023-06-10T09:15:00Z"
+      "time": "2023-06-08T13:10:00Z"
     },
     {
-      "name": "Innovation Budget",
-      "type": "xls",
-      "author": "Bob Williams",
-      "time": "2023-06-05T11:45:00Z"
+      "name": "Performance Optimization Results",
+      "type": "pptx",
+      "author": "Rachel Green",
+      "time": "2023-06-07T15:45:00Z"
     },
     {
-      "name": "UX Research Findings",
-      "type": "ppt",
-      "author": "Alice Johnson",
-      "time": "2023-06-20T10:00:00Z"
+      "name": "Machine Learning Model Evaluation",
+      "type": "ipynb",
+      "author": "Emma Davis",
+      "time": "2023-06-06T10:30:00Z"
     }
   ],
   "projects": [
     {
-      "name": "AI-Powered Customer Service",
-      "description": "Developing an AI chatbot to improve customer service efficiency and satisfaction.",
-      "link": "/projects/ai-customer-service"
+      "name": "AI-Powered Customer Service Bot",
+      "description": "Developing an intelligent chatbot to enhance customer support efficiency.",
+      "link": "/projects/ai-chatbot"
     },
     {
-      "name": "Blockchain for Supply Chain",
-      "description": "Exploring the use of blockchain technology to enhance transparency and traceability in our supply chain.",
-      "link": "/projects/blockchain-supply-chain"
+      "name": "Cloud Migration Initiative",
+      "description": "Transitioning our infrastructure to a cloud-based solution for improved scalability.",
+      "link": "/projects/cloud-migration"
     },
     {
-      "name": "VR Training Program",
-      "description": "Creating a virtual reality training program for new employees to improve onboarding and skill development.",
+      "name": "Mobile App Redesign",
+      "description": "Revamping our mobile application with a focus on user experience and performance.",
+      "link": "/projects/mobile-redesign"
+    },
+    {
+      "name": "Blockchain Integration",
+      "description": "Exploring blockchain technology for secure and transparent transactions.",
+      "link": "/projects/blockchain"
+    },
+    {
+      "name": "IoT Data Analytics Platform",
+      "description": "Building a robust platform to analyze and visualize data from IoT devices.",
+      "link": "/projects/iot-analytics"
+    },
+    {
+      "name": "Automated Testing Framework",
+      "description": "Developing a comprehensive automated testing solution to improve code quality.",
+      "link": "/projects/automated-testing"
+    },
+    {
+      "name": "VR Training Simulator",
+      "description": "Creating a virtual reality-based training program for new employees.",
       "link": "/projects/vr-training"
     },
     {
-      "name": "IoT-Enabled Smart Office",
-      "description": "Implementing Internet of Things devices to create a more efficient and comfortable work environment.",
-      "link": "/projects/iot-smart-office"
+      "name": "Predictive Maintenance System",
+      "description": "Implementing machine learning models to predict equipment failures and optimize maintenance schedules.",
+      "link": "/projects/predictive-maintenance"
+    },
+    {
+      "name": "Open-Source Contribution Initiative",
+      "description": "Encouraging and facilitating team contributions to open-source projects.",
+      "link": "/projects/open-source"
+    },
+    {
+      "name": "Cybersecurity Enhancement Program",
+      "description": "Strengthening our security measures through advanced threat detection and prevention techniques.",
+      "link": "/projects/cybersecurity"
     }
-  ]
+  ],
+  "helpAndSupport": "For any questions or support related to our squad's projects, please contact our support team at innovation-support@example.com or visit our internal knowledge base for documentation and FAQs."
 }
