@@ -15,7 +15,7 @@
     </div>
   </header>
 
-  <div class="section-card objectives">
+  <div class="section objectives">
     <h2 class="section-title">Our Objectives</h2>
     <div class="grid">
       <div class="custom-card objective-card" *ngFor="let objective of squadData.objectives; index as i" [ngClass]="'color-'+ (i%5+1)">
@@ -27,7 +27,7 @@
     </div>
   </div>
 
-  <div class="section-card squad-members">
+  <div class="section squad-members">
     <h2 class="section-title">Squad Members</h2>
     <div class="grid">
       <div class="custom-card member-card" *ngFor="let member of squadData.members; index as i" [ngClass]="'color-'+ (i%5+1)">
@@ -40,7 +40,7 @@
     </div>
   </div>
 
-  <div class="section-card recent-documents">
+  <div class="section recent-documents">
     <h2 class="section-title">Recent Documents</h2>
     <div class="grid">
       <div class="custom-card document-card" *ngFor="let doc of squadData.recentDocuments; index as i" [ngClass]="'color-'+ (i%5+1)">
@@ -53,7 +53,7 @@
     </div>
   </div>
 
-  <div class="section-card projects">
+  <div class="section projects">
     <h2 class="section-title">Our Projects</h2>
     <div class="grid">
       <div class="custom-card project-card" *ngFor="let project of squadData.projects; index as i" [ngClass]="'color-'+ (i%5+1)">
@@ -66,7 +66,7 @@
     </div>
   </div>
 
-  <div class="section-card help-support">
+  <div class="section help-support">
     <h2 class="section-title">Help and Support</h2>
     <p>{{ squadData.helpAndSupport }}</p>
     <button class="button" (click)="contactUs()">Contact Us</button>

@@ -426,3 +426,31 @@
     text-align: center;
   }
 }
+
+.section {
+  background: var(--white);
+  border-radius: 8px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #009bda;
+  margin-bottom: 25px;
+  border-bottom: 2px solid #009bda;
+  padding-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 20px;
+  }
+
+  .section-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+}
