@@ -4,7 +4,10 @@
   "leader": {
     "name": "Alex Johnson",
     "title": "Squad Leader",
-    "image": "assets/alex-johnson.jpg"
+    "image": "assets/alex-johnson.jpg",
+    "email": "alex.johnson@example.com",
+    "department": "Innovation & Technology",
+    "phone": "+1 (555) 123-4567"
   },
   "objectives": [
     "Develop cutting-edge software solutions",
@@ -22,52 +25,82 @@
     {
       "name": "Emily Chen",
       "title": "Senior Developer",
-      "image": "assets/emily-chen.jpg"
+      "image": "assets/emily-chen.jpg",
+      "email": "emily.chen@example.com",
+      "department": "Software Development",
+      "phone": "+1 (555) 234-5678"
     },
     {
       "name": "Michael Lee",
       "title": "UX Designer",
-      "image": "assets/michael-lee.jpg"
+      "image": "assets/michael-lee.jpg",
+      "email": "michael.lee@example.com",
+      "department": "User Experience",
+      "phone": "+1 (555) 345-6789"
     },
     {
       "name": "Sarah Brown",
       "title": "Data Scientist",
-      "image": "assets/sarah-brown.jpg"
+      "image": "assets/sarah-brown.jpg",
+      "email": "sarah.brown@example.com",
+      "department": "Data Science",
+      "phone": "+1 (555) 456-7890"
     },
     {
       "name": "David Kim",
       "title": "DevOps Engineer",
-      "image": "assets/david-kim.jpg"
+      "image": "assets/david-kim.jpg",
+      "email": "david.kim@example.com",
+      "department": "DevOps",
+      "phone": "+1 (555) 567-8901"
     },
     {
       "name": "Lisa Wang",
       "title": "Product Manager",
-      "image": "assets/lisa-wang.jpg"
+      "image": "assets/lisa-wang.jpg",
+      "email": "lisa.wang@example.com",
+      "department": "Product Management",
+      "phone": "+1 (555) 678-9012"
     },
     {
       "name": "John Smith",
       "title": "Backend Developer",
-      "image": "assets/john-smith.jpg"
+      "image": "assets/john-smith.jpg",
+      "email": "john.smith@example.com",
+      "department": "Software Development",
+      "phone": "+1 (555) 789-0123"
     },
     {
       "name": "Rachel Green",
       "title": "Frontend Developer",
-      "image": "assets/rachel-green.jpg"
+      "image": "assets/rachel-green.jpg",
+      "email": "rachel.green@example.com",
+      "department": "Software Development",
+      "phone": "+1 (555) 890-1234"
     },
     {
       "name": "Tom Wilson",
       "title": "QA Engineer",
-      "image": "assets/tom-wilson.jpg"
+      "image": "assets/tom-wilson.jpg",
+      "email": "tom.wilson@example.com",
+      "department": "Quality Assurance",
+      "phone": "+1 (555) 901-2345"
     },
     {
       "name": "Emma Davis",
       "title": "Machine Learning Engineer",
-      "image": "assets/emma-davis.jpg"
+      "image": "assets/emma-davis.jpg",
+      "email": "emma.davis@example.com",
+      "department": "Artificial Intelligence",
+      "phone": "+1 (555) 012-3456"
     },
     {
       "name": "Chris Taylor",
       "title": "Security Specialist",
-      "image": "assets/chris-taylor.jpg"
+      "image": "assets/chris-taylor.jpg",
+      "email": "chris.taylor@example.com",
+      "department": "Cybersecurity",
+      "phone": "+1 (555) 123-4567"
     }
   ],
   "recentDocuments": [

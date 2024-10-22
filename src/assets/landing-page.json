@@ -1,6 +1,40 @@
 {
     "missionStatement": "Our fleet is dedicated to innovation, excellence, and teamwork...",
     "leadership": "Meet our leadership team guiding the fleet toward success...",
+    "leadershipTeam": [
+      {
+        "name": "John Doe",
+        "title": "CEO",
+        "image": "john-doe.jpg",
+        "email": "john.doe@example.com",
+        "department": "Executive",
+        "phone": "+1 (555) 111-2222"
+      },
+      {
+        "name": "Jane Smith",
+        "title": "CTO",
+        "image": "jane-smith.jpg",
+        "email": "jane.smith@example.com",
+        "department": "Technology",
+        "phone": "+1 (555) 222-3333"
+      },
+      {
+        "name": "Mike Johnson",
+        "title": "COO",
+        "image": "mike-johnson.jpg",
+        "email": "mike.johnson@example.com",
+        "department": "Operations",
+        "phone": "+1 (555) 333-4444"
+      },
+      {
+        "name": "Sarah Lee",
+        "title": "CFO",
+        "image": "sarah-lee.jpg",
+        "email": "sarah.lee@example.com",
+        "department": "Finance",
+        "phone": "+1 (555) 444-5555"
+      }
+    ],
     "objectives": [
       {
         "title": "Optimize Fleet Performance",
@@ -60,4 +94,3 @@
       }
     ]
   }
-  

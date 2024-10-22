@@ -106,6 +106,13 @@ h3 {
 .color-4 { background: rgba(241, 196, 15, 0.1); }
 .color-5 { background: rgba(230, 126, 34, 0.1); }
 
+// Color variations (if you want to keep them)
+.color-1 .custom-card.leadership-card { background-color: rgba(52, 152, 219, 0.1); }
+.color-2 .custom-card.leadership-card { background-color: rgba(46, 204, 113, 0.1); }
+.color-3 .custom-card.leadership-card { background-color: rgba(155, 89, 182, 0.1); }
+.color-4 .custom-card.leadership-card { background-color: rgba(241, 196, 15, 0.1); }
+.color-5 .custom-card.leadership-card { background-color: rgba(230, 126, 34, 0.1); }
+
 /* Sections Layout */
 .objectives-section,
 .tools-section,
@@ -128,23 +135,55 @@ h3 {
   gap: 20px;
 }
 
-.leadership-card .card-inner {
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
+.leader-container {
+  position: relative;
 }
 
-.leadership-card .card-image {
-  flex: 0 0 auto;
-  margin-right: 0;
-  margin-bottom: 15px;
-}
+.custom-card.leadership-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
 
-.leadership-card .card-image img {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  object-fit: cover;
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .card-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .card-image {
+    flex: 0 0 auto;
+    margin-bottom: 15px;
+
+    img {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+  }
+
+  .card-content {
+    h3 {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+      color: var(--primary-color);
+    }
+
+    p {
+      font-size: 1rem;
+      color: var(--text-color);
+      margin: 0;
+    }
+  }
 }
 
 /* Resources Section */
@@ -190,6 +229,86 @@ h3 {
 
     &:hover {
       color: var(--accent-color);
+    }
+  }
+}
+.leader-details {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  z-index: 10;
+  background-color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 0 0 8px 8px;
+}
+
+.leadership-card {
+  position: relative;
+}
+
+.outlook-style-card {
+  position: fixed;
+  z-index: 1000;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  width: 300px;
+  overflow: hidden;
+  border: 1px solid #ccc;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+
+  &.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    background-color: #f3f3f3;
+    
+    img {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      margin-right: 16px;
+    }
+    
+    .header-info {
+      h3 {
+        margin: 0;
+        font-size: 18px;
+      }
+      
+      p {
+        margin: 4px 0 0;
+        font-size: 14px;
+        color: #666;
+      }
+    }
+  }
+  
+  .card-body {
+    padding: 16px;
+    
+    p {
+      margin: 8px 0;
+      font-size: 14px;
+    }
+    
+    a {
+      color: #0078d4;
+      text-decoration: none;
+      
+      &:hover {
+        text-decoration: underline;
+      }
     }
   }
 }

@@ -94,15 +94,33 @@
     <div class="section">
       <h2>Leadership</h2>
       <div class="leadership-section">
-        <div *ngFor="let leader of fleetData().leadership; index as i" class="custom-card leadership-card" [ngClass]="'color-'+ (i%5===0?random(): i%5)">
-          <div class="card-inner">
-            <div class="card-image">
-              <img src="{{ leader.image }}" alt="{{ leader.name }}" />
-            </div>
-            <div class="card-content">
+        <div class="leader-container" *ngFor="let leader of fleetData().leadership; index as i" 
+             [ngClass]="'color-'+ (i%5===0?random(): i%5)"
+             (mouseenter)="showLeaderDetails(leader, $event)"
+             (mouseleave)="hideLeaderDetails()">
+          <div class="custom-card leadership-card">
+            <div class="card-inner">
+              <img [src]="leader.image" [alt]="leader.name">
               <h3>{{ leader.name }}</h3>
               <p>{{ leader.title }}</p>
-              <a [href]="leader.link" class="card-link">Learn More</a>
+            </div>
+          </div>
+          
+          <div class="outlook-style-card" *ngIf="selectedLeader === leader" 
+               [class.visible]="selectedLeader === leader"
+               [style.top.px]="cardPosition.top"
+               [style.left.px]="cardPosition.left">
+            <div class="card-header">
+              <img [src]="leader.image" [alt]="leader.name">
+              <div class="header-info">
+                <h3>{{ leader.name }}</h3>
+                <p>{{ leader.title }}</p>
+              </div>
+            </div>
+            <div class="card-body">
+              <p><strong>Email:</strong> <a [href]="'mailto:' + leader.email">{{ leader.email }}</a></p>
+              <p><strong>Phone:</strong> {{ leader.phone }}</p>
+              <p><strong>Department:</strong> {{ leader.department }}</p>
             </div>
           </div>
         </div>
