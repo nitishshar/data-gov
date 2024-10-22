@@ -1,4 +1,5 @@
 export const FLEET_DATA: any = {
+  name:'Capital Fleet',
   missionStatement:
     'Our fleet is committed to delivering innovative, efficient, and sustainable services across all operations.',
   objectives: [
@@ -59,19 +60,23 @@ export const FLEET_DATA: any = {
       link: 'objective-link-9',
     },
   ],
-  leadership: [
+  leadership: [    
     {
-      name: 'John Doe',
-      title: 'Chief Fleet Officer',
-      description: 'Leads the strategy and operations for the fleet.',
-      image: 'john-doe.jpg',
+      "name": "Mike Johnson",
+      "title": "COO",
+      "image": "mike-johnson.jpg",
+      "email": "mike.johnson@example.com",
+      "department": "Operations",
+      "phone": "+1 (555) 333-4444"
     },
     {
-      name: 'Jane Smith',
-      title: 'Head of Operations',
-      description: 'Oversees the smooth operation of fleet activities.',
-      image: 'jane-smith.jpg',
-    },
+      "name": "Sarah Lee",
+      "title": "CFO",
+      "image": "sarah-lee.jpg",
+      "email": "sarah.lee@example.com",
+      "department": "Finance",
+      "phone": "+1 (555) 444-5555"
+    }
   
     
   ],
