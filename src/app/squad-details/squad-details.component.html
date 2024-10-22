@@ -30,11 +30,31 @@
   <div class="section squad-members">
     <h2 class="section-title">Squad Members</h2>
     <div class="grid">
-      <div class="custom-card member-card" *ngFor="let member of squadData.members; index as i" [ngClass]="'color-'+ (i%5+1)">
-        <div class="card-inner">
-          <img [src]="member.image" [alt]="member.name">
-          <h3>{{ member.name }}</h3>
-          <p>{{ member.title }}</p>
+      <div class="member-container" *ngFor="let member of squadData.members; index as i" 
+           [ngClass]="'color-'+ (i%5+1)"
+           (mouseenter)="showMemberDetails(member, $event)">
+        <div class="custom-card member-card">
+          <div class="card-inner">
+            <img [src]="member.image" [alt]="member.name">
+            <h3>{{ member.name }}</h3>
+            <p>{{ member.title }}</p>
+          </div>
+        </div>
+        
+        <div class="outlook-style-card" *ngIf="selectedMember === member" 
+             [class.visible]="selectedMember === member">
+          <div class="card-header">
+            <img [src]="selectedMember.image" [alt]="selectedMember.name">
+            <div class="header-info">
+              <h3>{{ selectedMember.name }}</h3>
+              <p>{{ selectedMember.title }}</p>
+            </div>
+          </div>
+          <div class="card-body">
+            <p><strong>Email:</strong> <a [href]="'mailto:' + selectedMember.email">{{ selectedMember.email }}</a></p>
+            <p><strong>Phone:</strong> {{ selectedMember.phone }}</p>
+            <p><strong>Department:</strong> {{ selectedMember.department }}</p>
+          </div>
         </div>
       </div>
     </div>
