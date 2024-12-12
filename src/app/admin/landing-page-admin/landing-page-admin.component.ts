@@ -38,23 +38,24 @@ interface LandingPageData {
     MatProgressSpinnerModule
   ],
   template: `
-    <div class="admin-page">
-      <div class="form-container">
-        <div *ngIf="isLoading" class="loading-overlay">
-          <mat-spinner diameter="40"></mat-spinner>
+    <div class="page-container">
+      <div *ngIf="isLoading" class="loading-overlay">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+
+      <div class="content-wrapper">
+        <div class="page-header">
+          <h1>Landing Page Settings</h1>
+          <p class="subtitle">Manage your landing page content and information</p>
         </div>
-        <mat-card class="admin-card">
-          <mat-card-header>
-            <mat-card-title>Landing Page Settings</mat-card-title>
-            <mat-card-subtitle>Manage your landing page content and information</mat-card-subtitle>
-          </mat-card-header>
-          
-          <mat-card-content>
-            <form [formGroup]="landingPageForm" (ngSubmit)="saveLandingPage()">
-              <!-- Basic Information Section -->
-              <div class="form-section">
-                <h3>Basic Information</h3>
-                <div class="section-content">
+
+        <form [formGroup]="landingPageForm" (ngSubmit)="saveLandingPage()">
+          <mat-card class="form-card">
+            <mat-card-content>
+              <!-- Basic Information -->
+              <div class="section">
+                <h2>Basic Information</h2>
+                <div class="form-fields">
                   <mat-form-field appearance="outline">
                     <mat-label>Fleet Name</mat-label>
                     <input matInput formControlName="name" placeholder="Enter fleet name">
@@ -75,24 +76,24 @@ interface LandingPageData {
                 </div>
               </div>
 
-              <!-- Objectives Section -->
-              <div class="form-section">
+              <!-- Objectives -->
+              <div class="section">
                 <div class="section-header">
-                  <h3>Objectives</h3>
+                  <h2>Objectives</h2>
                   <button mat-flat-button color="primary" type="button" (click)="addObjective()">
                     <mat-icon>add</mat-icon>
                     Add Objective
                   </button>
                 </div>
-                
-                <div class="section-content" formArrayName="objectives">
+
+                <div class="form-fields" formArrayName="objectives">
                   <div *ngFor="let objective of objectivesArray.controls; let i=index" 
-                       class="objective-item">
+                       class="objective-field">
                     <mat-form-field appearance="outline">
                       <mat-label>Objective {{i + 1}}</mat-label>
                       <input matInput [formControlName]="i" placeholder="Enter objective">
                       <button mat-icon-button matSuffix color="warn" type="button" 
-                              (click)="removeObjective(i)" class="remove-button">
+                              (click)="removeObjective(i)">
                         <mat-icon>delete_outline</mat-icon>
                       </button>
                     </mat-form-field>
@@ -100,29 +101,29 @@ interface LandingPageData {
                 </div>
               </div>
 
-              <!-- Leadership Section -->
-              <div class="form-section">
+              <!-- Leadership -->
+              <div class="section">
                 <div class="section-header">
-                  <h3>Leadership</h3>
+                  <h2>Leadership</h2>
                   <button mat-flat-button color="primary" type="button" (click)="addLeader()">
                     <mat-icon>person_add</mat-icon>
                     Add Leader
                   </button>
                 </div>
-                
-                <div class="section-content" formArrayName="leadership">
-                  <div *ngFor="let leader of leadershipArray.controls; let i=index" 
-                       [formGroupName]="i" 
-                       class="leader-card">
-                    <div class="card-header">
-                      <h4>Leader {{i + 1}}</h4>
+
+                <div class="form-fields" formArrayName="leadership">
+                  <mat-card *ngFor="let leader of leadershipArray.controls; let i=index" 
+                           [formGroupName]="i"
+                           class="leader-card">
+                    <div class="leader-header">
+                      <h3>Leader {{i + 1}}</h3>
                       <button mat-icon-button color="warn" type="button" 
-                              (click)="removeLeader(i)" class="remove-button">
+                              (click)="removeLeader(i)">
                         <mat-icon>delete_outline</mat-icon>
                       </button>
                     </div>
-                    
-                    <div class="card-content">
+
+                    <div class="leader-fields">
                       <mat-form-field appearance="outline">
                         <mat-label>Name</mat-label>
                         <input matInput formControlName="name" placeholder="Enter name">
@@ -143,59 +144,63 @@ interface LandingPageData {
                         <input matInput formControlName="department" placeholder="Enter department">
                       </mat-form-field>
                     </div>
-                  </div>
+                  </mat-card>
                 </div>
               </div>
+            </mat-card-content>
 
-              <div class="form-actions">
-                <button mat-stroked-button type="button">Cancel</button>
-                <button mat-flat-button color="primary" type="submit">Save Changes</button>
-              </div>
-            </form>
-          </mat-card-content>
-        </mat-card>
+            <mat-card-actions class="form-actions">
+              <button mat-stroked-button type="button">Cancel</button>
+              <button mat-flat-button color="primary" type="submit">Save Changes</button>
+            </mat-card-actions>
+          </mat-card>
+        </form>
       </div>
     </div>
   `,
   styles: [`
-    .admin-page {
-      padding: 24px;
+    .page-container {
+      min-height: 100%;
+      background: #f5f5f5;
+    }
+
+    .content-wrapper {
       max-width: 1200px;
       margin: 0 auto;
-    }
-
-    .admin-card {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    }
-
-    mat-card-header {
-      padding: 24px 24px 0;
-      margin-bottom: 24px;
-      border-bottom: 1px solid #eee;
-    }
-
-    mat-card-title {
-      font-size: 24px;
-      font-weight: 500;
-      color: #1976d2;
-      margin-bottom: 8px;
-    }
-
-    mat-card-subtitle {
-      color: #666;
-      font-size: 14px;
-    }
-
-    .form-section {
-      margin-bottom: 32px;
-      background: #f8f9fa;
-      border-radius: 8px;
       padding: 24px;
-      
-      h3 {
+    }
+
+    .page-header {
+      margin-bottom: 24px;
+
+      h1 {
         margin: 0;
+        font-size: 24px;
+        font-weight: 500;
+        color: #1976d2;
+      }
+
+      .subtitle {
+        margin: 8px 0 0;
+        color: #666;
+      }
+    }
+
+    .form-card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .section {
+      margin-bottom: 32px;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      h2 {
+        margin: 0 0 16px;
         font-size: 18px;
         font-weight: 500;
         color: #2c3e50;
@@ -206,14 +211,14 @@ interface LandingPageData {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
 
       button {
         gap: 8px;
       }
     }
 
-    .section-content {
+    .form-fields {
       display: flex;
       flex-direction: column;
       gap: 16px;
@@ -223,38 +228,27 @@ interface LandingPageData {
       width: 100%;
     }
 
-    .objective-item {
-      position: relative;
-      
-      .remove-button {
-        position: absolute;
-        top: 50%;
-        right: 0;
-        transform: translateY(-50%);
-      }
-    }
-
     .leader-card {
-      background: white;
-      border-radius: 8px;
       padding: 20px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-      
-      .card-header {
+      margin-bottom: 16px;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+
+      .leader-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 16px;
-        
-        h4 {
+
+        h3 {
           margin: 0;
           font-size: 16px;
           font-weight: 500;
           color: #2c3e50;
         }
       }
-      
-      .card-content {
+
+      .leader-fields {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         gap: 16px;
@@ -262,36 +256,11 @@ interface LandingPageData {
     }
 
     .form-actions {
+      padding: 16px 24px;
       display: flex;
       justify-content: flex-end;
       gap: 12px;
-      margin-top: 32px;
-      padding-top: 20px;
-      border-top: 1px solid #eee;
-    }
-
-    // Material Design elevation on hover
-    .leader-card {
-      transition: box-shadow 0.3s ease-in-out;
-      
-      &:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      }
-    }
-
-    // Responsive adjustments
-    @media (max-width: 768px) {
-      .admin-page {
-        padding: 16px;
-      }
-      
-      .form-section {
-        padding: 16px;
-      }
-      
-      .leader-card .card-content {
-        grid-template-columns: 1fr;
-      }
+      border-top: 1px solid #e0e0e0;
     }
 
     .loading-overlay {
@@ -305,6 +274,86 @@ interface LandingPageData {
       justify-content: center;
       align-items: center;
       z-index: 1000;
+    }
+
+    // Material Design elevation on hover
+    .leader-card {
+      transition: box-shadow 0.3s ease-in-out;
+      
+      &:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      }
+    }
+
+    // Responsive adjustments
+    @media (max-width: 768px) {
+      .content-wrapper {
+        padding: 16px;
+      }
+      
+      .leader-card .leader-fields {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    :host ::ng-deep {
+      .mat-mdc-form-field {
+        width: 100%;
+      }
+
+      .mdc-text-field--outlined {
+        --mdc-outlined-text-field-container-shape: 8px;
+        --mdc-outlined-text-field-label-padding-top: 20px;
+      }
+
+      .mat-mdc-form-field-wrapper {
+        margin: 0;
+        padding: 0;
+      }
+
+      .mat-mdc-text-field-wrapper {
+        padding-top: 16px !important;
+        background: #ffffff;
+      }
+
+      .mat-mdc-form-field-infix {
+        padding-top: 8px !important;
+        padding-bottom: 8px !important;
+        min-height: 40px;
+      }
+
+      .mdc-floating-label--float-above {
+        transform: translateY(-10px) scale(0.75) !important;
+      }
+      .mdc-floating-label:not(.mdc-floating-label--float-above) {
+        transform: translateY(10px) scale(0.75) !important;
+      }
+      .mdc-notched-outline__notch {
+        border-right: none;
+        padding-top: 0;
+      }
+
+      .mat-mdc-form-field-label-wrapper {
+        top: -0.84375em;
+        padding-top: 0.84375em;
+      }
+
+      .mat-mdc-form-field-label {
+        top: 28px !important;
+        margin-top: -0.5em;
+      }
+
+      // Adjust spacing for filled state
+      .mdc-text-field--outlined.mdc-text-field--with-leading-icon {
+        .mdc-floating-label {
+          left: 16px !important;
+        }
+      }
+
+      // Error state adjustments
+      .mat-mdc-form-field-error-wrapper {
+        padding: 4px 0;
+      }
     }
   `]
 })
