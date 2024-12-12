@@ -1,198 +1,133 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormArray, Validators, AbstractControl } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatTabsModule } from '@angular/material/tabs';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
-import { ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
   imports: [
     CommonModule,
-    MatTabsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatIconModule,
     MatSidenavModule,
     MatListModule,
-    RouterModule,
-    ReactiveFormsModule
+    MatIconModule,
+    RouterModule
   ],
-  templateUrl: './admin.component.html',
-  styleUrls: ['./admin.component.scss']
+  template: `
+    <div class="admin-layout">
+      <nav class="admin-sidenav">
+        <div class="sidenav-header">
+          <mat-icon>admin_panel_settings</mat-icon>
+          <span>Admin Dashboard</span>
+        </div>
+        
+        <div class="nav-list">
+          <a *ngFor="let item of menuItems" 
+             [routerLink]="[item.path]" 
+             routerLinkActive="active-link"
+             class="nav-item">
+            <mat-icon>{{item.icon}}</mat-icon>
+            <span>{{item.label}}</span>
+          </a>
+        </div>
+      </nav>
+
+      <main class="admin-content">
+        <router-outlet></router-outlet>
+      </main>
+    </div>
+  `,
+  styles: [`
+    .admin-layout {
+      display: flex;
+      height: 100vh;
+      background: #f5f5f5;
+    }
+
+    .admin-sidenav {
+      width: 250px;
+      background: #fff;
+      border-right: 1px solid #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      flex-shrink: 0;
+    }
+
+    .sidenav-header {
+      height: 64px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #1976d2;
+      color: white;
+      flex-shrink: 0;
+
+      mat-icon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
+
+      span {
+        font-size: 16px;
+        font-weight: 500;
+      }
+    }
+
+    .nav-list {
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-item {
+      height: 48px;
+      padding: 0 12px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: rgba(0, 0, 0, 0.87);
+      text-decoration: none;
+      transition: background-color 0.3s;
+
+      mat-icon {
+        color: rgba(0, 0, 0, 0.54);
+      }
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.04);
+      }
+
+      &.active-link {
+        background: #e3f2fd;
+        color: #1976d2;
+
+        mat-icon {
+          color: #1976d2;
+        }
+      }
+    }
+
+    .admin-content {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+    }
+  `]
 })
-export class AdminComponent implements OnInit {
-  landingPageForm!: FormGroup;
-  squadDetailsForm!: FormGroup;
-
+export class AdminComponent {
   menuItems = [
-    { path: 'landing-page', icon: 'home', label: 'Landing Page' },
-    { path: 'squad-details', icon: 'groups', label: 'Squad Details' },
-    { path: 'tools', icon: 'build', label: 'Tools Management' },
-    { path: 'programs', icon: 'school', label: 'Programs' },
-    { path: 'members', icon: 'person', label: 'Members' },
-    { path: 'settings', icon: 'settings', label: 'Settings' }
+    { path: './landing-page', icon: 'home', label: 'Landing Page' },
+    { path: './squad-details', icon: 'groups', label: 'Squad Details' },
+    { path: './tools', icon: 'build', label: 'Tools Management' },
+    { path: './programs', icon: 'school', label: 'Programs' },
+    { path: './members', icon: 'person', label: 'Members' },
+    { path: './settings', icon: 'settings', label: 'Settings' }
   ];
-
-  constructor(
-    private fb: FormBuilder,
-    private http: HttpClient,
-    private snackBar: MatSnackBar,
-    private router: Router
-  ) {
-    this.initializeForms();
-  }
-
-  ngOnInit() {
-    this.loadCurrentData();
-  }
-
-  // Helper getters for the template
-  get objectivesArray(): FormArray {
-    return this.landingPageForm.get('objectives') as FormArray;
-  }
-
-  get leadershipArray(): FormArray {
-    return this.landingPageForm.get('leadership') as FormArray;
-  }
-
-  get toolsArray(): FormArray {
-    return this.landingPageForm.get('tools') as FormArray;
-  }
-
-  get programsArray(): FormArray {
-    return this.landingPageForm.get('programs') as FormArray;
-  }
-
-  get squadsArray(): FormArray {
-    return this.landingPageForm.get('squads') as FormArray;
-  }
-
-  private initializeForms() {
-    this.landingPageForm = this.fb.group({
-      name: ['', Validators.required],
-      missionStatement: ['', Validators.required],
-      objectives: this.fb.array([]),
-      leadership: this.fb.array([]),
-      tools: this.fb.array([]),
-      programs: this.fb.array([]),
-      squads: this.fb.array([])
-    });
-
-    this.squadDetailsForm = this.fb.group({
-      name: ['', Validators.required],
-      missionStatement: ['', Validators.required],
-      leader: this.fb.group({
-        name: ['', Validators.required],
-        title: ['', Validators.required],
-        image: [''],
-        email: ['', [Validators.required, Validators.email]],
-        department: [''],
-        phone: ['']
-      }),
-      objectives: this.fb.array([]),
-      members: this.fb.array([]),
-      recentDocuments: this.fb.array([]),
-      projects: this.fb.array([]),
-      helpAndSupport: ['']
-    });
-  }
-
-  // Array manipulation methods
-  addObjective() {
-    this.objectivesArray.push(this.fb.control('', Validators.required));
-  }
-
-  removeObjective(index: number) {
-    this.objectivesArray.removeAt(index);
-  }
-
-  addLeader() {
-    this.leadershipArray.push(
-      this.fb.group({
-        name: ['', Validators.required],
-        title: ['', Validators.required],
-        image: [''],
-        email: ['', [Validators.required, Validators.email]],
-        department: [''],
-        phone: ['']
-      })
-    );
-  }
-
-  removeLeader(index: number) {
-    this.leadershipArray.removeAt(index);
-  }
-
-  private loadCurrentData() {
-    // Load landing page data
-    this.http.get('/api/landing-page').subscribe({
-      next: (data: any) => {
-        this.landingPageForm.patchValue(data);
-      },
-      error: (error) => {
-        this.snackBar.open('Error loading landing page data', 'Close', {
-          duration: 3000
-        });
-      }
-    });
-
-    // Load squad details data
-    this.http.get('/api/squad-details').subscribe({
-      next: (data: any) => {
-        this.squadDetailsForm.patchValue(data);
-      },
-      error: (error) => {
-        this.snackBar.open('Error loading squad details', 'Close', {
-          duration: 3000
-        });
-      }
-    });
-  }
-
-  saveLandingPage() {
-    if (this.landingPageForm.valid) {
-      this.http.post('/api/landing-page', this.landingPageForm.value).subscribe({
-        next: () => {
-          this.snackBar.open('Landing page updated successfully', 'Close', {
-            duration: 3000
-          });
-        },
-        error: (error) => {
-          this.snackBar.open('Error updating landing page', 'Close', {
-            duration: 3000
-          });
-        }
-      });
-    }
-  }
-
-  saveSquadDetails() {
-    if (this.squadDetailsForm.valid) {
-      this.http.post('/api/squad-details', this.squadDetailsForm.value).subscribe({
-        next: () => {
-          this.snackBar.open('Squad details updated successfully', 'Close', {
-            duration: 3000
-          });
-        },
-        error: (error) => {
-          this.snackBar.open('Error updating squad details', 'Close', {
-            duration: 3000
-          });
-        }
-      });
-    }
-  }
 } 
