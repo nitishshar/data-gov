@@ -141,6 +141,19 @@
         </div>
       </div>
 
+      <!-- Recent Accomplishments Section -->
+      <div class="section">
+        <h2>Recent Accomplishments</h2>
+        <div class="accomplishments-section">
+          <div class="accomplishment-preview" *ngFor="let accomplishment of fleetData().accomplishments?.slice(0, 3)">
+            <h4>{{ accomplishment.title }}</h4>
+            <p class="squad-name">{{ accomplishment.squad }}</p>
+            <a [routerLink]="['/accomplishments']" class="view-more">View Details</a>
+          </div>
+          <a [routerLink]="['/accomplishments']" class="view-all-link">View All Accomplishments</a>
+        </div>
+      </div>
+
       <!-- Resources Section -->
       <div class="section">
         <h2>Downloaded Resources</h2>

@@ -2,6 +2,125 @@ export const FLEET_DATA: any = {
   name:'Capital Fleet',
   missionStatement:
     'Our fleet is committed to delivering innovative, efficient, and sustainable services across all operations.',
+  accomplishments: [
+    {
+      id: '1',
+      title: 'Fleet Efficiency Optimization',
+      description: 'Successfully implemented AI-driven route optimization resulting in significant fuel savings and improved delivery times.',
+      squad: 'Innovation Squad',
+      date: new Date('2024-02-15'),
+      impact: 'Reduced fuel consumption by 25% and improved delivery efficiency by 30%',
+      benefits: [
+        'Decreased carbon emissions',
+        'Improved customer satisfaction through faster deliveries',
+        'Reduced operational costs',
+        'Enhanced driver satisfaction with optimized routes'
+      ],
+      teamMembers: [
+        {
+          name: 'Sarah Chen',
+          role: 'Project Lead',
+          contribution: 'Led the implementation and coordination of the AI system'
+        },
+        {
+          name: 'Mike Rodriguez',
+          role: 'Data Scientist',
+          contribution: 'Developed the machine learning models for route optimization'
+        },
+        {
+          name: 'Lisa Park',
+          role: 'Fleet Operations',
+          contribution: 'Provided operational insights and testing support'
+        }
+      ],
+      metrics: [
+        {
+          label: 'Fuel Savings',
+          value: '25%'
+        },
+        {
+          label: 'Delivery Time',
+          value: '-30%'
+        },
+        {
+          label: 'CO2 Reduction',
+          value: '20 tons'
+        }
+      ]
+    },
+    {
+      id: '2',
+      title: 'Safety Protocol Enhancement',
+      description: 'Implemented comprehensive safety measures and training programs leading to significant reduction in incidents.',
+      squad: 'Safety Squad',
+      date: new Date('2024-01-20'),
+      impact: 'Achieved 45% reduction in safety incidents and improved compliance scores',
+      benefits: [
+        'Enhanced workplace safety',
+        'Reduced insurance premiums',
+        'Improved team morale',
+        'Better regulatory compliance'
+      ],
+      teamMembers: [
+        {
+          name: 'John Martinez',
+          role: 'Safety Director',
+          contribution: 'Developed and implemented new safety protocols'
+        },
+        {
+          name: 'Emily Wong',
+          role: 'Training Coordinator',
+          contribution: 'Created and conducted safety training programs'
+        }
+      ],
+      metrics: [
+        {
+          label: 'Incident Reduction',
+          value: '45%'
+        },
+        {
+          label: 'Compliance Score',
+          value: '98%'
+        }
+      ]
+    },
+    {
+      id: '3',
+      title: 'Green Fleet Initiative Success',
+      description: 'Successfully transitioned 30% of fleet vehicles to electric alternatives.',
+      squad: 'Sustainability Squad',
+      date: new Date('2024-03-01'),
+      impact: 'Significant reduction in carbon footprint and operational costs',
+      benefits: [
+        'Reduced environmental impact',
+        'Lower maintenance costs',
+        'Enhanced brand reputation',
+        'Government incentives qualification'
+      ],
+      teamMembers: [
+        {
+          name: 'Alex Green',
+          role: 'Sustainability Lead',
+          contribution: 'Led the electric vehicle transition program'
+        },
+        {
+          name: 'Maria Santos',
+          role: 'Fleet Analyst',
+          contribution: 'Conducted cost-benefit analysis and vehicle selection'
+        }
+      ],
+      metrics: [
+        {
+          label: 'EV Transition',
+          value: '30%'
+        },
+        {
+          label: 'Cost Reduction',
+          value: '20%'
+        }
+      ]
+    }
+  ],
   objectives: [
     {
       name: 'Optimize Fleet Efficiency',

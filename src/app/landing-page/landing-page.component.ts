@@ -3,11 +3,12 @@ import { MatCardModule } from '@angular/material/card';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { FleetDataService } from '../services/fleet-management.service';
 import { NgClass, NgFor, NgStyle, NgIf } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-landing-page',
   standalone: true,
-  imports: [MatCardModule, MatToolbarModule, NgFor, NgStyle, NgClass, NgIf],
+  imports: [MatCardModule, MatToolbarModule, NgFor, NgStyle, NgClass, NgIf, RouterModule],
   templateUrl: './landing-page.component.html',
   styleUrl: './landing-page.component.scss',
 })

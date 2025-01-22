@@ -12,7 +12,8 @@ export class FleetDataService {
     objectives: [],
     tools: [],
     programs: [],
-    squads: []
+    squads: [],
+    accomplishments: []
   });
 
   constructor() {

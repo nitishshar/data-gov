@@ -6,8 +6,22 @@ import { ToolsComponent } from './tools/tools.component';
 import { ToolsEditComponent } from './admin/tools-edit/tools-edit.component';
 import { ProgramsComponent } from './programs/programs.component';
 import { ProgramsEditComponent } from './admin/programs-edit/programs-edit.component';
+import { AccomplishmentsComponent } from './accomplishments/accomplishments.component';
+import { LandingPageComponent } from './landing-page/landing-page.component';
 
 export const routes: Routes = [
+  {
+    path: '',
+    component: LandingPageComponent
+  },
+  {
+    path: 'accomplishments',
+    component: AccomplishmentsComponent
+  },
+  {
+    path: 'accomplishments/:id',
+    component: AccomplishmentsComponent
+  },
   {
     path: 'admin',
     component: AdminComponent,
