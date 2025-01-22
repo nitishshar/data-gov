@@ -138,7 +138,10 @@ interface Tool {
   styles: [`
     :host {
       display: block;
-      background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+      background: #ffffff;
+      background-image: 
+        linear-gradient(120deg, rgba(246,248,255,0.8) 0%, rgba(255,255,255,0.8) 100%),
+        repeating-linear-gradient(45deg, rgba(0,0,0,0.02) 0px, rgba(0,0,0,0.02) 2px, transparent 2px, transparent 12px);
       min-height: 100vh;
       color: #2c3e50;
     }
@@ -149,7 +152,11 @@ interface Tool {
       padding: 2rem;
       border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+      box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      background: linear-gradient(120deg, rgba(255,255,255,0.9), rgba(246,248,255,0.9));
+      border: 1px solid rgba(255, 255, 255, 0.7);
     }
 
     .glass-overlay {
@@ -158,8 +165,8 @@ interface Tool {
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(255, 255, 255, 0.6);
-      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(4px);
       z-index: 0;
     }
 
@@ -171,7 +178,11 @@ interface Tool {
     .intro-section {
       text-align: center;
       padding: 4rem 2rem;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+      background: linear-gradient(120deg, rgba(255,255,255,0.95), rgba(246,248,255,0.95));
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      box-shadow: 
+        0 10px 15px -3px rgba(0, 0, 0, 0.1),
+        0 4px 6px -2px rgba(0, 0, 0, 0.05);
 
       h1 {
         font-size: 3rem;
@@ -192,12 +203,14 @@ interface Tool {
     }
 
     .glass-effect {
-      background: rgba(255, 255, 255, 0.7);
+      background: rgba(255, 255, 255, 0.8);
       border-radius: 8px;
       padding: 1.5rem;
-      backdrop-filter: blur(5px);
-      border: 1px solid rgba(255, 255, 255, 0.8);
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
 
     .tools-table {
@@ -219,12 +232,62 @@ interface Tool {
       }
 
       tr:hover {
-        background: rgba(255, 255, 255, 0.5);
+        background: linear-gradient(120deg, rgba(255,255,255,0.9), rgba(246,248,255,0.9));
       }
     }
 
     .tool-section {
       margin-top: 3rem;
+      position: relative;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      border-radius: 16px;
+      overflow: hidden;
+
+      &:nth-child(3n + 1) {
+        background: linear-gradient(135deg, #bae1ff33 0%, #ffffff 100%);
+        .tool-header { 
+          background: #bae1ff40 !important;
+        }
+        .tool-content {
+          background: #bae1ff10;
+        }
+        .tool-documentation, .tool-support {
+          background: #bae1ff20;
+        }
+      }
+
+      &:nth-child(3n + 2) {
+        background: linear-gradient(135deg, #baffc933 0%, #ffffff 100%);
+        .tool-header { 
+          background: #baffc940 !important;
+        }
+        .tool-content {
+          background: #baffc910;
+        }
+        .tool-documentation, .tool-support {
+          background: #baffc920;
+        }
+      }
+
+      &:nth-child(3n + 3) {
+        background: linear-gradient(135deg, #ffdfba33 0%, #ffffff 100%);
+        .tool-header { 
+          background: #ffdfba40 !important;
+        }
+        .tool-content {
+          background: #ffdfba10;
+        }
+        .tool-documentation, .tool-support {
+          background: #ffdfba20;
+        }
+      }
+
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: 
+          0 12px 20px -6px rgba(0, 0, 0, 0.1),
+          0 4px 8px -4px rgba(0, 0, 0, 0.06);
+      }
 
       .tool-header {
         padding: 2rem;
@@ -232,7 +295,7 @@ interface Tool {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: rgba(255, 255, 255, 0.9) !important;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 
         h2 {
           margin: 0;
@@ -247,6 +310,7 @@ interface Tool {
           border-radius: 20px;
           font-size: 0.9rem;
           color: #1a237e;
+          backdrop-filter: blur(4px);
         }
       }
 
@@ -294,6 +358,12 @@ interface Tool {
         flex-direction: column;
         align-items: flex-start;
         gap: 1rem;
+        border-radius: 8px;
+        padding: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        box-shadow: 
+          0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
 
         a {
           display: flex;
@@ -305,6 +375,7 @@ interface Tool {
           border-radius: 4px;
           background: rgba(26, 35, 126, 0.1);
           transition: all 0.3s ease;
+          backdrop-filter: blur(4px);
 
           &:hover {
             background: rgba(26, 35, 126, 0.2);
