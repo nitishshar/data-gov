@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -26,43 +26,56 @@ import { MatSelectModule } from '@angular/material/select';
   template: `
     <div class="squad-details-edit">
       <form [formGroup]="squadForm" (ngSubmit)="saveSquadDetails()">
-        <mat-card class="form-section">
-          <mat-card-header>
-            <mat-card-title>Squad Details</mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <mat-form-field appearance="outline">
-              <mat-label>Squad Name</mat-label>
-              <input matInput formControlName="name" placeholder="Enter squad name">
-              <mat-error *ngIf="squadForm.get('name')?.hasError('required')">
-                Squad name is required
-              </mat-error>
-            </mat-form-field>
+        <div formArrayName="squads">
+          <div *ngFor="let squad of squads.controls; let i = index" [formGroupName]="i">
+            <mat-card class="form-section">
+              <mat-card-header>
+                <mat-card-title>Squad Details</mat-card-title>
+                <button mat-icon-button color="warn" type="button" (click)="removeSquad(i)" *ngIf="squads.length > 1">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </mat-card-header>
+              <mat-card-content>
+                <mat-form-field appearance="outline">
+                  <mat-label>Squad Name</mat-label>
+                  <input matInput formControlName="name" placeholder="Enter squad name">
+                  <mat-error *ngIf="squad.get('name')?.hasError('required')">
+                    Squad name is required
+                  </mat-error>
+                </mat-form-field>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Description</mat-label>
-              <textarea matInput formControlName="description" rows="4" placeholder="Enter description"></textarea>
-              <mat-error *ngIf="squadForm.get('description')?.hasError('required')">
-                Description is required
-              </mat-error>
-            </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Description</mat-label>
+                  <textarea matInput formControlName="description" rows="4" placeholder="Enter description"></textarea>
+                  <mat-error *ngIf="squad.get('description')?.hasError('required')">
+                    Description is required
+                  </mat-error>
+                </mat-form-field>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Leader</mat-label>
-              <input matInput formControlName="leader" placeholder="Enter leader name">
-              <mat-error *ngIf="squadForm.get('leader')?.hasError('required')">
-                Leader name is required
-              </mat-error>
-            </mat-form-field>
-          </mat-card-content>
-        </mat-card>
+                <mat-form-field appearance="outline">
+                  <mat-label>Leader</mat-label>
+                  <input matInput formControlName="leader" placeholder="Enter leader name">
+                  <mat-error *ngIf="squad.get('leader')?.hasError('required')">
+                    Leader name is required
+                  </mat-error>
+                </mat-form-field>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </div>
 
         <div class="form-actions">
-          <button mat-stroked-button type="button">Cancel</button>
-          <button mat-flat-button color="primary" type="submit">
-            <mat-icon>save</mat-icon>
-            Save Changes
+          <button mat-stroked-button type="button" (click)="addSquad()">
+            <mat-icon>add</mat-icon>
+            Add Squad
           </button>
+          <div class="action-buttons">
+            <button mat-stroked-button type="button">Cancel</button>
+            <button mat-flat-button color="primary" type="submit">
+              <mat-icon>save</mat-icon>
+              Save Changes
+            </button>
+          </div>
         </div>
       </form>
     </div>
@@ -112,6 +125,9 @@ import { MatSelectModule } from '@angular/material/select';
         margin-bottom: 1rem;
         border-bottom: 1px solid rgba(186, 225, 255, 0.5);
         backdrop-filter: blur(8px);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
 
         mat-card-title {
           margin: 0;
@@ -152,8 +168,8 @@ import { MatSelectModule } from '@angular/material/select';
 
     .form-actions {
       display: flex;
-      justify-content: flex-end;
-      gap: 1rem;
+      justify-content: space-between;
+      align-items: center;
       margin-top: 2rem;
       padding: 1.5rem;
       background: rgba(255, 255, 255, 0.95);
@@ -171,6 +187,11 @@ import { MatSelectModule } from '@angular/material/select';
         box-shadow: 
           0 15px 35px rgba(186, 225, 255, 0.4),
           0 3px 10px rgba(186, 225, 255, 0.3);
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 1rem;
       }
 
       button {
@@ -242,7 +263,13 @@ import { MatSelectModule } from '@angular/material/select';
       .form-actions {
         padding: 1rem;
         flex-direction: column;
+        gap: 1rem;
         
+        .action-buttons {
+          width: 100%;
+          flex-direction: column;
+        }
+
         button {
           width: 100%;
         }
@@ -251,49 +278,55 @@ import { MatSelectModule } from '@angular/material/select';
   `]
 })
 export class SquadDetailsEditComponent implements OnInit {
-  squadForm!: FormGroup;
+  squadForm: FormGroup;
 
   constructor(
     private fb: FormBuilder,
     private http: HttpClient,
     private snackBar: MatSnackBar
   ) {
-    this.initForm();
+    this.squadForm = this.fb.group({
+      squads: this.fb.array([])
+    });
   }
 
   ngOnInit() {
-    this.loadSquadDetails();
+    this.addSquad();
   }
 
-  private initForm() {
-    this.squadForm = this.fb.group({
+  get squads() {
+    return this.squadForm.get('squads') as FormArray;
+  }
+
+  createSquadGroup() {
+    return this.fb.group({
       name: ['', Validators.required],
       description: ['', Validators.required],
       leader: ['', Validators.required]
     });
   }
 
-  private loadSquadDetails() {
-    // Replace with your actual API endpoint
-    this.http.get('/api/squad-details').subscribe({
-      next: (data: any) => {
-        this.squadForm.patchValue(data);
-      },
-      error: () => {
-        this.snackBar.open('Failed to load squad details', 'Close', { duration: 3000 });
-      }
-    });
+  addSquad() {
+    this.squads.push(this.createSquadGroup());
+  }
+
+  removeSquad(index: number) {
+    this.squads.removeAt(index);
   }
 
   saveSquadDetails() {
     if (this.squadForm.valid) {
       // Replace with your actual API endpoint
-      this.http.post('/api/squad-details', this.squadForm.value).subscribe({
+      this.http.post('/api/squads', this.squadForm.value).subscribe({
         next: () => {
-          this.snackBar.open('Squad details updated successfully', 'Close', { duration: 3000 });
+          this.snackBar.open('Squad details saved successfully', 'Close', {
+            duration: 3000
+          });
         },
         error: () => {
-          this.snackBar.open('Failed to update squad details', 'Close', { duration: 3000 });
+          this.snackBar.open('Error saving squad details', 'Close', {
+            duration: 3000
+          });
         }
       });
     }
