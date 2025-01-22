@@ -142,7 +142,7 @@ import { FleetDataService } from '../../services/fleet-management.service';
             </div>
           </div>
 
-          <div class="form-actions">
+          <div class="section-actions">
             <button mat-raised-button color="primary" 
                     (click)="addTool()" type="button">
               <mat-icon>add</mat-icon>
@@ -160,61 +160,49 @@ import { FleetDataService } from '../../services/fleet-management.service';
     </div>
   `,
   styles: [`
+    :host {
+      display: block;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+
     .admin-tools-container {
       padding: 2rem 1rem;
       max-width: 1200px;
       margin: 0 auto;
     }
 
-    .glass-container {
-      background: var(--card-bg, rgba(255, 255, 255, 0.9));
-      border-radius: 8px;
-      padding: 2rem;
-      margin-bottom: 2rem;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.7);
-      transition: all 0.3s ease;
-
-      &:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-      }
-    }
-
     .intro-section {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(5px);
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 16px rgba(31, 38, 135, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+
       .intro-form {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
-        align-items: center;
+        gap: 1.5rem;
 
         .title-field {
           width: 100%;
-          max-width: 600px;
           
           input {
-            font-size: 2rem;
-            font-weight: 600;
-            color: #009bda;
-            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 300;
+            color: #2c3e50;
           }
         }
 
         .description-field {
           width: 100%;
-          max-width: 800px;
 
           textarea {
             font-size: 1.2rem;
             line-height: 1.6;
-            text-align: center;
           }
-        }
-
-        button {
-          margin-top: 1rem;
-          min-width: 150px;
         }
       }
     }
@@ -226,42 +214,31 @@ import { FleetDataService } from '../../services/fleet-management.service';
     }
 
     .tool-edit-card {
-      border-radius: 8px;
-      overflow: hidden;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(5px);
+      border-radius: 0.5rem;
       margin-bottom: 2rem;
-      transition: all 0.3s ease;
+      box-shadow: 0 4px 16px rgba(31, 38, 135, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
 
-      &.color-1 {
-        background: linear-gradient(135deg, #bae1ff33 0%, #ffffff 100%);
-        .card-header { background: #bae1ff40; }
-      }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 2rem;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(5px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.18);
 
-      &.color-2 {
-        background: linear-gradient(135deg, #baffc933 0%, #ffffff 100%);
-        .card-header { background: #baffc940; }
-      }
-
-      &.color-3 {
-        background: linear-gradient(135deg, #ffdfba33 0%, #ffffff 100%);
-        .card-header { background: #ffdfba40; }
-      }
-
-      .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem 2rem;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-
-        .header-title {
-          flex: 1;
-          margin-right: 1rem;
-          
-          input {
-            font-size: 1.8rem;
-            font-weight: 300;
-            color: #1a237e;
-          }
+      .header-title {
+        flex: 1;
+        margin-right: 1rem;
+        
+        input {
+          font-size: 1.8rem;
+          font-weight: 300;
+          color: #2c3e50;
         }
       }
     }
@@ -275,38 +252,80 @@ import { FleetDataService } from '../../services/fleet-management.service';
       mat-form-field {
         width: 100%;
       }
+    }
 
-      .features-section {
-        grid-column: 1 / -1;
-        background: rgba(255, 255, 255, 0.5);
-        padding: 1.5rem;
-        border-radius: 8px;
+    .features-section {
+      grid-column: 1 / -1;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(5px);
+      padding: 1.5rem;
+      border-radius: 0.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.18);
 
-        h3 {
-          color: #1a237e;
-          margin-bottom: 1rem;
-          font-weight: 500;
-        }
-
-        .features-list {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-          margin-bottom: 1rem;
-        }
+      h3 {
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+        font-weight: 500;
       }
+
+      .features-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+    }
+
+    .section-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      padding: 1rem 2rem;
+      background: rgba(255, 255, 255, 0.5);
+      border-top: 1px solid rgba(255, 255, 255, 0.18);
     }
 
     .form-actions {
       display: flex;
       gap: 1rem;
       justify-content: flex-end;
-      padding: 1rem 0;
+      margin-top: 2rem;
+    }
 
-      button {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
+    button {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-width: 120px;
+      border-radius: 4px;
+      padding: 0 24px;
+      height: 40px;
+
+      &.mat-mdc-raised-button {
+        background: #1976d2;
+        color: white;
+        
+        &:hover {
+          background: #1565c0;
+        }
+      }
+      
+      &.mat-mdc-outlined-button {
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        background: transparent;
+        
+        &:hover {
+          background: rgba(0, 0, 0, 0.04);
+        }
+      }
+    }
+
+    ::ng-deep {
+      .mat-mdc-form-field-outline {
+        background: rgba(255, 255, 255, 0.9);
+      }
+
+      .mat-mdc-text-field-wrapper {
+        background: transparent;
       }
     }
 
@@ -324,8 +343,12 @@ import { FleetDataService } from '../../services/fleet-management.service';
         padding: 1rem;
       }
 
-      .glass-container {
-        padding: 1rem;
+      .form-actions {
+        flex-direction: column;
+        
+        button {
+          width: 100%;
+        }
       }
     }
   `]
