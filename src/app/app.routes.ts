@@ -4,6 +4,7 @@ import { LandingPageAdminComponent } from './admin/landing-page-admin/landing-pa
 import { SquadDetailsEditComponent } from './admin/squad-details-edit/squad-details-edit.component';
 import { ToolsManagementComponent } from './admin/tools-management/tools-management.component';
 import { ToolsComponent } from './tools/tools.component';
+import { ToolsEditComponent } from './admin/tools-edit/tools-edit.component';
 
 export const routes: Routes = [
   {
@@ -20,7 +21,7 @@ export const routes: Routes = [
       },
       {
         path: 'tools',
-        component: ToolsManagementComponent
+        component: ToolsEditComponent
       },
       {
         path: '',

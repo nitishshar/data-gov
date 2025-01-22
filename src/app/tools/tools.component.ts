@@ -144,19 +144,25 @@ interface Tool {
         repeating-linear-gradient(45deg, rgba(0,0,0,0.02) 0px, rgba(0,0,0,0.02) 2px, transparent 2px, transparent 12px);
       min-height: 100vh;
       color: #2c3e50;
+      padding: 2rem 1rem;
     }
 
     .glass-container {
-      position: relative;
-      margin: 2rem;
+      max-width: 1200px;
+      margin: 0 auto 2rem auto;
       padding: 2rem;
-      border-radius: 16px;
+      border-radius: 8px;
       overflow: hidden;
-      box-shadow: 
-        0 4px 6px -1px rgba(0, 0, 0, 0.1),
-        0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      background: linear-gradient(120deg, rgba(255,255,255,0.9), rgba(246,248,255,0.9));
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      background: var(--card-bg, rgba(255, 255, 255, 0.9));
+      backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.7);
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+      }
     }
 
     .glass-overlay {
@@ -177,20 +183,14 @@ interface Tool {
 
     .intro-section {
       text-align: center;
-      padding: 4rem 2rem;
-      background: linear-gradient(120deg, rgba(255,255,255,0.95), rgba(246,248,255,0.95));
-      border: 1px solid rgba(255, 255, 255, 0.7);
-      box-shadow: 
-        0 10px 15px -3px rgba(0, 0, 0, 0.1),
-        0 4px 6px -2px rgba(0, 0, 0, 0.05);
 
       h1 {
-        font-size: 3rem;
+        font-size: 2.5rem;
         margin-bottom: 1rem;
-        font-weight: 300;
-        letter-spacing: 0.05em;
-        color: #1a237e;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        font-weight: 600;
+        color: #009bda;
+        border-bottom: 2px solid #009bda;
+        padding-bottom: 10px;
       }
 
       .intro-text {
@@ -198,7 +198,7 @@ interface Tool {
         max-width: 800px;
         margin: 0 auto;
         line-height: 1.6;
-        color: #455a64;
+        color: var(--text-color, #333333);
       }
     }
 
@@ -237,11 +237,8 @@ interface Tool {
     }
 
     .tool-section {
-      margin-top: 3rem;
       position: relative;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
-      border-radius: 16px;
-      overflow: hidden;
 
       &:nth-child(3n + 1) {
         background: linear-gradient(135deg, #bae1ff33 0%, #ffffff 100%);
@@ -280,13 +277,6 @@ interface Tool {
         .tool-documentation, .tool-support {
           background: #ffdfba20;
         }
-      }
-
-      &:hover {
-        transform: translateY(-4px);
-        box-shadow: 
-          0 12px 20px -6px rgba(0, 0, 0, 0.1),
-          0 4px 8px -4px rgba(0, 0, 0, 0.06);
       }
 
       .tool-header {
@@ -398,8 +388,12 @@ interface Tool {
     }
 
     @media (max-width: 768px) {
+      :host {
+        padding: 1rem;
+      }
+
       .glass-container {
-        margin: 1rem;
+        margin: 1rem auto;
         padding: 1rem;
       }
 
