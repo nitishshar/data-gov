@@ -145,8 +145,8 @@
       <div class="section">
         <h2>Recent Accomplishments</h2>
         <div class="accomplishments-section">
-          <mat-nav-list class="accomplishment-list">
-            <a mat-list-item *ngFor="let accomplishment of accomplishments; let i = index" 
+          <div class="accomplishment-list">
+            <a *ngFor="let accomplishment of accomplishments; let i = index" 
                [routerLink]="['/accomplishments', accomplishment.id]"
                class="accomplishment-item">
               <div class="accomplishment-content">
@@ -154,7 +154,7 @@
                 <div class="squad-name">{{ accomplishment.squad }}</div>
               </div>
             </a>
-          </mat-nav-list>
+          </div>
           <a [routerLink]="['/accomplishments']" class="view-all-link">
             View All Accomplishments
             <mat-icon>arrow_forward</mat-icon>
