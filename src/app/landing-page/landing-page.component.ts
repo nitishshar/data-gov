@@ -1,27 +1,62 @@
-import { Component, ChangeDetectorRef, HostListener } from '@angular/core';
+import { Component, ChangeDetectorRef, HostListener, OnInit, signal } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { FleetDataService } from '../services/fleet-management.service';
 import { NgClass, NgFor, NgStyle, NgIf } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatListModule } from '@angular/material/list';
+
+interface Accomplishment {
+  id: string;
+  title: string;
+  description: string;
+  squad: string;
+  date: Date;
+  impact: string;
+  metrics?: {
+    label: string;
+    value: string;
+  }[];
+}
 
 @Component({
   selector: 'app-landing-page',
   standalone: true,
-  imports: [MatCardModule, MatToolbarModule, NgFor, NgStyle, NgClass, NgIf, RouterModule],
+  imports: [
+    MatCardModule,
+    MatToolbarModule,
+    NgFor,
+    NgStyle,
+    NgClass,
+    NgIf,
+    RouterModule,
+    CommonModule,
+    MatButtonModule,
+    MatIconModule,
+    MatListModule
+  ],
   templateUrl: './landing-page.component.html',
   styleUrl: './landing-page.component.scss',
 })
-export class LandingPageComponent {
-  public fleetData: any;
+export class LandingPageComponent implements OnInit {
+  public fleetData = signal<any>({});
   public selectedLeader: any = null;
   public cardPosition = { top: 0, left: 0 };
+  public accomplishments: Accomplishment[] = [];
 
   constructor(
     private fleetDataService: FleetDataService,
     private cdr: ChangeDetectorRef
   ) {
     this.fleetData = this.fleetDataService.getFleetData();
+  }
+
+  ngOnInit() {
+    // Get the accomplishments from the fleet data
+    this.accomplishments = this.fleetData().accomplishments?.slice(0, 3) || [];
   }
 
   public random(): number {
