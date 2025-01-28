@@ -8,7 +8,7 @@ export interface FilterOption {
 export interface FilterOperand {
   name: string;
   label: string;
-  type: 'text' | 'number' | 'date' | 'select' | 'multiselect';
+  type: 'text' | 'number' | 'date' | 'select' | 'multiselect' | 'autocomplete';
   options?: FilterOption[];
   optionsLoader?: (search: string) => Observable<FilterOption[]>;
 }
@@ -16,7 +16,7 @@ export interface FilterOperand {
 export interface FilterOperator {
   symbol: string;
   label: string;
-  applicableTypes: Array<'text' | 'number' | 'date' | 'select' | 'multiselect'>;
+  applicableTypes: Array<'text' | 'number' | 'date' | 'select' | 'multiselect' | 'autocomplete'>;
   percentageSupport?: boolean;
 }
 

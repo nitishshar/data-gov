@@ -26,17 +26,44 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   isLoading = false;
   isMultiSelectMode = false;
   selectedValues: FilterSuggestion[] = [];
+  isAutocompleteMode = false;
 
   private inputSubject = new Subject<string>();
   private subscription: Subscription | null = null;
+
+  get shouldShowValueSelect(): boolean {
+    return !!(
+      this.currentOperand &&
+      this.currentOperator &&
+      (this.currentOperand.options || this.currentOperand.optionsLoader) &&
+      this.currentOperand.type === 'select'
+    );
+  }
+
+  get shouldShowAutocomplete(): boolean {
+    return !!(
+      this.currentOperand &&
+      this.currentOperator &&
+      (this.currentOperand.options || this.currentOperand.optionsLoader) &&
+      this.currentOperand.type === 'autocomplete'
+    );
+  }
+
+  get isMultiSelectAutocomplete(): boolean {
+    return this.shouldShowAutocomplete && this.currentOperator?.symbol === 'IN';
+  }
 
   getPlaceholder(): string {
     if (!this.currentOperand) {
       return 'Type to search for a column...';
     } else if (!this.currentOperator) {
       return `Select an operator for "${this.currentOperand.label}"...`;
-    } else if (this.isMultiSelectMode) {
-      return `Select multiple values for "${this.currentOperand.label}"...`;
+    } else if (this.isMultiSelectMode || this.isMultiSelectAutocomplete) {
+      return `Search and select multiple values for "${this.currentOperand.label}"...`;
+    } else if (this.shouldShowAutocomplete) {
+      return `Search for a value in "${this.currentOperand.label}"...`;
+    } else if (this.shouldShowValueSelect) {
+      return `Select a value for "${this.currentOperand.label}"...`;
     } else {
       return `Enter a value for "${this.currentOperand.label}"...`;
     }
@@ -70,8 +97,19 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   }
 
   onFocus() {
-    this.showSuggestions = true;
-    this.updateSuggestionsForInput(this.inputValue);
+    if (this.shouldShowValueSelect || this.isMultiSelectMode) {
+      this.showSuggestions = true;
+      this.updateSuggestionsForInput('');
+    } else if (this.shouldShowAutocomplete) {
+      this.showSuggestions = true;
+      this.isAutocompleteMode = true;
+      if (this.inputValue) {
+        this.updateSuggestionsForInput(this.inputValue);
+      }
+    } else {
+      this.showSuggestions = true;
+      this.updateSuggestionsForInput(this.inputValue);
+    }
   }
 
   onBlur(event: FocusEvent) {
@@ -80,12 +118,15 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       setTimeout(() => {
         this.showSuggestions = false;
         this.selectedSuggestionIndex = -1;
+        if (!this.isMultiSelectAutocomplete) {
+          this.isAutocompleteMode = false;
+        }
       }, 200);
     }
   }
 
   onKeyDown(event: KeyboardEvent) {
-    if (this.isMultiSelectMode) {
+    if (this.isMultiSelectMode || this.isMultiSelectAutocomplete) {
       if (event.key === 'Enter' && event.ctrlKey) {
         event.preventDefault();
         this.confirmMultiSelect();
@@ -106,6 +147,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     } else if (event.key === 'Escape') {
       this.showSuggestions = false;
       this.selectedSuggestionIndex = -1;
+      this.isAutocompleteMode = false;
     } else if (event.key === 'ArrowDown') {
       event.preventDefault();
       this.selectedSuggestionIndex = Math.min(
@@ -127,7 +169,13 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   selectSuggestion(suggestion: FilterSuggestion) {
     if (suggestion.type === 'operator' && suggestion.value === 'IN') {
       this.currentOperator = this.config.operators.find(op => op.symbol === suggestion.value) || null;
-      this.isMultiSelectMode = true;
+      if (this.currentOperand?.type === 'autocomplete') {
+        this.isAutocompleteMode = true;
+        this.isMultiSelectMode = false;
+      } else {
+        this.isMultiSelectMode = true;
+        this.isAutocompleteMode = false;
+      }
       this.selectedValues = [];
       this.tokens.push({
         type: suggestion.type,
@@ -154,14 +202,25 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     if (suggestion.type === 'operand') {
       this.currentOperand = this.config.operands.find(op => op.name === suggestion.value) || null;
       this.currentOperator = null;
+      this.isAutocompleteMode = false;
     } else if (suggestion.type === 'operator') {
       this.currentOperator = this.config.operators.find(op => op.symbol === suggestion.value) || null;
+      if (this.shouldShowValueSelect) {
+        this.showSuggestions = true;
+        this.updateSuggestionsForInput('');
+      } else if (this.shouldShowAutocomplete) {
+        this.isAutocompleteMode = true;
+        this.showSuggestions = true;
+      }
     } else if (suggestion.type === 'value') {
       this.currentOperand = null;
       this.currentOperator = null;
+      this.isAutocompleteMode = false;
     }
 
-    this.updateSuggestionsForInput('');
+    if (!this.shouldShowValueSelect && !this.shouldShowAutocomplete) {
+      this.updateSuggestionsForInput('');
+    }
     this.emitChange();
   }
 
@@ -214,20 +273,24 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     });
 
     this.isMultiSelectMode = false;
+    this.isAutocompleteMode = false;
     this.selectedValues = [];
     this.currentOperand = null;
     this.currentOperator = null;
     this.showSuggestions = false;
+    this.inputValue = '';
     this.emitChange();
   }
 
   cancelMultiSelect() {
     this.isMultiSelectMode = false;
+    this.isAutocompleteMode = false;
     this.selectedValues = [];
     // Remove the IN operator token
     this.tokens.pop();
     this.currentOperator = null;
     this.showSuggestions = false;
+    this.inputValue = '';
     this.emitChange();
   }
 
@@ -257,6 +320,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     this.currentOperand = operand;
     this.currentOperator = operator;
     this.isMultiSelectMode = false;
+    this.isAutocompleteMode = false;
     this.selectedValues = [];
   }
 
@@ -304,7 +368,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
         }));
     } else if (this.currentOperand && this.currentOperator) {
       // Show value suggestions based on operand type
-      if (this.currentOperand.type === 'select' || this.currentOperand.type === 'multiselect') {
+      if (this.currentOperand.type === 'select' || this.currentOperand.type === 'multiselect' || this.currentOperand.type === 'autocomplete') {
         if (this.currentOperand.options) {
           this.suggestions = this.currentOperand.options
             .filter(opt => opt.label.toLowerCase().includes(lowercaseInput))

@@ -66,6 +66,28 @@
       &:focus {
         box-shadow: none;
       }
+
+      &.select-mode {
+        cursor: pointer;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.5rem center;
+        background-size: 16px 12px;
+        padding-right: 2rem;
+
+        &::-webkit-calendar-picker-indicator {
+          display: none !important;
+        }
+      }
+
+      &.autocomplete-mode {
+        cursor: text;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23343a40' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3ccircle cx='11' cy='11' r='8'%3e%3c/circle%3e%3cline x1='21' y1='21' x2='16.65' y2='16.65'%3e%3c/line%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.5rem center;
+        background-size: 16px;
+        padding-right: 2rem;
+      }
     }
 
     .loading-spinner {
