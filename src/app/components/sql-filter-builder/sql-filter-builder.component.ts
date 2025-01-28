@@ -27,6 +27,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   isMultiSelectMode = false;
   selectedValues: FilterSuggestion[] = [];
   isAutocompleteMode = false;
+  bracketCount = 0;
 
   private inputSubject = new Subject<string>();
   private subscription: Subscription | null = null;
@@ -55,9 +56,9 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
 
   getPlaceholder(): string {
     if (!this.currentOperand) {
-      return 'Type to search for a column...';
+      return 'Type to search for a column or "(" to start a group...';
     } else if (!this.currentOperator) {
-      return `Select an operator for "${this.currentOperand.label}"...`;
+      return `Type an operator (=, !=, etc.) or select for "${this.currentOperand.label}"...`;
     } else if (this.isMultiSelectMode || this.isMultiSelectAutocomplete) {
       return `Search and select multiple values for "${this.currentOperand.label}"...`;
     } else if (this.shouldShowAutocomplete) {
@@ -90,10 +91,64 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
 
   onInput(event: Event) {
     const input = (event.target as HTMLInputElement).value;
+    
+    // Handle direct operator input
+    if (this.currentOperand && !this.currentOperator) {
+      const operator = this.config.operators.find(op => 
+        (op.symbol === input || op.label.toLowerCase() === input.toLowerCase()) && 
+        op.applicableTypes.includes(this.currentOperand!.type)
+      );
+      if (operator) {
+        this.selectSuggestion({
+          type: 'operator',
+          value: operator.symbol,
+          label: operator.label,
+          displayValue: operator.label
+        });
+        this.inputValue = '';
+        return;
+      }
+    }
+
+    // Handle parentheses
+    if (input === '(') {
+      this.addOpeningBracket();
+      return;
+    } else if (input === ')' && this.canAddClosingBracket()) {
+      this.addClosingBracket();
+      return;
+    }
+
     this.inputValue = input;
     this.showSuggestions = true;
     this.selectedSuggestionIndex = -1;
     this.inputSubject.next(input);
+  }
+
+  private addOpeningBracket() {
+    this.tokens.push({
+      type: 'bracket',
+      value: '(',
+      displayValue: '('
+    });
+    this.bracketCount++;
+    this.inputValue = '';
+    this.emitChange();
+  }
+
+  private addClosingBracket() {
+    this.tokens.push({
+      type: 'bracket',
+      value: ')',
+      displayValue: ')'
+    });
+    this.bracketCount--;
+    this.inputValue = '';
+    this.emitChange();
+  }
+
+  private canAddClosingBracket(): boolean {
+    return this.bracketCount > 0;
   }
 
   onFocus() {
@@ -126,6 +181,17 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   }
 
   onKeyDown(event: KeyboardEvent) {
+    // Handle parentheses with keyboard
+    if (event.key === '(') {
+      event.preventDefault();
+      this.addOpeningBracket();
+      return;
+    } else if (event.key === ')' && this.canAddClosingBracket()) {
+      event.preventDefault();
+      this.addClosingBracket();
+      return;
+    }
+
     if (this.isMultiSelectMode || this.isMultiSelectAutocomplete) {
       if (event.key === 'Enter' && event.ctrlKey) {
         event.preventDefault();
@@ -296,6 +362,14 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
 
   removeLastToken() {
     if (this.tokens.length > 0) {
+      const lastToken = this.tokens[this.tokens.length - 1];
+      if (lastToken.type === 'bracket') {
+        if (lastToken.value === '(') {
+          this.bracketCount--;
+        } else {
+          this.bracketCount++;
+        }
+      }
       this.tokens.pop();
       this.resetCurrentState();
       this.emitChange();
@@ -340,8 +414,12 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
           operandType: op.type
         }));
 
-      // Add logical operators if we have tokens
-      if (this.tokens.length > 0 && this.tokens[this.tokens.length - 1].type !== 'operator') {
+      // Add logical operators if we have tokens and last token is not an operator
+      const lastToken = this.tokens[this.tokens.length - 1];
+      if (this.tokens.length > 0 && 
+          lastToken && 
+          lastToken.type !== 'operator' && 
+          lastToken.type !== 'bracket') {
         this.suggestions.push(
           ...this.config.logicalOperators
             .filter(op => op.label.toLowerCase().includes(lowercaseInput))
