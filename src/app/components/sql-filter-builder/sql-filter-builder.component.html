@@ -1,0 +1,74 @@
+<div class="sql-filter-builder w-100">
+  <div class="form-group">
+    <div class="input-container">
+      <div class="tokens-display">
+        <span *ngFor="let token of tokens" class="token" [ngClass]="token.type">
+          {{ token.displayValue || token.value }}
+        </span>
+        <input
+          type="text"
+          class="form-control"
+          [placeholder]="getPlaceholder()"
+          [(ngModel)]="inputValue"
+          (input)="onInput($event)"
+          (focus)="onFocus()"
+          (blur)="onBlur($event)"
+          (keydown)="onKeyDown($event)"
+          autocomplete="off"
+        />
+        <div *ngIf="isLoading" class="loading-spinner">
+          <div class="spinner-border spinner-border-sm text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div *ngIf="showSuggestions && (suggestions.length > 0 || isLoading)" class="suggestions-dropdown">
+      <div class="list-group">
+        <div *ngIf="isLoading" class="list-group-item loading-item">
+          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          <span class="ms-2">Loading suggestions...</span>
+        </div>
+        <ng-container *ngIf="isMultiSelectMode">
+          <div class="list-group-item multiselect-header">
+            <div class="d-flex justify-content-between align-items-center">
+              <span>Select multiple values</span>
+              <button type="button" class="btn btn-primary btn-sm" (click)="confirmMultiSelect()" [disabled]="selectedValues.length === 0">
+                Add ({{ selectedValues.length }})
+              </button>
+            </div>
+          </div>
+          <div *ngFor="let suggestion of suggestions" class="list-group-item multiselect-item">
+            <div class="form-check">
+              <input 
+                type="checkbox" 
+                class="form-check-input" 
+                [id]="'check_' + suggestion.value"
+                [checked]="isValueSelected(suggestion.value)"
+                (change)="toggleValue(suggestion)"
+              >
+              <label class="form-check-label" [for]="'check_' + suggestion.value">
+                {{ suggestion.label }}
+              </label>
+            </div>
+          </div>
+        </ng-container>
+        <ng-container *ngIf="!isMultiSelectMode">
+          <button
+            *ngFor="let suggestion of suggestions; let i = index"
+            type="button"
+            class="list-group-item list-group-item-action"
+            [class.active]="i === selectedSuggestionIndex"
+            (click)="selectSuggestion(suggestion)"
+            (mousedown)="$event.preventDefault()"
+            (mouseover)="selectedSuggestionIndex = i"
+          >
+            <span class="suggestion-type" [class]="suggestion.type">{{ suggestion.type }}</span>
+            <span class="suggestion-label">{{ suggestion.label }}</span>
+          </button>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div> 

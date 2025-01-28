@@ -1,0 +1,259 @@
+.sql-filter-builder {
+  position: relative;
+  width: 100%;
+
+  .input-container {
+    position: relative;
+    width: 100%;
+  }
+
+  .tokens-display {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.375rem;
+    min-height: 38px;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    background: white;
+
+    &:focus-within {
+      border-color: #86b7fe;
+      box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+
+    .token {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border-radius: 0.25rem;
+      white-space: nowrap;
+      color: white;
+
+      &.operand {
+        background-color: #0d6efd;
+      }
+
+      &.operator {
+        background-color: #6610f2;
+      }
+
+      &.value {
+        background-color: #198754;
+      }
+
+      &.logical {
+        background-color: #fd7e14;
+      }
+
+      &.bracket {
+        background-color: #6c757d;
+      }
+    }
+
+    input {
+      flex: 1;
+      min-width: 150px;
+      border: none;
+      outline: none;
+      padding: 0;
+      background: transparent;
+      box-shadow: none;
+
+      &:focus {
+        box-shadow: none;
+      }
+    }
+
+    .loading-spinner {
+      margin-left: 0.5rem;
+      display: flex;
+      align-items: center;
+    }
+  }
+}
+
+.suggestions-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  max-height: 300px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid rgba(0,0,0,0.15);
+  border-radius: 0.25rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-top: 0.25rem;
+
+  .list-group-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border: none;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &.active {
+      background-color: #e9ecef;
+      border-color: #e9ecef;
+      color: #000;
+    }
+
+    &.loading-item {
+      color: #6c757d;
+      cursor: default;
+
+      &:hover {
+        background: none;
+      }
+    }
+
+    &.multiselect-header {
+      background-color: #f8f9fa;
+      font-weight: 500;
+      cursor: default;
+
+      &:hover {
+        background-color: #f8f9fa;
+      }
+
+      .btn {
+        font-size: 0.875rem;
+        padding: 0.25rem 0.5rem;
+      }
+    }
+
+    &.multiselect-item {
+      cursor: pointer;
+      padding: 0.5rem 1rem;
+
+      &:hover {
+        background-color: #f8f9fa;
+      }
+
+      .form-check {
+        width: 100%;
+        margin: 0;
+        display: flex;
+        align-items: center;
+
+        .form-check-input {
+          margin-right: 0.75rem;
+          cursor: pointer;
+        }
+
+        .form-check-label {
+          flex: 1;
+          cursor: pointer;
+          margin: 0;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+    }
+
+    .suggestion-type {
+      font-size: 0.75rem;
+      padding: 0.125rem 0.375rem;
+      border-radius: 0.25rem;
+      margin-right: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: white;
+
+      &.operand {
+        background-color: #0d6efd;
+      }
+
+      &.operator {
+        background-color: #6610f2;
+      }
+
+      &.value {
+        background-color: #198754;
+      }
+
+      &.logical {
+        background-color: #fd7e14;
+      }
+
+      &.bracket {
+        background-color: #6c757d;
+      }
+    }
+
+    .suggestion-label {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    &:hover {
+      background-color: #f8f9fa;
+    }
+  }
+}
+
+.tokens-preview {
+  min-height: 38px;
+  
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    
+    &.bg-operand {
+      background-color: #0d6efd;
+    }
+
+    &.bg-operator {
+      background-color: #6610f2;
+    }
+
+    &.bg-value {
+      background-color: #198754;
+    }
+
+    &.bg-logical {
+      background-color: #fd7e14;
+    }
+
+    &.bg-bracket {
+      background-color: #6c757d;
+    }
+    
+    .btn-close {
+      font-size: 0.75rem;
+      padding: 0.25rem;
+      margin-left: 0.5rem;
+      opacity: 0.7;
+      
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+}
+
+.sql-preview {
+  pre {
+    background: rgba(0,0,0,0.05);
+    padding: 1rem;
+    border-radius: 0.25rem;
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+} 
