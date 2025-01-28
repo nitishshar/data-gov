@@ -99,13 +99,16 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
         op.applicableTypes.includes(this.currentOperand!.type)
       );
       if (operator) {
+        // Clear input before selecting operator
+        this.inputValue = '';
+        (event.target as HTMLInputElement).value = '';
+        
         this.selectSuggestion({
           type: 'operator',
           value: operator.symbol,
           label: operator.label,
           displayValue: operator.label
         });
-        this.inputValue = '';
         return;
       }
     }
@@ -113,9 +116,13 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     // Handle parentheses
     if (input === '(') {
       this.addOpeningBracket();
+      this.inputValue = '';
+      (event.target as HTMLInputElement).value = '';
       return;
     } else if (input === ')' && this.canAddClosingBracket()) {
       this.addClosingBracket();
+      this.inputValue = '';
+      (event.target as HTMLInputElement).value = '';
       return;
     }
 
