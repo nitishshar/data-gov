@@ -31,6 +31,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   bracketCount = 0;
   dropdownPosition = { top: 0, left: 0 };
   generatedSql = '';
+  validationError: string | null = null;
 
   private inputSubject = new Subject<string>();
   private subscription: Subscription | null = null;
@@ -640,7 +641,62 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     }
   }
 
+  private validateFilter(): string | null {
+    // Check for unclosed brackets
+    if (this.bracketCount > 0) {
+      return 'Missing closing bracket )';
+    }
+
+    // Check for incomplete expression
+    if (this.tokens.length === 0) {
+      return null; // Empty filter is valid
+    }
+
+    const lastToken = this.tokens[this.tokens.length - 1];
+    
+    // Check if expression ends with operator
+    if (lastToken.type === 'operator' && lastToken.value !== ',') {
+      return 'Incomplete expression: operator needs a value';
+    }
+
+    // Check if expression ends with operand
+    if (lastToken.type === 'operand') {
+      return 'Incomplete expression: operand needs an operator';
+    }
+
+    // Check for missing values in IN clause
+    let inOperatorIndex = -1;
+    for (let i = 0; i < this.tokens.length; i++) {
+      const token = this.tokens[i];
+      if (token.type === 'operator' && token.value === 'IN') {
+        inOperatorIndex = i;
+      } else if (inOperatorIndex !== -1) {
+        // Check if we have proper IN clause structure
+        if (i === inOperatorIndex + 1 && token.type !== 'bracket') {
+          return 'IN operator must be followed by opening bracket';
+        }
+        if (token.type === 'bracket' && token.value === ')') {
+          // Check if we have any values between brackets
+          const hasValues = this.tokens
+            .slice(inOperatorIndex + 2, i)
+            .some(t => t.type === 'value');
+          if (!hasValues) {
+            return 'IN clause must contain at least one value';
+          }
+          inOperatorIndex = -1;
+        }
+      }
+    }
+    if (inOperatorIndex !== -1) {
+      return 'Incomplete IN clause';
+    }
+
+    return null;
+  }
+
   private emitChange() {
+    this.validationError = this.validateFilter();
+    
     if (this.tokens.length === 0) {
       this.generatedSql = '';
       this.filterChange.emit('');
@@ -672,7 +728,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     });
 
     this.generatedSql = sql;
-    this.filterChange.emit(sql);
+    this.filterChange.emit(this.validationError ? '' : sql);
   }
 
   updateDropdownPosition() {
