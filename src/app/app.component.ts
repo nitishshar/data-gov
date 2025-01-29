@@ -26,7 +26,7 @@ export class AppComponent implements OnInit {
       {
         name: 'division',
         label: 'Division',
-        type: 'select',
+        type: 'text',
         optionsLoader: (search: string) => this.mockDataService.getDivisions(search).pipe(
           map(divisions => divisions.map(div => ({
             value: div,
@@ -46,6 +46,16 @@ export class AppComponent implements OnInit {
         )
       },
       {
+        name: 'description',
+        label: 'Description',
+        type: 'text'
+      },
+      {
+        name: 'notes',
+        label: 'Notes',
+        type: 'text'
+      },
+      {
         name: 'headcount',
         label: 'Headcount',
         type: 'number'
@@ -58,7 +68,7 @@ export class AppComponent implements OnInit {
       {
         name: 'manager',
         label: 'Manager',
-        type: 'select',
+        type: 'text',
         optionsLoader: (search: string) => this.mockDataService.getManagers(search).pipe(
           map(managers => managers.map(manager => ({
             value: manager,
@@ -69,7 +79,7 @@ export class AppComponent implements OnInit {
       {
         name: 'location',
         label: 'Location',
-        type: 'select',
+        type: 'text',
         optionsLoader: (search: string) => this.mockDataService.getLocations(search).pipe(
           map(locations => locations.map(location => ({
             value: location,
@@ -123,24 +133,36 @@ export class AppComponent implements OnInit {
       {
         symbol: 'LIKE',
         label: 'Contains',
-        applicableTypes: ['text'],
+        applicableTypes: ['text', 'autocomplete'],
         percentageSupport: true
       },
       {
         symbol: 'NOT LIKE',
         label: 'Does Not Contain',
-        applicableTypes: ['text'],
+        applicableTypes: ['text', 'autocomplete'],
+        percentageSupport: true
+      },
+      {
+        symbol: 'STARTS WITH',
+        label: 'Starts With',
+        applicableTypes: ['text', 'autocomplete'],
+        percentageSupport: true
+      },
+      {
+        symbol: 'ENDS WITH',
+        label: 'Ends With',
+        applicableTypes: ['text', 'autocomplete'],
         percentageSupport: true
       },
       {
         symbol: 'IN',
         label: 'In',
-        applicableTypes: ['select']
+        applicableTypes: ['select', 'multiselect', 'autocomplete']
       },
       {
         symbol: 'NOT IN',
         label: 'Not In',
-        applicableTypes: ['select']
+        applicableTypes: ['select', 'multiselect', 'autocomplete']
       }
     ],
     logicalOperators: [

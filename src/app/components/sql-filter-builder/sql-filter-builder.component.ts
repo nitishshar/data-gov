@@ -517,19 +517,30 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Special handling for compound operators
-    if (this.currentOperand && !this.currentOperator && ['>', '<', '=', '!'].includes(input)) {
-      this.suggestions = this.config.operators
-        .filter(op => 
-          op.symbol.startsWith(input) && 
-          op.applicableTypes.includes(this.currentOperand!.type)
-        )
+    // Special handling for compound operators and text operators
+    if (this.currentOperand && !this.currentOperator) {
+      const isTextOperand = this.currentOperand.type === 'text' || this.currentOperand.type === 'autocomplete';
+      const operators = this.config.operators
+        .filter(op => {
+          // For text fields, show all applicable operators including LIKE
+          if (isTextOperand) {
+            return op.applicableTypes.includes(this.currentOperand!.type) &&
+                   (op.label.toLowerCase().includes(lowercaseInput) ||
+                    op.symbol.toLowerCase().includes(lowercaseInput));
+          }
+          // For other types, show operators that start with the input
+          return op.applicableTypes.includes(this.currentOperand!.type) &&
+                 (op.symbol.toLowerCase().startsWith(lowercaseInput) ||
+                  op.label.toLowerCase().includes(lowercaseInput));
+        })
         .map(op => ({
           type: 'operator' as const,
           value: op.symbol,
           label: op.label,
           displayValue: op.label
         }));
+
+      this.suggestions = operators;
       return;
     }
 
@@ -854,6 +865,34 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       const operandConfig = this.config.operands.find(op => op.name === operand.value);
       if (!operandConfig) throw new Error(`No operand config found for ${operand.value}`);
 
+      // Handle Text Filter with LIKE operators
+      if (operandConfig.type === 'text' || operandConfig.type === 'autocomplete') {
+        const value = values[0]?.value || '';
+        let filterValue = value;
+        let filterType = this.convertToAgGridFilterType('text', operator?.value || '=');
+
+        // Handle LIKE patterns
+        if (operator?.value === 'LIKE' || operator?.value === 'NOT LIKE') {
+          if (value.startsWith('%') && value.endsWith('%')) {
+            filterType = operator.value === 'LIKE' ? 'contains' : 'notContains';
+            filterValue = value.slice(1, -1); // Remove % from both ends
+          } else if (value.startsWith('%')) {
+            filterType = operator.value === 'LIKE' ? 'endsWith' : 'notEqual';
+            filterValue = value.slice(1); // Remove leading %
+          } else if (value.endsWith('%')) {
+            filterType = operator.value === 'LIKE' ? 'startsWith' : 'notEqual';
+            filterValue = value.slice(0, -1); // Remove trailing %
+          }
+        }
+
+        return {
+          type: 'text',
+          field: operand.value,
+          filterType,
+          filter: filterValue
+        };
+      }
+
       // Handle Set Filter (IN operator)
       if (operator?.value === 'IN' || operator?.value === 'NOT IN' || 
           operandConfig.type === 'select' || operandConfig.type === 'multiselect') {
@@ -861,16 +900,6 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
           type: 'set',
           field: operand.value,
           values: values.map(v => v.value)
-        };
-      }
-
-      // Handle Text Filter
-      if (operandConfig.type === 'text' || operandConfig.type === 'autocomplete') {
-        return {
-          type: 'text',
-          field: operand.value,
-          filterType: this.convertToAgGridFilterType('text', operator?.value || '='),
-          filter: values[0]?.value
         };
       }
 
@@ -968,15 +997,36 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
         } else if (token.type === 'operand') {
           sql += token.value;
         } else if (token.type === 'operator') {
-          sql += token.value === ',' ? token.value : ` ${token.value} `;
+          if (token.value === 'STARTS WITH') {
+            sql += ' LIKE ';
+          } else if (token.value === 'ENDS WITH') {
+            sql += ' LIKE ';
+          } else {
+            sql += token.value === ',' ? token.value : ` ${token.value} `;
+          }
         } else if (token.type === 'value') {
           const operand = this.tokens
             .slice(0, index)
             .reverse()
             .find(t => t.type === 'operand');
           
-          if (operand && this.config.operands.find(op => op.name === operand.value)?.type === 'text') {
-            sql += `'${token.value}'`;
+          const operandConfig = operand && this.config.operands.find(op => op.name === operand.value);
+          const operator = this.tokens
+            .slice(0, index)
+            .reverse()
+            .find(t => t.type === 'operator');
+          
+          if (operandConfig?.type === 'text') {
+            // Handle LIKE patterns
+            if (operator?.value === 'LIKE' || operator?.value === 'NOT LIKE') {
+              sql += `'%${token.value}%'`; // Wrap with % for contains
+            } else if (operator?.value === 'STARTS WITH') {
+              sql += `'${token.value}%'`; // Add % at the end for starts with
+            } else if (operator?.value === 'ENDS WITH') {
+              sql += `'%${token.value}'`; // Add % at the start for ends with
+            } else {
+              sql += `'${token.value}'`;
+            }
           } else {
             sql += token.value;
           }
