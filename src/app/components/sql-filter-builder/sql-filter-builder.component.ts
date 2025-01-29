@@ -30,9 +30,14 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   isAutocompleteMode = false;
   bracketCount = 0;
   dropdownPosition = { top: 0, left: 0 };
+  generatedSql = '';
 
   private inputSubject = new Subject<string>();
   private subscription: Subscription | null = null;
+
+  get showGeneratedSql(): boolean {
+    return this.config.showGeneratedSql ?? true; // Default to true if not specified
+  }
 
   get shouldShowValueSelect(): boolean {
     return !!(
@@ -97,11 +102,15 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     
     // Handle direct operator input
     if (this.currentOperand && !this.currentOperator) {
+      // Check for compound operators (>=, <=, <>, etc.)
+      const isCompoundOperatorStart = ['>', '<', '=', '!'].includes(input);
       const operator = this.config.operators.find(op => 
         (op.symbol === input || op.label.toLowerCase() === input.toLowerCase()) && 
         op.applicableTypes.includes(this.currentOperand!.type)
       );
-      if (operator) {
+
+      // Don't immediately select for potential compound operators
+      if (operator && !isCompoundOperatorStart) {
         // Clear input before selecting operator
         this.inputValue = '';
         (event.target as HTMLInputElement).value = '';
@@ -112,6 +121,14 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
           label: operator.label,
           displayValue: operator.label
         });
+        return;
+      }
+
+      // Handle compound operators
+      if (isCompoundOperatorStart) {
+        this.inputValue = input;
+        this.showSuggestions = true;
+        this.updateSuggestionsForInput(input);
         return;
       }
     }
@@ -487,6 +504,22 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Special handling for compound operators
+    if (this.currentOperand && !this.currentOperator && ['>', '<', '=', '!'].includes(input)) {
+      this.suggestions = this.config.operators
+        .filter(op => 
+          op.symbol.startsWith(input) && 
+          op.applicableTypes.includes(this.currentOperand!.type)
+        )
+        .map(op => ({
+          type: 'operator' as const,
+          value: op.symbol,
+          label: op.label,
+          displayValue: op.label
+        }));
+      return;
+    }
+
     if (this.isMultiSelectMode || (this.currentOperator?.symbol === 'IN' && this.currentOperand)) {
       // Show value suggestions for IN operator
       if (this.currentOperand && (
@@ -609,6 +642,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
 
   private emitChange() {
     if (this.tokens.length === 0) {
+      this.generatedSql = '';
       this.filterChange.emit('');
       return;
     }
@@ -637,6 +671,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       }
     });
 
+    this.generatedSql = sql;
     this.filterChange.emit(sql);
   }
 

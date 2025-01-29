@@ -286,4 +286,27 @@
     white-space: pre-wrap;
     word-break: break-all;
   }
+}
+
+.generated-sql {
+  margin-top: 8px;
+  padding: 8px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #666;
+
+  .sql-label {
+    font-weight: 500;
+    margin-right: 8px;
+    color: #333;
+  }
+
+  code {
+    font-family: 'Consolas', 'Monaco', monospace;
+    background-color: #fff;
+    padding: 2px 4px;
+    border-radius: 2px;
+    border: 1px solid #ddd;
+  }
 } 

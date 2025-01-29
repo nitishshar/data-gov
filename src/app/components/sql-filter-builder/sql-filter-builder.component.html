@@ -28,6 +28,11 @@
       </div>
     </div>
     
+    <div *ngIf="showGeneratedSql && generatedSql" class="generated-sql">
+      <span class="sql-label">Generated SQL:</span>
+      <code>{{ generatedSql }}</code>
+    </div>
+
     <div *ngIf="showSuggestions && (suggestions.length > 0 || isLoading)" 
          class="suggestions-dropdown"
          [style.top.px]="dropdownPosition.top"

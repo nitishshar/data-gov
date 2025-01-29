@@ -29,6 +29,7 @@ export interface FilterConfig {
   operands: FilterOperand[];
   operators: FilterOperator[];
   logicalOperators: LogicalOperator[];
+  showGeneratedSql?: boolean;
 }
 
 export interface FilterToken {
