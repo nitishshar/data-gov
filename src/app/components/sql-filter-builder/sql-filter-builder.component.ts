@@ -664,6 +664,33 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       return 'Incomplete expression: operand needs an operator';
     }
 
+    // Check if expression ends with logical operator
+    if (lastToken.type === 'logical') {
+      return 'Incomplete expression: logical operator needs a condition';
+    }
+
+    // Check for empty brackets and incomplete logical operators
+    for (let i = 0; i < this.tokens.length; i++) {
+      const token = this.tokens[i];
+      const nextToken = i < this.tokens.length - 1 ? this.tokens[i + 1] : null;
+
+      // Check for empty brackets
+      if (token.type === 'bracket' && token.value === '(' && nextToken?.type === 'bracket' && nextToken.value === ')') {
+        return 'Empty brackets are not allowed';
+      }
+
+      // Check for logical operators followed by invalid tokens
+      if (token.type === 'logical') {
+        if (!nextToken) {
+          return `Incomplete expression: ${token.value} needs a condition`;
+        }
+        // Only allow operands or opening brackets after logical operators
+        if (nextToken.type !== 'operand' && !(nextToken.type === 'bracket' && nextToken.value === '(')) {
+          return `Invalid expression after ${token.value}: expected column name or opening bracket`;
+        }
+      }
+    }
+
     // Check for missing values in IN clause
     let inOperatorIndex = -1;
     for (let i = 0; i < this.tokens.length; i++) {
