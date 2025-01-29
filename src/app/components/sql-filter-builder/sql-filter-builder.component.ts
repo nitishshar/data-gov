@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FilterConfig, FilterToken, FilterSuggestion, FilterOperand, FilterOperator } from '../../models/sql-filter.model';
@@ -15,6 +15,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   @Input() config!: FilterConfig;
   @Output() filterChange = new EventEmitter<string>();
+  @ViewChild('filterInput') filterInput!: ElementRef;
 
   inputValue = '';
   tokens: FilterToken[] = [];
@@ -28,6 +29,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   selectedValues: FilterSuggestion[] = [];
   isAutocompleteMode = false;
   bracketCount = 0;
+  dropdownPosition = { top: 0, left: 0 };
 
   private inputSubject = new Subject<string>();
   private subscription: Subscription | null = null;
@@ -91,6 +93,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
 
   onInput(event: Event) {
     const input = (event.target as HTMLInputElement).value;
+    this.updateDropdownPosition();
     
     // Handle direct operator input
     if (this.currentOperand && !this.currentOperator) {
@@ -159,6 +162,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   }
 
   onFocus() {
+    this.updateDropdownPosition();
     if (this.shouldShowValueSelect || this.isMultiSelectMode) {
       this.showSuggestions = true;
       this.updateSuggestionsForInput('');
@@ -242,13 +246,8 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   selectSuggestion(suggestion: FilterSuggestion) {
     if (suggestion.type === 'operator' && suggestion.value === 'IN') {
       this.currentOperator = this.config.operators.find(op => op.symbol === suggestion.value) || null;
-      if (this.currentOperand?.type === 'autocomplete') {
-        this.isAutocompleteMode = true;
-        this.isMultiSelectMode = false;
-      } else {
-        this.isMultiSelectMode = true;
-        this.isAutocompleteMode = false;
-      }
+      this.isMultiSelectMode = true;
+      this.isAutocompleteMode = this.currentOperand?.type === 'autocomplete';
       this.selectedValues = [];
       this.tokens.push({
         type: suggestion.type,
@@ -256,6 +255,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
         displayValue: suggestion.displayValue,
         operandType: suggestion.operandType
       });
+      this.showSuggestions = true;
       this.updateSuggestionsForInput('');
       return;
     }
@@ -276,6 +276,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       this.currentOperand = this.config.operands.find(op => op.name === suggestion.value) || null;
       this.currentOperator = null;
       this.isAutocompleteMode = false;
+      this.isMultiSelectMode = false;
     } else if (suggestion.type === 'operator') {
       this.currentOperator = this.config.operators.find(op => op.symbol === suggestion.value) || null;
       if (this.shouldShowValueSelect) {
@@ -289,6 +290,12 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       this.currentOperand = null;
       this.currentOperator = null;
       this.isAutocompleteMode = false;
+      this.isMultiSelectMode = false;
+    } else if (suggestion.type === 'logical') {
+      this.currentOperand = null;
+      this.currentOperator = null;
+      this.isAutocompleteMode = false;
+      this.isMultiSelectMode = false;
     }
 
     if (!this.shouldShowValueSelect && !this.shouldShowAutocomplete) {
@@ -345,6 +352,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       displayValue: ')'
     });
 
+    // Reset all states
     this.isMultiSelectMode = false;
     this.isAutocompleteMode = false;
     this.selectedValues = [];
@@ -353,6 +361,9 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     this.showSuggestions = false;
     this.inputValue = '';
     this.emitChange();
+    
+    // Update suggestions to show logical operators
+    this.updateSuggestionsForInput('');
   }
 
   cancelMultiSelect() {
@@ -370,6 +381,8 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   removeLastToken() {
     if (this.tokens.length > 0) {
       const lastToken = this.tokens[this.tokens.length - 1];
+      
+      // Handle bracket counting
       if (lastToken.type === 'bracket') {
         if (lastToken.value === '(') {
           this.bracketCount--;
@@ -377,7 +390,30 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
           this.bracketCount++;
         }
       }
-      this.tokens.pop();
+
+      // If we're removing an IN operator or its related tokens
+      if (lastToken.type === 'operator' && lastToken.value === 'IN') {
+        this.tokens.pop(); // Remove IN operator
+        this.isMultiSelectMode = false;
+        this.isAutocompleteMode = false;
+        this.selectedValues = [];
+      } else if (lastToken.type === 'bracket' && lastToken.value === ')' && this.tokens.length > 1) {
+        // Check if this is part of an IN clause
+        const prevTokens = this.tokens.slice(0, -1);
+        const inOperatorIndex = prevTokens.findIndex(t => t.type === 'operator' && t.value === 'IN');
+        if (inOperatorIndex !== -1) {
+          // Remove everything from IN operator onwards
+          this.tokens = this.tokens.slice(0, inOperatorIndex);
+          this.isMultiSelectMode = false;
+          this.isAutocompleteMode = false;
+          this.selectedValues = [];
+        } else {
+          this.tokens.pop();
+        }
+      } else {
+        this.tokens.pop();
+      }
+
       this.resetCurrentState();
       this.emitChange();
       this.updateSuggestionsForInput(this.inputValue);
@@ -387,30 +423,58 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   private resetCurrentState() {
     let operand = null;
     let operator = null;
+    let foundOperand = false;
+    let lastToken = this.tokens[this.tokens.length - 1];
     
+    // If the last token is a value or closing bracket, we should allow logical operators
+    if (lastToken && (lastToken.type === 'value' || (lastToken.type === 'bracket' && lastToken.value === ')'))) {
+      this.currentOperand = null;
+      this.currentOperator = null;
+      this.isMultiSelectMode = false;
+      this.isAutocompleteMode = false;
+      this.selectedValues = [];
+      this.showSuggestions = false;
+      return;
+    }
+
+    // Find the last operand and its operator
     for (let i = this.tokens.length - 1; i >= 0; i--) {
       const token = this.tokens[i];
-      if (token.type === 'operand') {
+      if (!foundOperand && token.type === 'operand') {
         operand = this.config.operands.find(op => op.name === token.value) || null;
-        break;
-      } else if (token.type === 'operator') {
+        foundOperand = true;
+      } else if (foundOperand && !operator && token.type === 'operator') {
         operator = this.config.operators.find(op => op.symbol === token.value) || null;
+        break;
       }
+    }
+
+    // If we have no tokens or the last token is a logical operator, reset everything
+    if (this.tokens.length === 0 || (lastToken && lastToken.type === 'logical')) {
+      this.currentOperand = null;
+      this.currentOperator = null;
+      this.isMultiSelectMode = false;
+      this.isAutocompleteMode = false;
+      this.selectedValues = [];
+      this.showSuggestions = false;
+      return;
     }
 
     this.currentOperand = operand;
     this.currentOperator = operator;
-    this.isMultiSelectMode = false;
-    this.isAutocompleteMode = false;
+    this.isMultiSelectMode = operator?.symbol === 'IN' || false;
+    this.isAutocompleteMode = this.isMultiSelectMode && operand?.type === 'autocomplete' || false;
     this.selectedValues = [];
+    this.showSuggestions = this.isMultiSelectMode || this.isAutocompleteMode;
   }
 
   private updateSuggestionsForInput(input: string) {
     this.suggestions = [];
     const lowercaseInput = input.toLowerCase();
+    const lastToken = this.tokens[this.tokens.length - 1];
 
-    if (!this.currentOperand && !this.currentOperator) {
-      // Show operands that match the input
+    // Reset suggestions if we're in a clean state or after a logical operator
+    if (this.tokens.length === 0 || (lastToken && lastToken.type === 'logical')) {
       this.suggestions = this.config.operands
         .filter(op => op.label.toLowerCase().includes(lowercaseInput))
         .map(op => ({
@@ -420,14 +484,62 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
           displayValue: op.label,
           operandType: op.type
         }));
+      return;
+    }
 
-      // Add logical operators if we have tokens and last token is not an operator
-      const lastToken = this.tokens[this.tokens.length - 1];
-      if (this.tokens.length > 0 && 
-          lastToken && 
-          lastToken.type !== 'operator' && 
-          lastToken.type !== 'bracket') {
-        this.suggestions.push(
+    if (this.isMultiSelectMode || (this.currentOperator?.symbol === 'IN' && this.currentOperand)) {
+      // Show value suggestions for IN operator
+      if (this.currentOperand && (
+        this.currentOperand.type === 'select' || 
+        this.currentOperand.type === 'multiselect' || 
+        this.currentOperand.type === 'autocomplete'
+      )) {
+        if (this.currentOperand.options) {
+          this.suggestions = this.currentOperand.options
+            .filter(opt => opt.label.toLowerCase().includes(lowercaseInput))
+            .map(opt => ({
+              type: 'value' as const,
+              value: opt.value,
+              label: opt.label,
+              displayValue: opt.label
+            }));
+        } else if (this.currentOperand.optionsLoader) {
+          this.isLoading = true;
+          this.currentOperand.optionsLoader(lowercaseInput).subscribe(
+            options => {
+              this.suggestions = options.map(opt => ({
+                type: 'value' as const,
+                value: opt.value,
+                label: opt.label,
+                displayValue: opt.label
+              }));
+              this.isLoading = false;
+            },
+            error => {
+              console.error('Error loading options:', error);
+              this.isLoading = false;
+            }
+          );
+        }
+        return;
+      }
+    }
+
+    if (!this.currentOperand && !this.currentOperator) {
+      // Show operands and logical operators if appropriate
+      const suggestions: FilterSuggestion[] = [...this.config.operands
+        .filter(op => op.label.toLowerCase().includes(lowercaseInput))
+        .map(op => ({
+          type: 'operand' as const,
+          value: op.name,
+          label: op.label,
+          displayValue: op.label,
+          operandType: op.type
+        }))];
+
+      // Add logical operators if we have tokens and last token is a value or closing bracket
+      if (lastToken && (lastToken.type === 'value' || (lastToken.type === 'bracket' && lastToken.value === ')'))) {
+        suggestions.push(
           ...this.config.logicalOperators
             .filter(op => op.label.toLowerCase().includes(lowercaseInput))
             .map(op => ({
@@ -438,6 +550,8 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
             }))
         );
       }
+
+      this.suggestions = suggestions;
     } else if (this.currentOperand && !this.currentOperator) {
       // Show applicable operators
       this.suggestions = this.config.operators
@@ -451,7 +565,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
           label: op.label,
           displayValue: op.label
         }));
-    } else if (this.currentOperand && this.currentOperator) {
+    } else if (this.currentOperand && this.currentOperator && !this.isMultiSelectMode) {
       // Show value suggestions based on operand type
       if (this.currentOperand.type === 'select' || this.currentOperand.type === 'multiselect' || this.currentOperand.type === 'autocomplete') {
         if (this.currentOperand.options) {
@@ -524,5 +638,31 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     });
 
     this.filterChange.emit(sql);
+  }
+
+  updateDropdownPosition() {
+    if (!this.filterInput?.nativeElement) return;
+
+    const inputEl = this.filterInput.nativeElement;
+    const rect = inputEl.getBoundingClientRect();
+    const cursorPosition = inputEl.selectionStart || 0;
+    
+    // Create a temporary span to measure text width
+    const span = document.createElement('span');
+    span.style.visibility = 'hidden';
+    span.style.position = 'absolute';
+    span.style.whiteSpace = 'pre';
+    span.style.font = window.getComputedStyle(inputEl).font;
+    span.textContent = inputEl.value.substring(0, cursorPosition);
+    document.body.appendChild(span);
+    
+    // Calculate position
+    const textWidth = span.offsetWidth;
+    document.body.removeChild(span);
+
+    this.dropdownPosition = {
+      top: rect.bottom + window.scrollY,
+      left: rect.left + textWidth + window.scrollX
+    };
   }
 } 

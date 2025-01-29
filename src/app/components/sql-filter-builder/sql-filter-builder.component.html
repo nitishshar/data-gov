@@ -6,6 +6,7 @@
           {{ token.displayValue || token.value }}
         </span>
         <input
+          #filterInput
           type="text"
           class="form-control"
           [placeholder]="getPlaceholder()"
@@ -14,6 +15,7 @@
           (focus)="onFocus()"
           (blur)="onBlur($event)"
           (keydown)="onKeyDown($event)"
+          (click)="updateDropdownPosition()"
           autocomplete="off"
           [class.select-mode]="shouldShowValueSelect"
           [class.autocomplete-mode]="shouldShowAutocomplete"
@@ -26,7 +28,10 @@
       </div>
     </div>
     
-    <div *ngIf="showSuggestions && (suggestions.length > 0 || isLoading)" class="suggestions-dropdown">
+    <div *ngIf="showSuggestions && (suggestions.length > 0 || isLoading)" 
+         class="suggestions-dropdown"
+         [style.top.px]="dropdownPosition.top"
+         [style.left.px]="dropdownPosition.left">
       <div class="list-group">
         <div *ngIf="isLoading" class="list-group-item loading-item">
           <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
