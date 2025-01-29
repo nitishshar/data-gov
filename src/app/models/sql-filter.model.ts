@@ -25,11 +25,29 @@ export interface LogicalOperator {
   label: string;
 }
 
+export type FilterOutputFormat = 'sql' | 'ag-grid';
+
+export interface AgGridFilterModel {
+  filterType: 'text' | 'number' | 'date' | 'set';
+  type: string;
+  filter?: any;
+  values?: any[];
+  filterTo?: any;
+  operator?: 'AND' | 'OR';
+}
+
+export interface AgGridCompositeFilterModel {
+  filterType?: 'multi';
+  operator?: 'AND' | 'OR';
+  conditions?: AgGridFilterModel[];
+}
+
 export interface FilterConfig {
   operands: FilterOperand[];
   operators: FilterOperator[];
   logicalOperators: LogicalOperator[];
   showGeneratedSql?: boolean;
+  outputFormat?: FilterOutputFormat;
 }
 
 export interface FilterToken {

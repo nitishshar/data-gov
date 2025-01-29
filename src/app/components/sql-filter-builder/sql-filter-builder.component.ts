@@ -1,7 +1,16 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { FilterConfig, FilterToken, FilterSuggestion, FilterOperand, FilterOperator } from '../../models/sql-filter.model';
+import { 
+  FilterConfig, 
+  FilterToken, 
+  FilterSuggestion, 
+  FilterOperand, 
+  FilterOperator,
+  FilterOutputFormat,
+  AgGridFilterModel,
+  AgGridCompositeFilterModel
+} from '../../models/sql-filter.model';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
@@ -14,7 +23,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 })
 export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   @Input() config!: FilterConfig;
-  @Output() filterChange = new EventEmitter<string>();
+  @Output() filterChange = new EventEmitter<string | AgGridCompositeFilterModel>();
   @ViewChild('filterInput') filterInput!: ElementRef;
 
   inputValue = '';
@@ -32,6 +41,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   dropdownPosition = { top: 0, left: 0 };
   generatedSql = '';
   validationError: string | null = null;
+  outputFormat: 'sql' | 'ag-grid' = 'sql';
 
   private inputSubject = new Subject<string>();
   private subscription: Subscription | null = null;
@@ -789,94 +799,205 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     return filterGroups;
   }
 
-  private generateFilterObject() {
-    const filterGroups = this.groupFilterTokens();
-    
-    return {
-      filters: filterGroups.map(group => {
-        // Find the main components of the filter
-        const operand = group.find(t => t.type === 'operand');
-        const operator = group.find(t => t.type === 'operator');
-        const values = group.filter(t => t.type === 'value');
-        const logical = group.find(t => t.type === 'logical');
-        
-        return {
-          condition: group.map(token => ({
-            type: token.type,
-            value: token.value,
-            displayValue: token.displayValue || token.value
-          })),
-          summary: {
-            field: operand?.value,
-            fieldLabel: operand?.displayValue,
-            operator: operator?.value,
-            operatorLabel: operator?.displayValue,
-            values: values.map(v => ({
-              value: v.value,
-              displayValue: v.displayValue || v.value
-            })),
-            logicalOperator: logical?.value
-          }
-        };
-      }),
-      sql: this.generatedSql,
-      isValid: !this.validationError,
-      error: this.validationError,
-      currentState: {
-        currentOperand: this.currentOperand?.name,
-        currentOperator: this.currentOperator?.symbol,
-        isMultiSelectMode: this.isMultiSelectMode,
-        isAutocompleteMode: this.isAutocompleteMode,
-        bracketCount: this.bracketCount,
-        selectedValues: this.selectedValues
-      }
+  private generateAgGridFilter(filterGroups: FilterToken[][]): AgGridCompositeFilterModel {
+    if (filterGroups.length === 0) return { filterType: 'multi', conditions: [] };
+
+    const convertToAgGridType = (operator: string): string => {
+      const typeMap: { [key: string]: string } = {
+        '=': 'equals',
+        '!=': 'notEqual',
+        '>': 'greaterThan',
+        '>=': 'greaterThanOrEqual',
+        '<': 'lessThan',
+        '<=': 'lessThanOrEqual',
+        'LIKE': 'contains',
+        'NOT LIKE': 'notContains',
+        'IN': 'in',
+        'NOT IN': 'notIn'
+      };
+      return typeMap[operator] || operator;
     };
+
+    const createAgGridCondition = (group: FilterToken[]): AgGridFilterModel => {
+      const operand = group.find(t => t.type === 'operand');
+      const operator = group.find(t => t.type === 'operator');
+      const values = group.filter(t => t.type === 'value');
+      
+      const operandConfig = this.config.operands.find(op => op.name === operand?.value);
+      const filterType = operandConfig?.type === 'number' ? 'number' :
+                        operandConfig?.type === 'date' ? 'date' :
+                        operandConfig?.type === 'select' || operandConfig?.type === 'multiselect' ? 'set' :
+                        'text';
+
+      const condition: AgGridFilterModel = {
+        filterType,
+        type: convertToAgGridType(operator?.value || ''),
+        filter: values[0]?.value
+      };
+
+      // Handle IN operator
+      if (operator?.value === 'IN' || operator?.value === 'NOT IN') {
+        condition.values = values.map(v => v.value);
+        delete condition.filter;
+      }
+
+      // Add field name to condition
+      if (operand) {
+        (condition as any).field = operand.value;
+      }
+
+      return condition;
+    };
+
+    // Create the composite filter model
+    const result: AgGridCompositeFilterModel = {
+      filterType: 'multi',
+      conditions: []
+    };
+
+    let currentLogicalOperator: 'AND' | 'OR' | undefined;
+
+    // Process all groups
+    filterGroups.forEach((group, index) => {
+      const logical = group.find(t => t.type === 'logical');
+      const nonLogicalTokens = group.filter(t => t.type !== 'logical');
+
+      if (logical) {
+        currentLogicalOperator = logical.value as 'AND' | 'OR';
+      }
+
+      if (nonLogicalTokens.length > 0) {
+        const condition = createAgGridCondition(nonLogicalTokens);
+        result.conditions?.push(condition);
+
+        // Set the operator for the composite filter
+        if (index > 0 && currentLogicalOperator) {
+          result.operator = currentLogicalOperator;
+        }
+      }
+    });
+
+    return result;
   }
 
   private emitChange() {
     this.validationError = this.validateFilter();
+    const filterGroups = this.groupFilterTokens();
+    const agGridFilter = this.generateAgGridFilter(filterGroups);
     
-    if (this.tokens.length === 0) {
-      this.generatedSql = '';
-      this.filterChange.emit('');
-      console.log('Filter Object:', {
-        filters: [],
-        sql: '',
-        isValid: true,
-        error: null
-      });
-      return;
-    }
-
+    // Generate SQL
     let sql = '';
-    this.tokens.forEach((token, index) => {
-      if (token.type === 'logical') {
-        sql += ` ${token.value} `;
-      } else if (token.type === 'operand') {
-        sql += token.value;
-      } else if (token.type === 'operator') {
-        sql += token.value === ',' ? token.value : ` ${token.value} `;
-      } else if (token.type === 'value') {
-        const operand = this.tokens
-          .slice(0, index)
-          .reverse()
-          .find(t => t.type === 'operand');
-        
-        if (operand && this.config.operands.find(op => op.name === operand.value)?.type === 'text') {
-          sql += `'${token.value}'`;
-        } else {
+    if (this.tokens.length > 0) {
+      this.tokens.forEach((token, index) => {
+        if (token.type === 'logical') {
+          sql += ` ${token.value} `;
+        } else if (token.type === 'operand') {
+          sql += token.value;
+        } else if (token.type === 'operator') {
+          sql += token.value === ',' ? token.value : ` ${token.value} `;
+        } else if (token.type === 'value') {
+          const operand = this.tokens
+            .slice(0, index)
+            .reverse()
+            .find(t => t.type === 'operand');
+          
+          if (operand && this.config.operands.find(op => op.name === operand.value)?.type === 'text') {
+            sql += `'${token.value}'`;
+          } else {
+            sql += token.value;
+          }
+        } else if (token.type === 'bracket') {
           sql += token.value;
         }
-      } else if (token.type === 'bracket') {
-        sql += token.value;
-      }
-    });
-
+      });
+    }
     this.generatedSql = sql;
-    this.filterChange.emit(this.validationError ? '' : sql);
 
-    // Log the complete filter object with grouped filters
-    console.log('Filter Object:', this.generateFilterObject());
+    // Emit changes based on output format
+    if (this.outputFormat === 'sql') {
+      this.filterChange.emit(this.validationError ? '' : sql);
+    } else {
+      this.filterChange.emit(this.validationError ? { filterType: 'multi', conditions: [] } : agGridFilter);
+    }
+
+    // Create detailed filter object for logging
+    const completeFilterObject = {
+      rawTokens: this.tokens.map(token => ({
+        type: token.type,
+        value: token.value,
+        displayValue: token.displayValue,
+        operandType: token.operandType
+      })),
+      
+      parsedGroups: filterGroups.map(group => {
+        const operand = group.find(t => t.type === 'operand');
+        const operator = group.find(t => t.type === 'operator');
+        const values = group.filter(t => t.type === 'value');
+        const logical = group.find(t => t.type === 'logical');
+        const brackets = group.filter(t => t.type === 'bracket');
+        
+        return {
+          groupTokens: group,
+          parsed: {
+            field: operand ? {
+              name: operand.value,
+              displayName: operand.displayValue,
+              type: this.config.operands.find(op => op.name === operand.value)?.type
+            } : null,
+            operator: operator ? {
+              symbol: operator.value,
+              displayName: operator.displayValue
+            } : null,
+            values: values.map(v => ({
+              value: v.value,
+              displayValue: v.displayValue
+            })),
+            logicalOperator: logical?.value,
+            hasBrackets: brackets.length > 0,
+            brackets: brackets.map(b => b.value)
+          }
+        };
+      }),
+
+      outputs: {
+        sql: {
+          query: this.generatedSql,
+          isValid: !this.validationError
+        },
+        agGrid: {
+          filter: agGridFilter,
+          isValid: !this.validationError
+        }
+      },
+
+      state: {
+        validation: {
+          isValid: !this.validationError,
+          error: this.validationError
+        },
+        current: {
+          operand: this.currentOperand ? {
+            name: this.currentOperand.name,
+            label: this.currentOperand.label,
+            type: this.currentOperand.type
+          } : null,
+          operator: this.currentOperator ? {
+            symbol: this.currentOperator.symbol,
+            label: this.currentOperator.label
+          } : null,
+          bracketCount: this.bracketCount,
+          modes: {
+            isMultiSelectMode: this.isMultiSelectMode,
+            isAutocompleteMode: this.isAutocompleteMode
+          },
+          selectedValues: this.selectedValues
+        },
+        outputFormat: this.outputFormat
+      }
+    };
+
+    // Log the complete filter object
+    console.log('Complete Filter Object:', completeFilterObject);
   }
 
   updateDropdownPosition() {

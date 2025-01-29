@@ -6,7 +6,7 @@ import { ConfigBuilderComponent } from './config-builder/config-builder.componen
 import { LandingPageComponent } from './landing-page/landing-page.component';
 import { SquadDetailsComponent } from './squad-details/squad-details.component';
 import { SqlFilterBuilderComponent } from './components/sql-filter-builder/sql-filter-builder.component';
-import { FilterConfig, FilterOperand } from './models/sql-filter.model';
+import { FilterConfig, FilterOperand, AgGridCompositeFilterModel } from './models/sql-filter.model';
 import { Observable, map } from 'rxjs';
 import { MockDataService } from './services/mock-data.service';
 
@@ -154,9 +154,14 @@ export class AppComponent implements OnInit {
     private mockDataService: MockDataService
   ) {}
 
-  onFilterChange(sql: string) {
-    console.log('Generated SQL:', sql);
-    // Handle the SQL filter change here
+  onFilterChange(filter: string | AgGridCompositeFilterModel) {
+    if (typeof filter === 'string') {
+      // Handle SQL string
+      console.log('SQL Filter:', filter);
+    } else {
+      // Handle ag-Grid filter model
+      console.log('ag-Grid Filter:', filter);
+    }
   }
 
   ngOnInit() {
