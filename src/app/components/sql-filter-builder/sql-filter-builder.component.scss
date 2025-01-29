@@ -309,4 +309,21 @@
     border-radius: 2px;
     border: 1px solid #ddd;
   }
+}
+
+.sql-info {
+  display: flex;
+  align-items: center;
+  margin-left: 8px;
+  color: #6c757d;
+  cursor: help;
+
+  i {
+    font-size: 16px;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: #0d6efd;
+    }
+  }
 } 

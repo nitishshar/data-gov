@@ -25,6 +25,9 @@
             <span class="visually-hidden">Loading...</span>
           </div>
         </div>
+        <div *ngIf="showGeneratedSql && tokens.length > 0" class="sql-info">
+          <i class="bi bi-info-circle" [title]="'Generated SQL: ' + generatedSql"></i>
+        </div>
       </div>
     </div>
     
