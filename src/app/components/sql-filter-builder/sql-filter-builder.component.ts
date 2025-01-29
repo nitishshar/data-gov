@@ -721,12 +721,130 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     return null;
   }
 
+  private groupFilterTokens() {
+    const filterGroups = [];
+    let currentGroup: FilterToken[] = [];
+    let bracketStack = 0;
+    let inClauseActive = false;
+
+    for (let i = 0; i < this.tokens.length; i++) {
+      const token = this.tokens[i];
+
+      // Handle brackets
+      if (token.type === 'bracket') {
+        if (token.value === '(') {
+          bracketStack++;
+          // Start of IN clause
+          if (i > 0 && this.tokens[i - 1].type === 'operator' && this.tokens[i - 1].value === 'IN') {
+            inClauseActive = true;
+          }
+        } else {
+          bracketStack--;
+          // End of IN clause
+          if (inClauseActive && bracketStack === 0) {
+            inClauseActive = false;
+            currentGroup.push(token);
+            if (currentGroup.length > 0) {
+              filterGroups.push([...currentGroup]);
+              currentGroup = [];
+            }
+            continue;
+          }
+        }
+      }
+
+      // Add token to current group
+      currentGroup.push(token);
+
+      // Check if we should close the current group
+      if (bracketStack === 0 && !inClauseActive) {
+        if (
+          // Complete condition (operand-operator-value)
+          (token.type === 'value') ||
+          // Logical operator marks the end of a group
+          (token.type === 'logical') ||
+          // Last token
+          (i === this.tokens.length - 1)
+        ) {
+          if (currentGroup.length > 0) {
+            // Remove logical operator from current group and add it to the next group
+            if (token.type === 'logical') {
+              currentGroup.pop();
+            }
+            filterGroups.push([...currentGroup]);
+            currentGroup = [];
+            if (token.type === 'logical') {
+              currentGroup.push(token);
+            }
+          }
+        }
+      }
+    }
+
+    // Add any remaining tokens
+    if (currentGroup.length > 0) {
+      filterGroups.push(currentGroup);
+    }
+
+    return filterGroups;
+  }
+
+  private generateFilterObject() {
+    const filterGroups = this.groupFilterTokens();
+    
+    return {
+      filters: filterGroups.map(group => {
+        // Find the main components of the filter
+        const operand = group.find(t => t.type === 'operand');
+        const operator = group.find(t => t.type === 'operator');
+        const values = group.filter(t => t.type === 'value');
+        const logical = group.find(t => t.type === 'logical');
+        
+        return {
+          condition: group.map(token => ({
+            type: token.type,
+            value: token.value,
+            displayValue: token.displayValue || token.value
+          })),
+          summary: {
+            field: operand?.value,
+            fieldLabel: operand?.displayValue,
+            operator: operator?.value,
+            operatorLabel: operator?.displayValue,
+            values: values.map(v => ({
+              value: v.value,
+              displayValue: v.displayValue || v.value
+            })),
+            logicalOperator: logical?.value
+          }
+        };
+      }),
+      sql: this.generatedSql,
+      isValid: !this.validationError,
+      error: this.validationError,
+      currentState: {
+        currentOperand: this.currentOperand?.name,
+        currentOperator: this.currentOperator?.symbol,
+        isMultiSelectMode: this.isMultiSelectMode,
+        isAutocompleteMode: this.isAutocompleteMode,
+        bracketCount: this.bracketCount,
+        selectedValues: this.selectedValues
+      }
+    };
+  }
+
   private emitChange() {
     this.validationError = this.validateFilter();
     
     if (this.tokens.length === 0) {
       this.generatedSql = '';
       this.filterChange.emit('');
+      console.log('Filter Object:', {
+        filters: [],
+        sql: '',
+        isValid: true,
+        error: null
+      });
       return;
     }
 
@@ -756,6 +874,9 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
 
     this.generatedSql = sql;
     this.filterChange.emit(this.validationError ? '' : sql);
+
+    // Log the complete filter object with grouped filters
+    console.log('Filter Object:', this.generateFilterObject());
   }
 
   updateDropdownPosition() {
