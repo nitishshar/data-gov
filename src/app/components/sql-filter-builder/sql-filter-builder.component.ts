@@ -444,6 +444,11 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
         this.tokens.pop();
       }
 
+      // Reset bracketCount if all tokens are removed
+      if (this.tokens.length === 0) {
+        this.bracketCount = 0;
+      }
+
       this.resetCurrentState();
       this.emitChange();
       this.updateSuggestionsForInput(this.inputValue);
