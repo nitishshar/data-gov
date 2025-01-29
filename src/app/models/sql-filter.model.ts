@@ -27,19 +27,42 @@ export interface LogicalOperator {
 
 export type FilterOutputFormat = 'sql' | 'ag-grid';
 
-export interface AgGridFilterModel {
-  filterType: 'text' | 'number' | 'date' | 'set';
-  type: string;
-  filter?: any;
-  values?: any[];
-  filterTo?: any;
-  operator?: 'AND' | 'OR';
+// Based on ag-Grid's official filter models
+export interface AgGridTextFilterModel {
+  type: 'text';
+  filter?: string;
+  filterType: 'contains' | 'notContains' | 'equals' | 'notEqual' | 'startsWith' | 'endsWith';
+  field: string;
 }
 
+export interface AgGridNumberFilterModel {
+  type: 'number';
+  filter?: number;
+  filterTo?: number;
+  filterType: 'equals' | 'notEqual' | 'greaterThan' | 'greaterThanOrEqual' | 'lessThan' | 'lessThanOrEqual' | 'inRange';
+  field: string;
+}
+
+export interface AgGridDateFilterModel {
+  type: 'date';
+  dateFrom?: string | Date;
+  dateTo?: string | Date;
+  filterType: 'equals' | 'notEqual' | 'greaterThan' | 'lessThan' | 'inRange';
+  field: string;
+}
+
+export interface AgGridSetFilterModel {
+  type: 'set';
+  values: string[];
+  field: string;
+}
+
+export type AgGridFilterModel = AgGridTextFilterModel | AgGridNumberFilterModel | AgGridDateFilterModel | AgGridSetFilterModel;
+
 export interface AgGridCompositeFilterModel {
-  filterType?: 'multi';
+  filterType: 'multi';
   operator?: 'AND' | 'OR';
-  conditions?: AgGridFilterModel[];
+  conditions: AgGridFilterModel[];
 }
 
 export interface FilterConfig {

@@ -9,7 +9,9 @@ import {
   FilterOperator,
   FilterOutputFormat,
   AgGridFilterModel,
-  AgGridCompositeFilterModel
+  AgGridCompositeFilterModel,
+  AgGridNumberFilterModel,
+  AgGridDateFilterModel
 } from '../../models/sql-filter.model';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
@@ -799,54 +801,122 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     return filterGroups;
   }
 
+  private convertToAgGridFilterType(operandType: string, operator: string): any {
+    // Text filters
+    if (operandType === 'text') {
+      switch (operator) {
+        case '=': return 'equals' as const;
+        case '!=': return 'notEqual' as const;
+        case 'LIKE': return 'contains' as const;
+        case 'NOT LIKE': return 'notContains' as const;
+        case 'STARTS WITH': return 'startsWith' as const;
+        case 'ENDS WITH': return 'endsWith' as const;
+        default: return 'equals' as const;
+      }
+    }
+    // Number filters
+    else if (operandType === 'number') {
+      switch (operator) {
+        case '=': return 'equals' as const;
+        case '!=': return 'notEqual' as const;
+        case '>': return 'greaterThan' as const;
+        case '>=': return 'greaterThanOrEqual' as const;
+        case '<': return 'lessThan' as const;
+        case '<=': return 'lessThanOrEqual' as const;
+        case 'BETWEEN': return 'inRange' as const;
+        default: return 'equals' as const;
+      }
+    }
+    // Date filters
+    else if (operandType === 'date') {
+      switch (operator) {
+        case '=': return 'equals' as const;
+        case '!=': return 'notEqual' as const;
+        case '>': return 'greaterThan' as const;
+        case '<': return 'lessThan' as const;
+        case 'BETWEEN': return 'inRange' as const;
+        default: return 'equals' as const;
+      }
+    }
+    return 'equals' as const;
+  }
+
   private generateAgGridFilter(filterGroups: FilterToken[][]): AgGridCompositeFilterModel {
     if (filterGroups.length === 0) return { filterType: 'multi', conditions: [] };
-
-    const convertToAgGridType = (operator: string): string => {
-      const typeMap: { [key: string]: string } = {
-        '=': 'equals',
-        '!=': 'notEqual',
-        '>': 'greaterThan',
-        '>=': 'greaterThanOrEqual',
-        '<': 'lessThan',
-        '<=': 'lessThanOrEqual',
-        'LIKE': 'contains',
-        'NOT LIKE': 'notContains',
-        'IN': 'in',
-        'NOT IN': 'notIn'
-      };
-      return typeMap[operator] || operator;
-    };
 
     const createAgGridCondition = (group: FilterToken[]): AgGridFilterModel => {
       const operand = group.find(t => t.type === 'operand');
       const operator = group.find(t => t.type === 'operator');
       const values = group.filter(t => t.type === 'value');
       
-      const operandConfig = this.config.operands.find(op => op.name === operand?.value);
-      const filterType = operandConfig?.type === 'number' ? 'number' :
-                        operandConfig?.type === 'date' ? 'date' :
-                        operandConfig?.type === 'select' || operandConfig?.type === 'multiselect' ? 'set' :
-                        'text';
+      if (!operand) throw new Error('No operand found in filter group');
+      
+      const operandConfig = this.config.operands.find(op => op.name === operand.value);
+      if (!operandConfig) throw new Error(`No operand config found for ${operand.value}`);
 
-      const condition: AgGridFilterModel = {
-        filterType,
-        type: convertToAgGridType(operator?.value || ''),
+      // Handle Set Filter (IN operator)
+      if (operator?.value === 'IN' || operator?.value === 'NOT IN' || 
+          operandConfig.type === 'select' || operandConfig.type === 'multiselect') {
+        return {
+          type: 'set',
+          field: operand.value,
+          values: values.map(v => v.value)
+        };
+      }
+
+      // Handle Text Filter
+      if (operandConfig.type === 'text' || operandConfig.type === 'autocomplete') {
+        return {
+          type: 'text',
+          field: operand.value,
+          filterType: this.convertToAgGridFilterType('text', operator?.value || '='),
+          filter: values[0]?.value
+        };
+      }
+
+      // Handle Number Filter
+      if (operandConfig.type === 'number') {
+        const numberFilter: AgGridNumberFilterModel = {
+          type: 'number',
+          field: operand.value,
+          filterType: this.convertToAgGridFilterType('number', operator?.value || '='),
+          filter: Number(values[0]?.value)
+        };
+
+        // Handle range filters if needed
+        if (operator?.value === 'BETWEEN' && values.length === 2) {
+          numberFilter.filterType = 'inRange';
+          numberFilter.filterTo = Number(values[1].value);
+        }
+
+        return numberFilter;
+      }
+
+      // Handle Date Filter
+      if (operandConfig.type === 'date') {
+        const dateFilter: AgGridDateFilterModel = {
+          type: 'date',
+          field: operand.value,
+          filterType: this.convertToAgGridFilterType('date', operator?.value || '='),
+          dateFrom: values[0]?.value
+        };
+
+        // Handle range filters if needed
+        if (operator?.value === 'BETWEEN' && values.length === 2) {
+          dateFilter.filterType = 'inRange';
+          dateFilter.dateTo = values[1].value;
+        }
+
+        return dateFilter;
+      }
+
+      // Default to text filter if type is not recognized
+      return {
+        type: 'text',
+        field: operand.value,
+        filterType: 'equals',
         filter: values[0]?.value
       };
-
-      // Handle IN operator
-      if (operator?.value === 'IN' || operator?.value === 'NOT IN') {
-        condition.values = values.map(v => v.value);
-        delete condition.filter;
-      }
-
-      // Add field name to condition
-      if (operand) {
-        (condition as any).field = operand.value;
-      }
-
-      return condition;
     };
 
     // Create the composite filter model
@@ -867,12 +937,16 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       }
 
       if (nonLogicalTokens.length > 0) {
-        const condition = createAgGridCondition(nonLogicalTokens);
-        result.conditions?.push(condition);
+        try {
+          const condition = createAgGridCondition(nonLogicalTokens);
+          result.conditions.push(condition);
 
-        // Set the operator for the composite filter
-        if (index > 0 && currentLogicalOperator) {
-          result.operator = currentLogicalOperator;
+          // Set the operator for the composite filter
+          if (index > 0 && currentLogicalOperator) {
+            result.operator = currentLogicalOperator;
+          }
+        } catch (error) {
+          console.error('Error creating ag-Grid filter condition:', error);
         }
       }
     });
