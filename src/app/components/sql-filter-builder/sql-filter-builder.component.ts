@@ -1208,7 +1208,11 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
             .reverse()
             .find(t => t.type === 'operator');
           
-          if (operandConfig?.type === 'text') {
+          // Handle string values (text, select, multiselect, autocomplete)
+          if (operandConfig?.type === 'text' || 
+              operandConfig?.type === 'select' || 
+              operandConfig?.type === 'multiselect' || 
+              operandConfig?.type === 'autocomplete') {
             // Handle LIKE patterns
             if (operator?.value === 'LIKE' || operator?.value === 'NOT LIKE') {
               sql += `'%${token.value}%'`; // Wrap with % for contains
@@ -1216,10 +1220,16 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
               sql += `'${token.value}%'`; // Add % at the end for starts with
             } else if (operator?.value === 'ENDS WITH') {
               sql += `'%${token.value}'`; // Add % at the start for ends with
+            } else if (operator?.value === 'IN' || operator?.value === 'NOT IN') {
+              sql += `'${token.value}'`; // Just wrap in quotes for IN/NOT IN
             } else {
-              sql += `'${token.value}'`;
+              sql += `'${token.value}'`; // Default string wrapping
             }
+          } else if (operandConfig?.type === 'date') {
+            // Handle date values
+            sql += `'${token.value}'`; // Dates should also be quoted
           } else {
+            // Numbers and other types
             sql += token.value;
           }
         } else if (token.type === 'bracket') {
