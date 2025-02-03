@@ -427,7 +427,6 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
 
     this.tokens.push(token);
     this.inputValue = '';
-    this.showSuggestions = false;
     this.selectedSuggestionIndex = -1;
     
     if (suggestion.type === 'operand') {
@@ -435,6 +434,17 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       this.currentOperator = null;
       this.isAutocompleteMode = false;
       this.isMultiSelectMode = false;
+      // Automatically show applicable operators
+      this.showSuggestions = true;
+      const applicableOperators = this.config.operators
+        .filter(op => op.applicableTypes.includes(this.currentOperand!.type))
+        .map(op => ({
+          type: 'operator' as const,
+          value: op.symbol,
+          label: op.label,
+          displayValue: op.label
+        }));
+      this.suggestions = applicableOperators;
     } else if (suggestion.type === 'operator') {
       this.currentOperator = this.config.operators.find(op => op.symbol === suggestion.value) || null;
       if (this.shouldShowValueSelect) {
@@ -449,17 +459,18 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       this.currentOperator = null;
       this.isAutocompleteMode = false;
       this.isMultiSelectMode = false;
+      this.showSuggestions = false;
     } else if (suggestion.type === 'logical') {
       this.currentOperand = null;
       this.currentOperator = null;
       this.isAutocompleteMode = false;
       this.isMultiSelectMode = false;
+      this.showSuggestions = false;
     }
 
     if (!this.shouldShowValueSelect && !this.shouldShowAutocomplete) {
-      this.updateSuggestionsForInput('');
+      this.emitChange();
     }
-    this.emitChange();
   }
 
   /**
@@ -578,7 +589,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
         this.isMultiSelectMode = false;
         this.isAutocompleteMode = false;
         this.selectedValues = [];
-      } else if (lastToken.type === 'bracket' && lastToken.value === ')' && this.tokens.length > 1) {
+      } else if (lastToken.type === 'bracket' && lastToken.value === ')') {
         // Check if this is part of an IN clause
         const prevTokens = this.tokens.slice(0, -1);
         const inOperatorIndex = prevTokens.findIndex(t => t.type === 'operator' && t.value === 'IN');
