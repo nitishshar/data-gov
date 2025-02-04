@@ -38,7 +38,7 @@ import { FleetDataService } from '../../services/fleet-management.service';
         </mat-card-header>
       </mat-card>
 
-      <form [formGroup]="landingPageForm" (ngSubmit)="saveLandingPage()">
+        <form [formGroup]="landingPageForm" (ngSubmit)="saveLandingPage()">
         <!-- Hero Section -->
         <mat-expansion-panel expanded="true">
           <mat-expansion-panel-header>
@@ -50,19 +50,19 @@ import { FleetDataService } from '../../services/fleet-management.service';
 
           <div class="form-row">
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Fleet Name</mat-label>
-              <input matInput formControlName="name" placeholder="Enter fleet name">
+                    <mat-label>Fleet Name</mat-label>
+                    <input matInput formControlName="name" placeholder="Enter fleet name">
               <mat-hint>This will be displayed as the main title on your landing page</mat-hint>
-            </mat-form-field>
+                  </mat-form-field>
           </div>
           <div class="form-row">
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Mission Statement</mat-label>
+                    <mat-label>Mission Statement</mat-label>
               <textarea matInput formControlName="missionStatement" rows="4" 
-                        placeholder="Enter your mission statement"></textarea>
+                              placeholder="Enter your mission statement"></textarea>
               <mat-hint>Describe your fleet's mission and values</mat-hint>
-            </mat-form-field>
-          </div>
+                  </mat-form-field>
+                </div>
         </mat-expansion-panel>
 
         <!-- Objectives Section -->
@@ -74,9 +74,9 @@ import { FleetDataService } from '../../services/fleet-management.service';
             </mat-panel-title>
             <mat-panel-description>
               <button mat-raised-button color="primary" type="button" (click)="$event.stopPropagation(); addObjective()">
-                <mat-icon>add</mat-icon>
-                Add Objective
-              </button>
+                    <mat-icon>add</mat-icon>
+                    Add Objective
+                  </button>
             </mat-panel-description>
           </mat-expansion-panel-header>
 
@@ -103,7 +103,7 @@ import { FleetDataService } from '../../services/fleet-management.service';
                          placeholder="Enter objective description"></textarea>
               </mat-form-field>
             </div>
-          </div>
+                </div>
         </mat-expansion-panel>
 
         <!-- Tools Section -->
@@ -125,7 +125,7 @@ import { FleetDataService } from '../../services/fleet-management.service';
                  [formGroupName]="i" 
                  class="array-item">
               <div class="form-row">
-                <mat-form-field appearance="outline">
+                    <mat-form-field appearance="outline">
                   <mat-label>Tool Name</mat-label>
                   <input matInput formControlName="name" placeholder="Enter tool name">
                 </mat-form-field>
@@ -135,7 +135,7 @@ import { FleetDataService } from '../../services/fleet-management.service';
                 </mat-form-field>
                 <button mat-icon-button color="warn" type="button" (click)="removeTool(i)">
                   <mat-icon>delete</mat-icon>
-                </button>
+                      </button>
               </div>
               <div class="form-row">
                 <mat-form-field appearance="outline" class="full-width">
@@ -148,10 +148,10 @@ import { FleetDataService } from '../../services/fleet-management.service';
                 <mat-form-field appearance="outline" class="full-width">
                   <mat-label>Link</mat-label>
                   <input matInput formControlName="link" placeholder="Enter tool link">
-                </mat-form-field>
+                    </mat-form-field>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
         </mat-expansion-panel>
 
         <!-- Programs Section -->
@@ -183,8 +183,8 @@ import { FleetDataService } from '../../services/fleet-management.service';
                 </mat-form-field>
                 <button mat-icon-button color="warn" type="button" (click)="removeProgram(i)">
                   <mat-icon>delete</mat-icon>
-                </button>
-              </div>
+                  </button>
+                </div>
               <div class="form-row">
                 <mat-form-field appearance="outline" class="full-width">
                   <mat-label>Description</mat-label>
@@ -218,7 +218,7 @@ import { FleetDataService } from '../../services/fleet-management.service';
           </mat-expansion-panel-header>
           <div formArrayName="squads">
             <div *ngFor="let squad of squadsArray.controls; let i = index" 
-                 [formGroupName]="i" 
+                           [formGroupName]="i"
                  class="array-item">
               <div class="form-row">
                 <mat-form-field appearance="outline">
@@ -231,8 +231,8 @@ import { FleetDataService } from '../../services/fleet-management.service';
                 </mat-form-field>
                 <button mat-icon-button color="warn" type="button" (click)="removeSquad(i)">
                   <mat-icon>delete</mat-icon>
-                </button>
-              </div>
+                      </button>
+                    </div>
               <div class="form-row">
                 <mat-form-field appearance="outline" class="full-width">
                   <mat-label>Description</mat-label>
@@ -269,28 +269,28 @@ import { FleetDataService } from '../../services/fleet-management.service';
                  [formGroupName]="i" 
                  class="array-item">
               <div class="form-row">
-                <mat-form-field appearance="outline">
-                  <mat-label>Name</mat-label>
+                      <mat-form-field appearance="outline">
+                        <mat-label>Name</mat-label>
                   <input matInput formControlName="name" placeholder="Enter leader name">
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <mat-label>Title</mat-label>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline">
+                        <mat-label>Title</mat-label>
                   <input matInput formControlName="title" placeholder="Enter leader title">
-                </mat-form-field>
+                      </mat-form-field>
                 <button mat-icon-button color="warn" type="button" (click)="removeLeader(i)">
                   <mat-icon>delete</mat-icon>
                 </button>
               </div>
               <div class="form-row">
-                <mat-form-field appearance="outline">
-                  <mat-label>Email</mat-label>
+                      <mat-form-field appearance="outline">
+                        <mat-label>Email</mat-label>
                   <input matInput formControlName="email" type="email" placeholder="Enter leader email">
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                  <mat-label>Department</mat-label>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline">
+                        <mat-label>Department</mat-label>
                   <input matInput formControlName="department" placeholder="Enter leader department">
-                </mat-form-field>
-              </div>
+                      </mat-form-field>
+                    </div>
               <div class="form-row">
                 <mat-form-field appearance="outline">
                   <mat-label>Phone</mat-label>
@@ -404,7 +404,7 @@ import { FleetDataService } from '../../services/fleet-management.service';
             Save Changes
           </button>
         </div>
-      </form>
+        </form>
     </div>
   `,
   styles: [`
@@ -468,7 +468,7 @@ import { FleetDataService } from '../../services/fleet-management.service';
 
       .mat-mdc-form-field {
         flex: 1;
-
+        font-size: 14px;
         &.color-field {
           width: 120px;
           flex: 0 0 auto;
@@ -568,7 +568,7 @@ import { FleetDataService } from '../../services/fleet-management.service';
           
           &.mdc-floating-label--float-above {
             top: 10px;
-            transform: translateY(-160%) scale(0.75);
+            transform: translateY(-5px) scale(0.75) !important;
           }
         }
 
@@ -695,7 +695,7 @@ import { FleetDataService } from '../../services/fleet-management.service';
 })
 export class LandingPageAdminComponent implements OnInit {
   landingPageForm: FormGroup;
-  
+
   constructor(
     private fb: FormBuilder,
     private fleetDataService: FleetDataService,
