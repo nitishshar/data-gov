@@ -555,20 +555,21 @@ import { FleetDataService } from '../../services/fleet-management.service';
         }
 
         .mat-mdc-form-field-infix {
-          padding: 8px 0;
+          padding: 5px !important;
           width: auto;
           min-height: 48px;
         }
 
         .mdc-floating-label {
           color: #009bda !important;
-          top: 33px;
+          top: 33px; 
+          font-size: 16px !important;
           transform-origin: left top;
           color: rgba(0, 0, 0, 0.6);
           
           &.mdc-floating-label--float-above {
             top: 10px;
-            transform: translateY(-5px) scale(0.75) !important;
+            transform: translateY(-5px) scale(0.85) !important;
           }
         }
 
