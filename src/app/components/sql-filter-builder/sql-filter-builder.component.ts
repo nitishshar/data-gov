@@ -424,6 +424,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       this.tokens.push(token);
       this.showSuggestions = true;
       this.updateSuggestionsForInput('');
+      setTimeout(() => this.updateDropdownPosition());
       return;
     }
 
@@ -490,14 +491,17 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
           displayValue: op.label
         }));
       this.suggestions = applicableOperators;
+      setTimeout(() => this.updateDropdownPosition());
     } else if (suggestion.type === 'operator') {
       this.currentOperator = this.config.operators.find(op => op.symbol === suggestion.value) || null;
       if (this.shouldShowValueSelect) {
         this.showSuggestions = true;
         this.updateSuggestionsForInput('');
+        setTimeout(() => this.updateDropdownPosition());
       } else if (this.shouldShowAutocomplete) {
         this.isAutocompleteMode = true;
         this.showSuggestions = true;
+        setTimeout(() => this.updateDropdownPosition());
       } else {
         this.showSuggestions = false;
       }
@@ -513,6 +517,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
         label: op.label,
         displayValue: op.label
       }));
+      setTimeout(() => this.updateDropdownPosition());
     } else if (suggestion.type === 'logical') {
       this.currentOperand = null;
       this.currentOperator = null;
@@ -520,6 +525,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       this.isMultiSelectMode = false;
       this.showSuggestions = true;
       this.updateSuggestionsForInput('');
+      setTimeout(() => this.updateDropdownPosition());
     }
 
     if (!this.shouldShowValueSelect && !this.shouldShowAutocomplete) {
@@ -685,7 +691,9 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
           this.updateSuggestionsForInput('');
           
           // Update dropdown position after suggestions are shown
-          this.updateDropdownPosition();
+          setTimeout(() => {
+            this.updateDropdownPosition();
+          });
         }, 150);
 
         this.emitChange();
@@ -889,6 +897,24 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
             label: opt.label,
             displayValue: opt.label
           }));
+      } else if (this.currentOperand.optionsLoader) {
+        // Load options for select fields with optionsLoader
+        this.isLoading = true;
+        this.currentOperand.optionsLoader(lowercaseInput).subscribe(
+          options => {
+            this.suggestions = options.map(opt => ({
+              type: 'value' as const,
+              value: opt.value,
+              label: opt.label,
+              displayValue: opt.label
+            }));
+            this.isLoading = false;
+          },
+          error => {
+            console.error('Error loading options:', error);
+            this.isLoading = false;
+          }
+        );
       }
       return;
     }
