@@ -951,13 +951,14 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
 
     for (let i = 0; i < this.tokens.length; i++) {
       const token = this.tokens[i];
+      const isLastToken = i === this.tokens.length - 1;
 
       // Track bracket count
       if (this.isBracketToken(token)) {
         if (this.isOpenBracket(token)) {
           openBrackets++;
           // Check if this is part of an IN clause
-          if (lastToken && this.isOperatorToken(lastToken) && lastToken.value === 'IN') {
+          if (lastToken && this.isOperatorToken(lastToken) && (lastToken.value === 'IN' || lastToken.value === 'NOT IN')) {
             inClauseActive = true;
           }
         } else if (this.isCloseBracket(token)) {
@@ -1006,9 +1007,9 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
 
         // After an operator, handle IN operator specially
         if (this.isOperatorToken(lastToken)) {
-          if (lastToken.value === 'IN') {
+          if (lastToken.value === 'IN' || lastToken.value === 'NOT IN') {
             if (!this.isOpenBracket(token)) {
-              return 'After IN operator, an opening bracket is expected';
+              return 'After IN/NOT IN operator, an opening bracket is expected';
             }
           } else if (!inClauseActive && !this.isValueToken(token)) {
             return 'After an operator, a value is expected';
@@ -1025,7 +1026,8 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
           }
         }
         // After a value outside IN clause, only logical operators or closing brackets are allowed
-        else if (this.isValueToken(lastToken) && !inClauseActive) {
+        // unless it's the last token in the sequence
+        else if (this.isValueToken(lastToken) && !inClauseActive && !isLastToken) {
           const isValidNextToken = 
             this.isLogicalToken(token) || 
             this.isCloseBracket(token);
@@ -1192,7 +1194,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   private generateAgGridFilter(filterGroups: FilterToken[][]): AgGridCompositeFilterModel {
     if (filterGroups.length === 0) return { filterType: 'multi', conditions: [] };
 
-    const createAgGridCondition = (group: FilterToken[]): AgGridFilterModel => {
+    const createAgGridCondition = (group: FilterToken[]): AgGridFilterModel | AgGridCompositeFilterModel => {
       const operand = group.find(t => t.type === 'operand');
       const operator = group.find(t => t.type === 'operator');
       const values = group.filter(t => t.type === 'value');
@@ -1201,6 +1203,33 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       
       const operandConfig = this.config.operands.find(op => op.name === operand.value);
       if (!operandConfig) throw new Error(`No operand config found for ${operand.value}`);
+
+      // Handle Set Filter (IN, NOT IN, and != operators for select/multiselect)
+      if (operator?.value === 'IN' || operator?.value === 'NOT IN' || 
+          operator?.value === '!=' && (operandConfig.type === 'select' || operandConfig.type === 'multiselect') ||
+          operandConfig.type === 'select' || operandConfig.type === 'multiselect') {
+        
+        // For NOT IN and != operators, create a composite filter with notEqual conditions
+        if (operator?.value === 'NOT IN' || operator?.value === '!=') {
+          const notEqualFilter: AgGridCompositeFilterModel = {
+            filterType: 'multi',
+            operator: 'AND',
+            conditions: values.map(v => ({
+              type: 'text',
+              field: operand.value,
+              filterType: 'notEqual',
+              filter: v.value
+            }))
+          };
+          return notEqualFilter;
+        }
+        // For regular IN operator and equals
+        return {
+          type: 'set',
+          field: operand.value,
+          values: values.map(v => v.value)
+        };
+      }
 
       // Handle Text Filter with LIKE operators
       if (operandConfig.type === 'text' || operandConfig.type === 'autocomplete') {
@@ -1227,16 +1256,6 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
           field: operand.value,
           filterType,
           filter: filterValue
-        };
-      }
-
-      // Handle Set Filter (IN operator)
-      if (operator?.value === 'IN' || operator?.value === 'NOT IN' || 
-          operandConfig.type === 'select' || operandConfig.type === 'multiselect') {
-        return {
-          type: 'set',
-          field: operand.value,
-          values: values.map(v => v.value)
         };
       }
 
@@ -1305,7 +1324,12 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       if (nonLogicalTokens.length > 0) {
         try {
           const condition = createAgGridCondition(nonLogicalTokens);
-          result.conditions.push(condition);
+          // Handle nested composite filters (like NOT IN)
+          if ('filterType' in condition && condition.filterType === 'multi') {
+            result.conditions.push(...condition.conditions);
+          } else {
+            result.conditions.push(condition as AgGridFilterModel);
+          }
 
           // Set the operator for the composite filter
           if (index > 0 && currentLogicalOperator) {
