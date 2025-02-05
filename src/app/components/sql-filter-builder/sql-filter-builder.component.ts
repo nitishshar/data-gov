@@ -459,7 +459,14 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       this.currentOperator = null;
       this.isAutocompleteMode = false;
       this.isMultiSelectMode = false;
-      this.showSuggestions = false;
+      // Automatically show logical operators after a value is selected
+      this.showSuggestions = true;
+      this.suggestions = this.config.logicalOperators.map(op => ({
+        type: 'logical' as const,
+        value: op.value,
+        label: op.label,
+        displayValue: op.label
+      }));
     } else if (suggestion.type === 'logical') {
       this.currentOperand = null;
       this.currentOperator = null;
@@ -846,80 +853,97 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
    * @example Checks for incomplete expressions and bracket matching
    */
   private validateFilter(): string | null {
-    // Check for unclosed brackets
-    if (this.bracketCount > 0) {
-      return 'Missing closing bracket )';
-    }
-
-    // Check for incomplete expression
     if (this.tokens.length === 0) {
-      return null; // Empty filter is valid
+      return null;
     }
 
-    const lastToken = this.tokens[this.tokens.length - 1];
-    
-    // Check if expression ends with operator
-    if (lastToken.type === 'operator' && lastToken.value !== ',') {
-      return 'Incomplete expression: operator needs a value';
-    }
+    let openBrackets = 0;
+    let lastToken: FilterToken | null = null;
+    let operandCount = 0;
+    let operatorCount = 0;
+    let valueCount = 0;
 
-    // Check if expression ends with operand
-    if (lastToken.type === 'operand') {
-      return 'Incomplete expression: operand needs an operator';
-    }
-
-    // Check if expression ends with logical operator
-    if (lastToken.type === 'logical') {
-      return 'Incomplete expression: logical operator needs a condition';
-    }
-
-    // Check for empty brackets and incomplete logical operators
     for (let i = 0; i < this.tokens.length; i++) {
       const token = this.tokens[i];
-      const nextToken = i < this.tokens.length - 1 ? this.tokens[i + 1] : null;
 
-      // Check for empty brackets
-      if (token.type === 'bracket' && token.value === '(' && nextToken?.type === 'bracket' && nextToken.value === ')') {
-        return 'Empty brackets are not allowed';
-      }
-
-      // Check for logical operators followed by invalid tokens
-      if (token.type === 'logical') {
-        if (!nextToken) {
-          return `Incomplete expression: ${token.value} needs a condition`;
-        }
-        // Only allow operands or opening brackets after logical operators
-        if (nextToken.type !== 'operand' && !(nextToken.type === 'bracket' && nextToken.value === '(')) {
-          return `Invalid expression after ${token.value}: expected column name or opening bracket`;
-        }
-      }
-    }
-
-    // Check for missing values in IN clause
-    let inOperatorIndex = -1;
-    for (let i = 0; i < this.tokens.length; i++) {
-      const token = this.tokens[i];
-      if (token.type === 'operator' && token.value === 'IN') {
-        inOperatorIndex = i;
-      } else if (inOperatorIndex !== -1) {
-        // Check if we have proper IN clause structure
-        if (i === inOperatorIndex + 1 && token.type !== 'bracket') {
-          return 'IN operator must be followed by opening bracket';
-        }
-        if (token.type === 'bracket' && token.value === ')') {
-          // Check if we have any values between brackets
-          const hasValues = this.tokens
-            .slice(inOperatorIndex + 2, i)
-            .some(t => t.type === 'value');
-          if (!hasValues) {
-            return 'IN clause must contain at least one value';
+      // Track bracket count
+      if (token.type === 'bracket') {
+        if (token.value === '(') {
+          openBrackets++;
+        } else {
+          openBrackets--;
+          if (openBrackets < 0) {
+            return 'Unmatched closing bracket';
           }
-          inOperatorIndex = -1;
         }
       }
+
+      // Validate token sequence
+      if (lastToken) {
+        // After a closing bracket, only logical operators or closing brackets are allowed
+        if (lastToken.value === ')') {
+          if (!['logical', 'bracket'].includes(token.type) || (token.type === 'bracket' && token.value === '(')) {
+            return 'After a closing bracket, only logical operators or another closing bracket are allowed';
+          }
+        }
+
+        // After a logical operator, only operands or opening brackets are allowed
+        if (lastToken.type === 'logical') {
+          if (!['operand', 'bracket'].includes(token.type) || (token.type === 'bracket' && token.value === ')')) {
+            return 'After a logical operator, an operand or opening bracket is expected';
+          }
+        }
+
+        // After an operand, only operators are allowed
+        if (lastToken.type === 'operand') {
+          if (token.type !== 'operator') {
+            return 'After an operand, an operator is expected';
+          }
+        }
+
+        // After an operator, only values are allowed
+        if (lastToken.type === 'operator') {
+          if (token.type !== 'value') {
+            return 'After an operator, a value is expected';
+          }
+        }
+
+        // After a value, only logical operators or closing brackets are allowed
+        if (lastToken.type === 'value') {
+          if (!['logical', 'bracket'].includes(token.type) || (token.type === 'bracket' && token.value === '(')) {
+            return 'After a value, a logical operator or closing bracket is expected';
+          }
+        }
+      }
+
+      // Track operand-operator-value groups
+      if (token.type === 'operand') operandCount++;
+      if (token.type === 'operator') operatorCount++;
+      if (token.type === 'value') {
+        valueCount++;
+        // Check if we have a complete group (operand-operator-value)
+        if (operandCount === operatorCount && operandCount === valueCount) {
+          // If this is not the last token, the next token must be a logical operator
+          if (i < this.tokens.length - 1) {
+            const nextToken = this.tokens[i + 1];
+            if (nextToken.type !== 'logical' && !(nextToken.type === 'bracket' && nextToken.value === ')')) {
+              return 'After a complete condition (operand-operator-value), a logical operator or closing bracket is expected';
+            }
+          }
+        }
+      }
+
+      lastToken = token;
     }
-    if (inOperatorIndex !== -1) {
-      return 'Incomplete IN clause';
+
+    // Check for unclosed brackets
+    if (openBrackets > 0) {
+      return 'Unclosed opening bracket';
+    }
+
+    // Check for incomplete conditions
+    if (operandCount !== operatorCount || operatorCount !== valueCount) {
+      return 'Incomplete condition';
     }
 
     return null;
