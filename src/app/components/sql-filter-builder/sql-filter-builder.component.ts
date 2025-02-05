@@ -652,30 +652,42 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       }
 
       if (inOperatorIndex !== -1) {
+        // First close all suggestions and clear states
+        this.showSuggestions = false;
+        this.suggestions = [];
+        this.selectedValues = [];
+        this.inputValue = '';
+
         // Remove everything after the IN operator
         this.tokens = this.tokens.slice(0, inOperatorIndex + 1);
         
-        // Keep the IN operator and maintain multiselect mode
+        // Keep the IN operator and get operand info
         const inOperator = this.tokens[inOperatorIndex];
         this.currentOperator = this.config.operators.find(op => op.symbol === inOperator.value) || null;
         
-        // Get the operand for showing value suggestions
         const operandToken = this.tokens[inOperatorIndex - 1];
         if (this.isOperandToken(operandToken)) {
           this.currentOperand = this.config.operands.find(op => op.name === operandToken.value) || null;
-          if (this.currentOperand && this.currentOperand.options) {
-            this.suggestions = this.currentOperand.options.map(opt => ({
-              type: 'value',
-              value: opt.value,
-              label: opt.label,
-              displayValue: opt.label
-            }));
-          }
         }
 
-        this.isMultiSelectMode = true;
-        this.showSuggestions = true;
-        this.selectedValues = [];
+        // Focus input and clear it
+        if (this.filterInput?.nativeElement) {
+          this.filterInput.nativeElement.value = '';
+          this.filterInput.nativeElement.focus();
+        }
+
+        // After a brief delay, show appropriate suggestions
+        setTimeout(() => {
+          this.isMultiSelectMode = true;
+          this.showSuggestions = true;
+          
+          // Trigger suggestions update with empty string to show all options
+          this.updateSuggestionsForInput('');
+          
+          // Update dropdown position after suggestions are shown
+          this.updateDropdownPosition();
+        }, 150);
+
         this.emitChange();
         return;
       }
