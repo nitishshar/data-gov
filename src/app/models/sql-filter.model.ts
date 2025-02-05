@@ -73,12 +73,39 @@ export interface FilterConfig {
   outputFormat?: FilterOutputFormat;
 }
 
-export interface FilterToken {
-  type: 'operand' | 'operator' | 'value' | 'logical' | 'bracket';
-  value: string;
+export type TokenType = 'operand' | 'operator' | 'value' | 'logical' | 'bracket';
+
+export interface BaseFilterToken {
   displayValue?: string;
   operandType?: string;
 }
+
+export interface OperandToken extends BaseFilterToken {
+  type: 'operand';
+  value: string;
+}
+
+export interface OperatorToken extends BaseFilterToken {
+  type: 'operator';
+  value: string;
+}
+
+export interface ValueToken extends BaseFilterToken {
+  type: 'value';
+  value: string;
+}
+
+export interface LogicalToken extends BaseFilterToken {
+  type: 'logical';
+  value: string;
+}
+
+export interface BracketToken extends BaseFilterToken {
+  type: 'bracket';
+  value: '(' | ')';
+}
+
+export type FilterToken = OperandToken | OperatorToken | ValueToken | LogicalToken | BracketToken;
 
 export interface FilterSuggestion {
   label: string;

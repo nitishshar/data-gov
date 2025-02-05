@@ -11,7 +11,12 @@ import {
   AgGridFilterModel,
   AgGridCompositeFilterModel,
   AgGridNumberFilterModel,
-  AgGridDateFilterModel
+  AgGridDateFilterModel,
+  BracketToken,
+  OperatorToken,
+  ValueToken,
+  LogicalToken,
+  OperandToken
 } from '../../models/sql-filter.model';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
@@ -266,11 +271,12 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
    * @example Used when user types "("
    */
   private addOpeningBracket() {
-    this.tokens.push({
+    const token: BracketToken = {
       type: 'bracket',
       value: '(',
       displayValue: '('
-    });
+    };
+    this.tokens.push(token);
     this.bracketCount++;
     this.inputValue = '';
     this.emitChange();
@@ -281,11 +287,12 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
    * @example Used when user types ")"
    */
   private addClosingBracket() {
-    this.tokens.push({
+    const token: BracketToken = {
       type: 'bracket',
       value: ')',
       displayValue: ')'
-    });
+    };
+    this.tokens.push(token);
     this.bracketCount--;
     this.inputValue = '';
     this.emitChange();
@@ -306,18 +313,18 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
    */
   onFocus() {
     this.updateDropdownPosition();
+    this.showSuggestions = true;
+    
     if (this.shouldShowValueSelect || this.isMultiSelectMode) {
-      this.showSuggestions = true;
       this.updateSuggestionsForInput('');
     } else if (this.shouldShowAutocomplete) {
-      this.showSuggestions = true;
       this.isAutocompleteMode = true;
       if (this.inputValue) {
         this.updateSuggestionsForInput(this.inputValue);
       }
     } else {
-      this.showSuggestions = true;
-      this.updateSuggestionsForInput(this.inputValue);
+      // Show initial suggestions when no input
+      this.updateSuggestionsForInput('');
     }
   }
 
@@ -402,28 +409,67 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
    * @example Handles selection of operands, operators, and values
    */
   selectSuggestion(suggestion: FilterSuggestion) {
-    if (suggestion.type === 'operator' && suggestion.value === 'IN') {
+    // Handle both IN and NOT IN operators consistently
+    if (suggestion.type === 'operator' && (suggestion.value === 'IN' || suggestion.value === 'NOT IN')) {
       this.currentOperator = this.config.operators.find(op => op.symbol === suggestion.value) || null;
       this.isMultiSelectMode = true;
       this.isAutocompleteMode = this.currentOperand?.type === 'autocomplete';
       this.selectedValues = [];
-      this.tokens.push({
-        type: suggestion.type,
+      const token: OperatorToken = {
+        type: 'operator',
         value: suggestion.value,
         displayValue: suggestion.displayValue,
         operandType: suggestion.operandType
-      });
+      };
+      this.tokens.push(token);
       this.showSuggestions = true;
       this.updateSuggestionsForInput('');
       return;
     }
 
-    const token: FilterToken = {
-      type: suggestion.type,
-      value: suggestion.value,
-      displayValue: suggestion.displayValue,
-      operandType: suggestion.operandType
-    };
+    let token: FilterToken;
+    switch (suggestion.type) {
+      case 'operand':
+        token = {
+          type: 'operand',
+          value: suggestion.value,
+          displayValue: suggestion.displayValue,
+          operandType: suggestion.operandType
+        };
+        break;
+      case 'operator':
+        token = {
+          type: 'operator',
+          value: suggestion.value,
+          displayValue: suggestion.displayValue,
+          operandType: suggestion.operandType
+        };
+        break;
+      case 'value':
+        token = {
+          type: 'value',
+          value: suggestion.value,
+          displayValue: suggestion.displayValue,
+          operandType: suggestion.operandType
+        };
+        break;
+      case 'logical':
+        token = {
+          type: 'logical',
+          value: suggestion.value,
+          displayValue: suggestion.displayValue,
+          operandType: suggestion.operandType
+        };
+        break;
+      case 'bracket':
+        token = {
+          type: 'bracket',
+          value: suggestion.value as '(' | ')',
+          displayValue: suggestion.displayValue,
+          operandType: suggestion.operandType
+        };
+        break;
+    }
 
     this.tokens.push(token);
     this.inputValue = '';
@@ -434,7 +480,6 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       this.currentOperator = null;
       this.isAutocompleteMode = false;
       this.isMultiSelectMode = false;
-      // Automatically show applicable operators
       this.showSuggestions = true;
       const applicableOperators = this.config.operators
         .filter(op => op.applicableTypes.includes(this.currentOperand!.type))
@@ -453,13 +498,14 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       } else if (this.shouldShowAutocomplete) {
         this.isAutocompleteMode = true;
         this.showSuggestions = true;
+      } else {
+        this.showSuggestions = false;
       }
     } else if (suggestion.type === 'value') {
       this.currentOperand = null;
       this.currentOperator = null;
       this.isAutocompleteMode = false;
       this.isMultiSelectMode = false;
-      // Automatically show logical operators after a value is selected
       this.showSuggestions = true;
       this.suggestions = this.config.logicalOperators.map(op => ({
         type: 'logical' as const,
@@ -472,7 +518,8 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       this.currentOperator = null;
       this.isAutocompleteMode = false;
       this.isMultiSelectMode = false;
-      this.showSuggestions = false;
+      this.showSuggestions = true;
+      this.updateSuggestionsForInput('');
     }
 
     if (!this.shouldShowValueSelect && !this.shouldShowAutocomplete) {
@@ -512,36 +559,40 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     if (this.selectedValues.length === 0) return;
 
     // Add opening parenthesis
-    this.tokens.push({
+    const openBracket: BracketToken = {
       type: 'bracket',
       value: '(',
       displayValue: '('
-    });
+    };
+    this.tokens.push(openBracket);
 
     // Add selected values
     this.selectedValues.forEach((value, index) => {
       if (index > 0) {
         // Add comma between values
-        this.tokens.push({
+        const comma: OperatorToken = {
           type: 'operator',
           value: ',',
           displayValue: ','
-        });
+        };
+        this.tokens.push(comma);
       }
 
-      this.tokens.push({
+      const valueToken: ValueToken = {
         type: 'value',
         value: value.value,
         displayValue: value.label
-      });
+      };
+      this.tokens.push(valueToken);
     });
 
     // Add closing parenthesis
-    this.tokens.push({
+    const closeBracket: BracketToken = {
       type: 'bracket',
       value: ')',
       displayValue: ')'
-    });
+    };
+    this.tokens.push(closeBracket);
 
     // Reset all states
     this.isMultiSelectMode = false;
@@ -578,50 +629,62 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
    * @example Used when pressing backspace
    */
   removeLastToken() {
-    if (this.tokens.length > 0) {
-      const lastToken = this.tokens[this.tokens.length - 1];
-      
-      // Handle bracket counting
-      if (lastToken.type === 'bracket') {
-        if (lastToken.value === '(') {
-          this.bracketCount--;
-        } else {
-          this.bracketCount++;
-        }
-      }
+    if (this.tokens.length === 0) return;
 
-      // If we're removing an IN operator or its related tokens
-      if (lastToken.type === 'operator' && lastToken.value === 'IN') {
-        this.tokens.pop(); // Remove IN operator
-        this.isMultiSelectMode = false;
-        this.isAutocompleteMode = false;
-        this.selectedValues = [];
-      } else if (lastToken.type === 'bracket' && lastToken.value === ')') {
-        // Check if this is part of an IN clause
-        const prevTokens = this.tokens.slice(0, -1);
-        const inOperatorIndex = prevTokens.findIndex(t => t.type === 'operator' && t.value === 'IN');
-        if (inOperatorIndex !== -1) {
-          // Remove everything from IN operator onwards
-          this.tokens = this.tokens.slice(0, inOperatorIndex);
-          this.isMultiSelectMode = false;
-          this.isAutocompleteMode = false;
-          this.selectedValues = [];
-        } else {
-          this.tokens.pop();
-        }
-      } else {
-        this.tokens.pop();
-      }
-
-      // Reset bracketCount if all tokens are removed
-      if (this.tokens.length === 0) {
-        this.bracketCount = 0;
-      }
-
-      this.resetCurrentState();
-      this.emitChange();
-      this.updateSuggestionsForInput(this.inputValue);
+    const lastToken = this.tokens[this.tokens.length - 1];
+    
+    // Handle bracket count
+    if (this.isBracketToken(lastToken)) {
+      if (lastToken.value === '(') this.bracketCount--;
+      if (lastToken.value === ')') this.bracketCount++;
     }
+
+    // Special handling for IN and NOT IN operator values
+    if (this.isValueToken(lastToken) || this.isCloseBracket(lastToken) || (this.isOperatorToken(lastToken) && lastToken.value === ',')) {
+      // Look back through tokens to find if we're in an IN clause
+      let inOperatorIndex = -1;
+      for (let i = this.tokens.length - 1; i >= 0; i--) {
+        const token = this.tokens[i];
+        if (this.isOperatorToken(token) && (token.value === 'IN' || token.value === 'NOT IN')) {
+          inOperatorIndex = i;
+          break;
+        }
+      }
+
+      if (inOperatorIndex !== -1) {
+        // Remove everything after the IN operator
+        this.tokens = this.tokens.slice(0, inOperatorIndex + 1);
+        
+        // Keep the IN operator and maintain multiselect mode
+        const inOperator = this.tokens[inOperatorIndex];
+        this.currentOperator = this.config.operators.find(op => op.symbol === inOperator.value) || null;
+        
+        // Get the operand for showing value suggestions
+        const operandToken = this.tokens[inOperatorIndex - 1];
+        if (this.isOperandToken(operandToken)) {
+          this.currentOperand = this.config.operands.find(op => op.name === operandToken.value) || null;
+          if (this.currentOperand && this.currentOperand.options) {
+            this.suggestions = this.currentOperand.options.map(opt => ({
+              type: 'value',
+              value: opt.value,
+              label: opt.label,
+              displayValue: opt.label
+            }));
+          }
+        }
+
+        this.isMultiSelectMode = true;
+        this.showSuggestions = true;
+        this.selectedValues = [];
+        this.emitChange();
+        return;
+      }
+    }
+
+    // Default token removal
+    this.tokens.pop();
+    this.resetCurrentState();
+    this.emitChange();
   }
 
   /**
@@ -635,13 +698,20 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     let lastToken = this.tokens[this.tokens.length - 1];
     
     // If the last token is a value or closing bracket, we should allow logical operators
-    if (lastToken && (lastToken.type === 'value' || (lastToken.type === 'bracket' && lastToken.value === ')'))) {
+    if (lastToken && (this.isValueToken(lastToken) || (this.isBracketToken(lastToken) && lastToken.value === ')'))) {
       this.currentOperand = null;
       this.currentOperator = null;
       this.isMultiSelectMode = false;
       this.isAutocompleteMode = false;
       this.selectedValues = [];
-      this.showSuggestions = false;
+      this.showSuggestions = true;
+      // Show logical operators
+      this.suggestions = this.config.logicalOperators.map(op => ({
+        type: 'logical' as const,
+        value: op.value,
+        label: op.label,
+        displayValue: op.label
+      }));
       return;
     }
 
@@ -657,23 +727,44 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       }
     }
 
-    // If we have no tokens or the last token is a logical operator, reset everything
-    if (this.tokens.length === 0 || (lastToken && lastToken.type === 'logical')) {
-      this.currentOperand = null;
-      this.currentOperator = null;
+    // Update current state
+    this.currentOperand = operand;
+    this.currentOperator = operator;
+    
+    // If we have an operand but no operator, show operators
+    if (this.currentOperand && !this.currentOperator) {
       this.isMultiSelectMode = false;
       this.isAutocompleteMode = false;
       this.selectedValues = [];
-      this.showSuggestions = false;
+      this.showSuggestions = true;
+      // Show operators
+      this.suggestions = this.config.operators
+        .filter(op => op.applicableTypes.includes(this.currentOperand!.type))
+        .map(op => ({
+          type: 'operator' as const,
+          value: op.symbol,
+          label: op.label,
+          displayValue: op.label
+        }));
       return;
     }
 
-    this.currentOperand = operand;
-    this.currentOperator = operator;
-    this.isMultiSelectMode = operator?.symbol === 'IN' || false;
-    this.isAutocompleteMode = this.isMultiSelectMode && operand?.type === 'autocomplete' || false;
-    this.selectedValues = [];
-    this.showSuggestions = this.isMultiSelectMode || this.isAutocompleteMode;
+    // Handle both IN and NOT IN operators consistently
+    if (this.currentOperator && (this.currentOperator.symbol === 'IN' || this.currentOperator.symbol === 'NOT IN') && this.currentOperand) {
+      this.isMultiSelectMode = true;
+      this.isAutocompleteMode = this.currentOperand.type === 'autocomplete';
+      this.selectedValues = [];
+      this.showSuggestions = true;
+      // Show value suggestions for IN/NOT IN operator
+      if (this.currentOperand.options) {
+        this.suggestions = this.currentOperand.options.map(opt => ({
+          type: 'value' as const,
+          value: opt.value,
+          label: opt.label,
+          displayValue: opt.label
+        }));
+      }
+    }
   }
 
   /**
@@ -687,7 +778,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     const lastToken = this.tokens[this.tokens.length - 1];
 
     // Reset suggestions if we're in a clean state or after a logical operator
-    if (this.tokens.length === 0 || (lastToken && lastToken.type === 'logical')) {
+    if (this.tokens.length === 0 || (lastToken && this.isLogicalToken(lastToken))) {
       this.suggestions = this.config.operands
         .filter(op => op.label.toLowerCase().includes(lowercaseInput))
         .map(op => ({
@@ -727,13 +818,25 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.isMultiSelectMode || (this.currentOperator?.symbol === 'IN' && this.currentOperand)) {
-      // Show value suggestions for IN operator
-      if (this.currentOperand && (
-        this.currentOperand.type === 'select' || 
-        this.currentOperand.type === 'multiselect' || 
-        this.currentOperand.type === 'autocomplete'
-      )) {
+    // Handle value input after operator
+    if (this.currentOperand && this.currentOperator) {
+      // For non-select type fields (text, number, date), treat input as direct value
+      if (!['select', 'multiselect', 'autocomplete'].includes(this.currentOperand.type)) {
+        if (input) {
+          this.suggestions = [{
+            type: 'value',
+            value: input,
+            label: input,
+            displayValue: input
+          }];
+        } else {
+          this.suggestions = [];
+        }
+        return;
+      }
+
+      // For select/multiselect/autocomplete fields
+      if (this.isMultiSelectMode || this.currentOperator.symbol === 'IN' || this.currentOperator.symbol === 'NOT IN') {
         if (this.currentOperand.options) {
           this.suggestions = this.currentOperand.options
             .filter(opt => opt.label.toLowerCase().includes(lowercaseInput))
@@ -763,87 +866,31 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
         }
         return;
       }
+
+      // For non-IN operators with select/autocomplete fields
+      if (this.currentOperand.options) {
+        this.suggestions = this.currentOperand.options
+          .filter(opt => opt.label.toLowerCase().includes(lowercaseInput))
+          .map(opt => ({
+            type: 'value' as const,
+            value: opt.value,
+            label: opt.label,
+            displayValue: opt.label
+          }));
+      }
+      return;
     }
 
-    if (!this.currentOperand && !this.currentOperator) {
-      // Show operands and logical operators if appropriate
-      const suggestions: FilterSuggestion[] = [...this.config.operands
+    // Show logical operators after a complete value token
+    if (lastToken && (this.isValueToken(lastToken) || (this.isBracketToken(lastToken) && lastToken.value === ')'))) {
+      this.suggestions = this.config.logicalOperators
         .filter(op => op.label.toLowerCase().includes(lowercaseInput))
         .map(op => ({
-          type: 'operand' as const,
-          value: op.name,
-          label: op.label,
-          displayValue: op.label,
-          operandType: op.type
-        }))];
-
-      // Add logical operators if we have tokens and last token is a value or closing bracket
-      if (lastToken && (lastToken.type === 'value' || (lastToken.type === 'bracket' && lastToken.value === ')'))) {
-        suggestions.push(
-          ...this.config.logicalOperators
-            .filter(op => op.label.toLowerCase().includes(lowercaseInput))
-            .map(op => ({
-              type: 'logical' as const,
-              value: op.value,
-              label: op.label,
-              displayValue: op.label
-            }))
-        );
-      }
-
-      this.suggestions = suggestions;
-    } else if (this.currentOperand && !this.currentOperator) {
-      // Show applicable operators
-      this.suggestions = this.config.operators
-        .filter(op => 
-          op.applicableTypes.includes(this.currentOperand!.type) &&
-          op.label.toLowerCase().includes(lowercaseInput)
-        )
-        .map(op => ({
-          type: 'operator' as const,
-          value: op.symbol,
+          type: 'logical' as const,
+          value: op.value,
           label: op.label,
           displayValue: op.label
         }));
-    } else if (this.currentOperand && this.currentOperator && !this.isMultiSelectMode) {
-      // Show value suggestions based on operand type
-      if (this.currentOperand.type === 'select' || this.currentOperand.type === 'multiselect' || this.currentOperand.type === 'autocomplete') {
-        if (this.currentOperand.options) {
-          this.suggestions = this.currentOperand.options
-            .filter(opt => opt.label.toLowerCase().includes(lowercaseInput))
-            .map(opt => ({
-              type: 'value' as const,
-              value: opt.value,
-              label: opt.label,
-              displayValue: opt.label
-            }));
-        } else if (this.currentOperand.optionsLoader) {
-          this.isLoading = true;
-          this.currentOperand.optionsLoader(lowercaseInput).subscribe(
-            options => {
-              this.suggestions = options.map(opt => ({
-                type: 'value' as const,
-                value: opt.value,
-                label: opt.label,
-                displayValue: opt.label
-              }));
-              this.isLoading = false;
-            },
-            error => {
-              console.error('Error loading options:', error);
-              this.isLoading = false;
-            }
-          );
-        }
-      } else if (lowercaseInput) {
-        // For text, number, and date inputs
-        this.suggestions = [{
-          type: 'value' as const,
-          value: input,
-          label: input,
-          displayValue: input
-        }];
-      }
     }
   }
 
@@ -862,76 +909,105 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     let operandCount = 0;
     let operatorCount = 0;
     let valueCount = 0;
+    let inClauseActive = false;
 
     for (let i = 0; i < this.tokens.length; i++) {
       const token = this.tokens[i];
 
       // Track bracket count
-      if (token.type === 'bracket') {
-        if (token.value === '(') {
+      if (this.isBracketToken(token)) {
+        if (this.isOpenBracket(token)) {
           openBrackets++;
-        } else {
+          // Check if this is part of an IN clause
+          if (lastToken && this.isOperatorToken(lastToken) && lastToken.value === 'IN') {
+            inClauseActive = true;
+          }
+        } else if (this.isCloseBracket(token)) {
           openBrackets--;
           if (openBrackets < 0) {
             return 'Unmatched closing bracket';
           }
+          // End of IN clause
+          if (inClauseActive && openBrackets === 0) {
+            inClauseActive = false;
+            valueCount++; // Count the entire IN clause as one value
+          }
         }
+        lastToken = token;
+        continue;
       }
 
       // Validate token sequence
       if (lastToken) {
         // After a closing bracket, only logical operators or closing brackets are allowed
-        if (lastToken.value === ')') {
-          if (!['logical', 'bracket'].includes(token.type) || (token.type === 'bracket' && token.value === '(')) {
+        if (this.isCloseBracket(lastToken)) {
+          const isValidNextToken = 
+            this.isLogicalToken(token) || 
+            this.isCloseBracket(token);
+          if (!isValidNextToken) {
             return 'After a closing bracket, only logical operators or another closing bracket are allowed';
           }
         }
 
         // After a logical operator, only operands or opening brackets are allowed
-        if (lastToken.type === 'logical') {
-          if (!['operand', 'bracket'].includes(token.type) || (token.type === 'bracket' && token.value === ')')) {
+        if (this.isLogicalToken(lastToken)) {
+          const isValidNextToken = 
+            this.isOperandToken(token) || 
+            this.isOpenBracket(token);
+          if (!isValidNextToken) {
             return 'After a logical operator, an operand or opening bracket is expected';
           }
         }
 
         // After an operand, only operators are allowed
-        if (lastToken.type === 'operand') {
-          if (token.type !== 'operator') {
+        if (this.isOperandToken(lastToken)) {
+          if (!this.isOperatorToken(token)) {
             return 'After an operand, an operator is expected';
           }
         }
 
-        // After an operator, only values are allowed
-        if (lastToken.type === 'operator') {
-          if (token.type !== 'value') {
+        // After an operator, handle IN operator specially
+        if (this.isOperatorToken(lastToken)) {
+          if (lastToken.value === 'IN') {
+            if (!this.isOpenBracket(token)) {
+              return 'After IN operator, an opening bracket is expected';
+            }
+          } else if (!inClauseActive && !this.isValueToken(token)) {
             return 'After an operator, a value is expected';
           }
         }
 
-        // After a value, only logical operators or closing brackets are allowed
-        if (lastToken.type === 'value') {
-          if (!['logical', 'bracket'].includes(token.type) || (token.type === 'bracket' && token.value === '(')) {
+        // After a value in an IN clause, allow comma or closing bracket
+        if (this.isValueToken(lastToken) && inClauseActive) {
+          const isValidNextToken = 
+            (this.isOperatorToken(token) && token.value === ',') || 
+            this.isCloseBracket(token);
+          if (!isValidNextToken) {
+            return 'In an IN clause, values must be separated by commas';
+          }
+        }
+        // After a value outside IN clause, only logical operators or closing brackets are allowed
+        else if (this.isValueToken(lastToken) && !inClauseActive) {
+          const isValidNextToken = 
+            this.isLogicalToken(token) || 
+            this.isCloseBracket(token);
+          if (!isValidNextToken) {
             return 'After a value, a logical operator or closing bracket is expected';
+          }
+        }
+
+        // After a comma in IN clause, only values are allowed
+        if (this.isOperatorToken(lastToken) && lastToken.value === ',') {
+          if (!this.isValueToken(token)) {
+            return 'After a comma in IN clause, a value is expected';
           }
         }
       }
 
       // Track operand-operator-value groups
-      if (token.type === 'operand') operandCount++;
-      if (token.type === 'operator') operatorCount++;
-      if (token.type === 'value') {
-        valueCount++;
-        // Check if we have a complete group (operand-operator-value)
-        if (operandCount === operatorCount && operandCount === valueCount) {
-          // If this is not the last token, the next token must be a logical operator
-          if (i < this.tokens.length - 1) {
-            const nextToken = this.tokens[i + 1];
-            if (nextToken.type !== 'logical' && !(nextToken.type === 'bracket' && nextToken.value === ')')) {
-              return 'After a complete condition (operand-operator-value), a logical operator or closing bracket is expected';
-            }
-          }
-        }
-      }
+      if (this.isOperandToken(token)) operandCount++;
+      if (this.isOperatorToken(token) && token.value !== ',') operatorCount++;
+      if (this.isValueToken(token) && !inClauseActive) valueCount++;
 
       lastToken = token;
     }
@@ -964,14 +1040,14 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       const token = this.tokens[i];
 
       // Handle brackets
-      if (token.type === 'bracket') {
-        if (token.value === '(') {
+      if (this.isBracketToken(token)) {
+        if (this.isOpenBracket(token)) {
           bracketStack++;
           // Start of IN clause
           if (i > 0 && this.tokens[i - 1].type === 'operator' && this.tokens[i - 1].value === 'IN') {
             inClauseActive = true;
           }
-        } else {
+        } else if (this.isCloseBracket(token)) {
           bracketStack--;
           // End of IN clause
           if (inClauseActive && bracketStack === 0) {
@@ -1389,5 +1465,33 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       top: rect.bottom + window.scrollY,
       left: rect.left + textWidth + window.scrollX
     };
+  }
+
+  private isBracketToken(token: FilterToken): token is BracketToken {
+    return token.type === 'bracket' && (token.value === '(' || token.value === ')');
+  }
+
+  private isOpenBracket(token: FilterToken): token is BracketToken & { value: '(' } {
+    return this.isBracketToken(token) && token.value === '(';
+  }
+
+  private isCloseBracket(token: FilterToken): token is BracketToken & { value: ')' } {
+    return this.isBracketToken(token) && token.value === ')';
+  }
+
+  private isOperatorToken(token: FilterToken): token is OperatorToken {
+    return token.type === 'operator';
+  }
+
+  private isValueToken(token: FilterToken): token is ValueToken {
+    return token.type === 'value';
+  }
+
+  private isLogicalToken(token: FilterToken): token is LogicalToken {
+    return token.type === 'logical';
+  }
+
+  private isOperandToken(token: FilterToken): token is OperandToken {
+    return token.type === 'operand';
   }
 } 
