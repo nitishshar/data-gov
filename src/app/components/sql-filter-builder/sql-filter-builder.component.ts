@@ -1779,9 +1779,19 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     const operand = this.config.operands.find(op => op.name === operandToken.value);
     if (!operand) return;
 
-    // Show applicable operators as suggestions
+    // Show only IN/NOT IN operators if current operator is IN or NOT IN
+    const isInOperator = token.value === 'IN' || token.value === 'NOT IN';
     this.suggestions = this.config.operators
-      .filter(op => op.applicableTypes.includes(operand.type))
+      .filter(op => {
+        if (isInOperator) {
+          // Only show IN and NOT IN operators
+          return op.symbol === 'IN' || op.symbol === 'NOT IN';
+        }
+        // For other operators, show all applicable operators except IN/NOT IN
+        return op.applicableTypes.includes(operand.type) && 
+               op.symbol !== 'IN' && 
+               op.symbol !== 'NOT IN';
+      })
       .map(op => ({
         type: 'operator' as const,
         value: op.symbol,
