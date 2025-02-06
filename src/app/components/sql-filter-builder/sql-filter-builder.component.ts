@@ -658,50 +658,59 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       }
 
       if (inOperatorIndex !== -1) {
-        // First close all suggestions and clear states
-        this.showSuggestions = false;
+        // We're in an IN clause
+        if (this.isCloseBracket(lastToken)) {
+          // Remove the closing bracket
+          this.tokens.pop();
+        } else if (this.isValueToken(lastToken)) {
+          // Remove the value
+          this.tokens.pop();
+          
+          // If there's a comma before this value, remove it too
+          const previousToken = this.tokens[this.tokens.length - 1];
+          if (this.isOperatorToken(previousToken) && previousToken.value === ',') {
+            this.tokens.pop();
+          }
+          
+          // If this was the last value in the IN clause, remove the opening bracket and IN operator
+          const nextToken = this.tokens[this.tokens.length - 1];
+          if (this.isOpenBracket(nextToken)) {
+            this.tokens.pop(); // Remove opening bracket
+            this.tokens.pop(); // Remove IN operator
+          }
+        } else if (this.isOperatorToken(lastToken) && lastToken.value === ',') {
+          // Just remove the comma
+          this.tokens.pop();
+        }
+
+        // Reset states and update suggestions
+        this.showSuggestions = true;
         this.suggestions = [];
         this.selectedValues = [];
         this.inputValue = '';
-
-        // Remove everything after the IN operator
-        this.tokens = this.tokens.slice(0, inOperatorIndex + 1);
         
-        // Keep the IN operator and get operand info
-        const inOperator = this.tokens[inOperatorIndex];
-        this.currentOperator = this.config.operators.find(op => op.symbol === inOperator.value) || null;
-        
-        const operandToken = this.tokens[inOperatorIndex - 1];
-        if (this.isOperandToken(operandToken)) {
-          this.currentOperand = this.config.operands.find(op => op.name === operandToken.value) || null;
-        }
-
-        // Focus input and clear it
-        if (this.filterInput?.nativeElement) {
-          this.filterInput.nativeElement.value = '';
-          this.filterInput.nativeElement.focus();
-        }
-
-        // After a brief delay, show appropriate suggestions
-        setTimeout(() => {
+        // If we still have an IN operator active, set up for more values
+        const lastRemainingToken = this.tokens[this.tokens.length - 1];
+        if (this.isOperatorToken(lastRemainingToken) && (lastRemainingToken.value === 'IN' || lastRemainingToken.value === 'NOT IN')) {
+          this.currentOperator = this.config.operators.find(op => op.symbol === lastRemainingToken.value) || null;
+          const operandToken = this.tokens[this.tokens.length - 2];
+          if (this.isOperandToken(operandToken)) {
+            this.currentOperand = this.config.operands.find(op => op.name === operandToken.value) || null;
+          }
           this.isMultiSelectMode = true;
-          this.showSuggestions = true;
+          this.isAutocompleteMode = this.currentOperand?.type === 'autocomplete';
           
-          // Trigger suggestions update with empty string to show all options
+          // Update suggestions
           this.updateSuggestionsForInput('');
-          
-          // Update dropdown position after suggestions are shown
-          setTimeout(() => {
-            this.updateDropdownPosition();
-          });
-        }, 150);
+          setTimeout(() => this.updateDropdownPosition());
+        }
 
         this.emitChange();
         return;
       }
     }
 
-    // Default token removal
+    // Default token removal for non-IN clause tokens
     this.tokens.pop();
     this.resetCurrentState();
     this.emitChange();
