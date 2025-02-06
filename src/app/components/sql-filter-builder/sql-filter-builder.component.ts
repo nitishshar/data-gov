@@ -663,24 +663,28 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
           // Remove the closing bracket
           this.tokens.pop();
         } else if (this.isValueToken(lastToken)) {
-          // Remove the value
-          this.tokens.pop();
+          // For IN filter values, remove the entire value including comma if it exists
+          this.tokens.pop(); // Remove the value
           
-          // If there's a comma before this value, remove it too
+          // Look at previous token for comma
           const previousToken = this.tokens[this.tokens.length - 1];
           if (this.isOperatorToken(previousToken) && previousToken.value === ',') {
-            this.tokens.pop();
-          }
-          
-          // If this was the last value in the IN clause, remove the opening bracket and IN operator
-          const nextToken = this.tokens[this.tokens.length - 1];
-          if (this.isOpenBracket(nextToken)) {
-            this.tokens.pop(); // Remove opening bracket
-            this.tokens.pop(); // Remove IN operator
+            this.tokens.pop(); // Remove the comma
+          } else {
+            // If no comma before this value, it might be the first value
+            // Check if we should remove the opening bracket and IN operator
+            const nextToken = this.tokens[this.tokens.length - 1];
+            if (this.isOpenBracket(nextToken)) {
+              this.tokens.pop(); // Remove opening bracket
+              this.tokens.pop(); // Remove IN operator
+            }
           }
         } else if (this.isOperatorToken(lastToken) && lastToken.value === ',') {
-          // Just remove the comma
-          this.tokens.pop();
+          // If on a comma, remove both the comma and the value before it
+          this.tokens.pop(); // Remove the comma
+          if (this.tokens.length > 0 && this.isValueToken(this.tokens[this.tokens.length - 1])) {
+            this.tokens.pop(); // Remove the value before the comma
+          }
         }
 
         // Reset states and update suggestions
