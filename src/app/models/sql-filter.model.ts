@@ -78,6 +78,7 @@ export type TokenType = 'operand' | 'operator' | 'value' | 'logical' | 'bracket'
 export interface BaseFilterToken {
   displayValue?: string;
   operandType?: string;
+  groupId?: string;
 }
 
 export interface OperandToken extends BaseFilterToken {

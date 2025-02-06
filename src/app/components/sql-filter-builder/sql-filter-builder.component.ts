@@ -119,6 +119,9 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   /** Currently active IN clause for editing */
   private activeInClause: { operand: FilterOperand | null, values: FilterSuggestion[] } | null = null;
 
+  /** Whether the filter builder is in edit mode */
+  isEditMode = false;
+
   /**
    * Whether to show the generated SQL preview
    * @returns boolean based on config setting
@@ -1628,14 +1631,9 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Gets the display tokens for the current filter
-   * This method handles the collapsing of IN filter values when enabled
+   * Gets the collapsed version of tokens for IN clauses
    */
-  get displayTokens(): FilterToken[] {
-    if (!this.collapseInFilterValues) {
-      return this.tokens;
-    }
-
+  private getCollapsedTokens(): FilterToken[] {
     const result: FilterToken[] = [];
     let inClauseStart = -1;
     let inClauseValues: FilterToken[] = [];
@@ -1701,6 +1699,16 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     }
 
     return result;
+  }
+
+  /**
+   * Gets the display tokens with group IDs
+   * This method handles the collapsing of IN filter values when enabled
+   */
+  get displayTokens(): FilterToken[] {
+    const tokens = !this.collapseInFilterValues ? this.tokens : this.getCollapsedTokens();
+    this.assignGroupIds();
+    return tokens;
   }
 
   /**
@@ -1861,6 +1869,73 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
           this.filterInput.nativeElement.value.length,
           this.filterInput.nativeElement.value.length
         );
+      }
+    });
+  }
+
+  /** Toggles edit mode */
+  toggleEditMode() {
+    this.isEditMode = !this.isEditMode;
+  }
+
+  /** Removes a filter group */
+  removeFilterGroup(groupId: string) {
+    // Find the start and end indices of the group
+    const tokens = [...this.tokens];
+    let startIndex = -1;
+    let endIndex = -1;
+
+    for (let i = 0; i < tokens.length; i++) {
+      if (this.isOperandToken(tokens[i]) && tokens[i].groupId === groupId) {
+        startIndex = i;
+        // Look for the end of this group (value token or closing bracket for IN clauses)
+        for (let j = i; j < tokens.length; j++) {
+          const token = tokens[j];
+          if (token.groupId === groupId) {
+            endIndex = j;
+          }
+        }
+        break;
+      }
+    }
+
+    if (startIndex === -1 || endIndex === -1) return;
+
+    // Check if there's a logical operator after this group that should also be removed
+    if (endIndex + 1 < tokens.length && this.isLogicalToken(tokens[endIndex + 1])) {
+      endIndex++;
+    }
+    // Or if there's a logical operator before this group that should be removed
+    else if (startIndex > 0 && this.isLogicalToken(tokens[startIndex - 1])) {
+      startIndex--;
+    }
+
+    // Remove the group
+    this.tokens.splice(startIndex, endIndex - startIndex + 1);
+
+    // Reset current state if no tokens left
+    if (this.tokens.length === 0) {
+      this.currentOperand = null;
+      this.currentOperator = null;
+    }
+
+    this.emitChange();
+  }
+
+  /** Assigns group IDs to tokens */
+  private assignGroupIds() {
+    let currentGroupId = '';
+    let isInGroup = false;
+
+    this.tokens.forEach((token, index) => {
+      if (this.isOperandToken(token)) {
+        currentGroupId = `group-${index}`;
+        isInGroup = true;
+        token.groupId = currentGroupId;
+      } else if (isInGroup && !this.isLogicalToken(token)) {
+        token.groupId = currentGroupId;
+      } else if (this.isLogicalToken(token)) {
+        isInGroup = false;
       }
     });
   }

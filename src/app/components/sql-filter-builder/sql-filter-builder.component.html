@@ -3,10 +3,18 @@
     <div class="input-container">
       <div class="tokens-display" [class.has-error]="validationError">
         <span *ngFor="let token of displayTokens" 
-              class="token" 
-              [ngClass]="token.type"
+              class="token"
+              [class.editing]="isEditMode && token.type === 'operand'"
               [class.clickable]="token.type === 'value' && token.isCollapsed || token.type === 'operator'"
+              [class.operand]="token.type === 'operand'"
+              [class.operator]="token.type === 'operator'"
+              [class.value]="token.type === 'value'"
+              [class.logical]="token.type === 'logical'"
+              [class.bracket]="token.type === 'bracket'"
               (click)="token.type === 'value' && token.isCollapsed ? onCollapsedValueClick(token) : token.type === 'operator' ? onOperatorClick(token, $event) : null">
+          <span *ngIf="isEditMode && token.type === 'operand' && token.groupId" class="delete-button" (click)="removeFilterGroup(token.groupId)">
+            <i class="bi bi-x"></i>
+          </span>
           {{ token.displayValue || token.value }}
         </span>
         <input
@@ -31,6 +39,7 @@
         </div>
         <div *ngIf="showGeneratedSql && tokens.length > 0" class="sql-info">
           <i class="bi bi-info-circle" [title]="'Generated SQL: ' + generatedSql"></i>
+          <i class="bi bi-pencil ms-2 cursor-pointer" (click)="toggleEditMode()" [class.active]="isEditMode"></i>
         </div>
       </div>
       <div *ngIf="validationError" class="validation-error">
