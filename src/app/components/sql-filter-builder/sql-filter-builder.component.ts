@@ -471,6 +471,34 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
         };
         break;
       case 'value':
+        // Special handling for value selection when we have currentOperand and currentOperator
+        if (this.currentOperand && this.currentOperator) {
+          token = {
+            type: 'value',
+            value: suggestion.value,
+            displayValue: suggestion.displayValue,
+            operandType: suggestion.operandType
+          };
+          this.tokens.push(token);
+          this.inputValue = '';
+          this.selectedSuggestionIndex = -1;
+          
+          // Reset states but keep suggestions visible for logical operators
+          this.currentOperand = null;
+          this.currentOperator = null;
+          this.isAutocompleteMode = false;
+          this.isMultiSelectMode = false;
+          this.showSuggestions = true;
+          this.suggestions = this.config.logicalOperators.map(op => ({
+            type: 'logical' as const,
+            value: op.value,
+            label: op.label,
+            displayValue: op.label
+          }));
+          setTimeout(() => this.updateDropdownPosition());
+          this.emitChange();
+          return;
+        }
         token = {
           type: 'value',
           value: suggestion.value,

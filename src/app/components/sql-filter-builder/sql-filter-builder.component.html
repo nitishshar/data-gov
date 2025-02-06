@@ -106,7 +106,7 @@
             type="button"
             class="list-group-item list-group-item-action"
             [class.active]="i === selectedSuggestionIndex"
-            (click)="currentOperator ? onOperatorChange(suggestion) : selectSuggestion(suggestion)"
+            (click)="selectSuggestion(suggestion)"
             (mousedown)="$event.preventDefault()"
             (mouseover)="selectedSuggestionIndex = i"
           >
