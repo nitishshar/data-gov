@@ -1936,9 +1936,46 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     if (this.tokens.length === 0) {
       this.currentOperand = null;
       this.currentOperator = null;
+      this.showSuggestions = true;
+      this.updateSuggestionsForInput('');
+    } else {
+      // Get the last token after removal
+      const lastToken = this.tokens[this.tokens.length - 1];
+      
+      // Show appropriate suggestions based on the last token
+      this.showSuggestions = true;
+      if (this.isValueToken(lastToken) || (this.isBracketToken(lastToken) && lastToken.value === ')')) {
+        // After a value or closing bracket, show logical operators
+        this.suggestions = this.config.logicalOperators.map(op => ({
+          type: 'logical' as const,
+          value: op.value,
+          label: op.label,
+          displayValue: op.label
+        }));
+      } else if (this.isLogicalToken(lastToken)) {
+        // After a logical operator, show operands
+        this.suggestions = this.config.operands
+          .map(op => ({
+            type: 'operand' as const,
+            value: op.name,
+            label: op.label,
+            displayValue: op.label,
+            operandType: op.type
+          }));
+      }
     }
 
     this.emitChange();
+
+    // Focus the input and move cursor to the end
+    setTimeout(() => {
+      if (this.filterInput?.nativeElement) {
+        const input = this.filterInput.nativeElement;
+        input.focus();
+        input.setSelectionRange(input.value.length, input.value.length);
+        this.updateDropdownPosition();
+      }
+    });
   }
 
   /** Assigns group IDs to tokens */
