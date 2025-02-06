@@ -53,6 +53,9 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   /** Number of values to show when collapsed (default 2) */
   @Input() collapsedValueCount: number = 2;
 
+  /** More values text template */
+  @Input() moreValuesText: string = '+{count} more';
+
   /** Event emitter that emits either SQL string or ag-Grid filter object based on outputFormat */
   @Output() filterChange = new EventEmitter<string | AgGridCompositeFilterModel>();
 
@@ -1668,8 +1671,8 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
             const remainingCount = inClauseValues.length - this.collapsedValueCount;
             result.push({
               type: 'value',
-              value: `...+${remainingCount} more`,
-              displayValue: `...+${remainingCount} more`,
+              value: this.moreValuesText.replace('{count}', remainingCount.toString()),
+              displayValue: this.moreValuesText.replace('{count}', remainingCount.toString()),
               isCollapsed: true,
               fullValues: inClauseValues
             } as ValueToken);
@@ -1743,5 +1746,122 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     // Update suggestions
     this.updateSuggestionsForInput('');
     setTimeout(() => this.updateDropdownPosition());
+  }
+
+  /** Finds the operand token associated with an operator token */
+  private findOperandForOperator(operatorToken: OperatorToken): OperandToken | null {
+    const operatorIndex = this.tokens.findIndex(t => t === operatorToken);
+    if (operatorIndex <= 0) return null;
+
+    // Look backwards for the first operand token
+    for (let i = operatorIndex - 1; i >= 0; i--) {
+      const token = this.tokens[i];
+      if (this.isOperandToken(token)) {
+        return token;
+      }
+    }
+    return null;
+  }
+
+  /** Handles click on an operator token */
+  onOperatorClick(token: OperatorToken, event: MouseEvent) {
+    const operandToken = this.findOperandForOperator(token);
+    if (!operandToken) return;
+
+    const operand = this.config.operands.find(op => op.name === operandToken.value);
+    if (!operand) return;
+
+    // Show applicable operators as suggestions
+    this.suggestions = this.config.operators
+      .filter(op => op.applicableTypes.includes(operand.type))
+      .map(op => ({
+        type: 'operator' as const,
+        value: op.symbol,
+        label: op.label,
+        displayValue: op.label,
+        operandType: operand.type
+      }));
+
+    // Set up for operator change
+    this.currentOperand = operand;
+    this.currentOperator = this.config.operators.find(op => op.symbol === token.value) || null;
+    
+    // Position dropdown near the clicked operator
+    const target = event.target as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    this.dropdownPosition = {
+      top: rect.bottom + window.scrollY,
+      left: rect.left + window.scrollX
+    };
+    
+    this.showSuggestions = true;
+  }
+
+  /** Handles operator change selection */
+  onOperatorChange(suggestion: FilterSuggestion) {
+    if (!this.currentOperator || !this.currentOperand) return;
+
+    // Find the operator token to replace
+    const operatorIndex = this.tokens.findIndex(t => 
+      this.isOperatorToken(t) && 
+      t.value === this.currentOperator?.symbol &&
+      // Look for the operator that's part of the current operand's group
+      this.findOperandForOperator(t as OperatorToken)?.value === this.currentOperand?.name
+    );
+    if (operatorIndex === -1) return;
+
+    // Replace the operator with the new one
+    this.tokens[operatorIndex] = {
+      type: 'operator',
+      value: suggestion.value,
+      displayValue: suggestion.displayValue,
+      operandType: suggestion.operandType
+    };
+
+    // Check if we have a value after this operator
+    const nextToken = this.tokens[operatorIndex + 1];
+    const hasValue = nextToken && (this.isValueToken(nextToken) || 
+                                (this.isBracketToken(nextToken) && nextToken.value === '(' && suggestion.value.includes('IN')));
+
+    // Reset state
+    this.showSuggestions = hasValue; // Only show suggestions if we don't have a value
+    this.currentOperand = hasValue ? null : this.currentOperand;
+    this.currentOperator = hasValue ? null : this.config.operators.find(op => op.symbol === suggestion.value) || null;
+
+    if (hasValue) {
+      // If we have a value, show logical operators
+      this.suggestions = this.config.logicalOperators.map(op => ({
+        type: 'logical' as const,
+        value: op.value,
+        label: op.label,
+        displayValue: op.label
+      }));
+    } else {
+      // If we don't have a value, prepare for value input
+      if (suggestion.value === 'IN' || suggestion.value === 'NOT IN') {
+        this.isMultiSelectMode = true;
+        this.isAutocompleteMode = this.currentOperand?.type === 'autocomplete';
+        this.selectedValues = [];
+        this.updateSuggestionsForInput('');
+      } else {
+        this.showSuggestions = this.shouldShowValueSelect || this.shouldShowAutocomplete;
+        if (this.showSuggestions) {
+          this.updateSuggestionsForInput('');
+        }
+      }
+    }
+
+    this.emitChange();
+
+    // Move cursor to end of textbox
+    setTimeout(() => {
+      if (this.filterInput?.nativeElement) {
+        this.filterInput.nativeElement.focus();
+        this.filterInput.nativeElement.setSelectionRange(
+          this.filterInput.nativeElement.value.length,
+          this.filterInput.nativeElement.value.length
+        );
+      }
+    });
   }
 } 
