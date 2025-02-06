@@ -332,13 +332,84 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Handles input blur
+   * @param event Focus event
+   * @example Hides suggestions dropdown on blur
+   */
+  onBlur(event: FocusEvent) {
+    const relatedTarget = event.relatedTarget as HTMLElement;
+    if (!relatedTarget || !relatedTarget.closest('.suggestions-dropdown')) {
+      setTimeout(() => {
+        // Reset operator editing state if we were editing an operator
+        if (this.currentOperator && this.currentOperand) {
+          const lastToken = this.tokens[this.tokens.length - 1];
+          this.currentOperator = null;
+          this.currentOperand = null;
+          
+          // Show appropriate suggestions based on last token
+          this.showSuggestions = true;
+          if (this.isValueToken(lastToken) || (this.isBracketToken(lastToken) && lastToken.value === ')')) {
+            this.suggestions = this.config.logicalOperators.map(op => ({
+              type: 'logical' as const,
+              value: op.value,
+              label: op.label,
+              displayValue: op.label
+            }));
+          } else if (this.isLogicalToken(lastToken)) {
+            this.suggestions = this.config.operands.map(op => ({
+              type: 'operand' as const,
+              value: op.name,
+              label: op.label,
+              displayValue: op.label,
+              operandType: op.type
+            }));
+          }
+        } else {
+          this.showSuggestions = false;
+          this.selectedSuggestionIndex = -1;
+          if (!this.isMultiSelectAutocomplete) {
+            this.isAutocompleteMode = false;
+          }
+        }
+      }, 200);
+    }
+  }
+
+  /**
    * Handles input focus
    * @example Shows suggestions dropdown on focus
    */
   onFocus() {
     this.updateDropdownPosition();
-    this.showSuggestions = true;
     
+    // If we were editing an operator, reset the state
+    if (this.currentOperator && this.currentOperand) {
+      const lastToken = this.tokens[this.tokens.length - 1];
+      this.currentOperator = null;
+      this.currentOperand = null;
+      
+      // Show appropriate suggestions based on last token
+      this.showSuggestions = true;
+      if (this.isValueToken(lastToken) || (this.isBracketToken(lastToken) && lastToken.value === ')')) {
+        this.suggestions = this.config.logicalOperators.map(op => ({
+          type: 'logical' as const,
+          value: op.value,
+          label: op.label,
+          displayValue: op.label
+        }));
+      } else if (this.isLogicalToken(lastToken)) {
+        this.suggestions = this.config.operands.map(op => ({
+          type: 'operand' as const,
+          value: op.name,
+          label: op.label,
+          displayValue: op.label,
+          operandType: op.type
+        }));
+      }
+      return;
+    }
+    
+    this.showSuggestions = true;
     if (this.shouldShowValueSelect || this.isMultiSelectMode) {
       this.updateSuggestionsForInput('');
     } else if (this.shouldShowAutocomplete) {
@@ -349,24 +420,6 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     } else {
       // Show initial suggestions when no input
       this.updateSuggestionsForInput('');
-    }
-  }
-
-  /**
-   * Handles input blur
-   * @param event Focus event
-   * @example Hides suggestions dropdown on blur
-   */
-  onBlur(event: FocusEvent) {
-    const relatedTarget = event.relatedTarget as HTMLElement;
-    if (!relatedTarget || !relatedTarget.closest('.suggestions-dropdown')) {
-      setTimeout(() => {
-        this.showSuggestions = false;
-        this.selectedSuggestionIndex = -1;
-        if (!this.isMultiSelectAutocomplete) {
-          this.isAutocompleteMode = false;
-        }
-      }, 200);
     }
   }
 
