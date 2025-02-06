@@ -47,6 +47,12 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   /** Configuration object for the filter builder */
   @Input() config!: FilterConfig;
 
+  /** Whether to show IN filter values in collapsed mode */
+  @Input() collapseInFilterValues: boolean = false;
+
+  /** Number of values to show when collapsed (default 2) */
+  @Input() collapsedValueCount: number = 2;
+
   /** Event emitter that emits either SQL string or ag-Grid filter object based on outputFormat */
   @Output() filterChange = new EventEmitter<string | AgGridCompositeFilterModel>();
 
@@ -106,6 +112,9 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
 
   /** Subscription for input subject */
   private subscription: Subscription | null = null;
+
+  /** Currently active IN clause for editing */
+  private activeInClause: { operand: FilterOperand | null, values: FilterSuggestion[] } | null = null;
 
   /**
    * Whether to show the generated SQL preview
@@ -564,41 +573,86 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   confirmMultiSelect() {
     if (this.selectedValues.length === 0) return;
 
-    // Add opening parenthesis
-    const openBracket: BracketToken = {
-      type: 'bracket',
-      value: '(',
-      displayValue: '('
-    };
-    this.tokens.push(openBracket);
+    if (this.activeInClause) {
+      // Find the IN clause tokens and replace them
+      let inClauseStart = -1;
+      let inClauseEnd = -1;
+      let foundIN = false;
 
-    // Add selected values
-    this.selectedValues.forEach((value, index) => {
-      if (index > 0) {
-        // Add comma between values
-        const comma: OperatorToken = {
-          type: 'operator',
-          value: ',',
-          displayValue: ','
-        };
-        this.tokens.push(comma);
+      for (let i = 0; i < this.tokens.length; i++) {
+        const token = this.tokens[i];
+        if (this.isOperatorToken(token) && (token.value === 'IN' || token.value === 'NOT IN')) {
+          inClauseStart = i;
+          foundIN = true;
+        } else if (foundIN && this.isCloseBracket(token)) {
+          inClauseEnd = i;
+          break;
+        }
       }
 
-      const valueToken: ValueToken = {
-        type: 'value',
-        value: value.value,
-        displayValue: value.label
-      };
-      this.tokens.push(valueToken);
-    });
+      if (inClauseStart !== -1 && inClauseEnd !== -1) {
+        // Keep tokens before IN clause
+        const newTokens = this.tokens.slice(0, inClauseStart + 1);
+        
+        // Add opening bracket
+        newTokens.push({ type: 'bracket', value: '(', displayValue: '(' });
 
-    // Add closing parenthesis
-    const closeBracket: BracketToken = {
-      type: 'bracket',
-      value: ')',
-      displayValue: ')'
-    };
-    this.tokens.push(closeBracket);
+        // Add selected values
+        this.selectedValues.forEach((value, index) => {
+          if (index > 0) {
+            newTokens.push({ type: 'operator', value: ',', displayValue: ',' });
+          }
+          newTokens.push({
+            type: 'value',
+            value: value.value,
+            displayValue: value.label
+          });
+        });
+
+        // Add closing bracket
+        newTokens.push({ type: 'bracket', value: ')', displayValue: ')' });
+
+        // Add remaining tokens after IN clause
+        newTokens.push(...this.tokens.slice(inClauseEnd + 1));
+
+        this.tokens = newTokens;
+      }
+
+      this.activeInClause = null;
+    } else {
+      // Original behavior for new IN clauses
+      const openBracket: BracketToken = {
+        type: 'bracket',
+        value: '(',
+        displayValue: '('
+      };
+      this.tokens.push(openBracket);
+
+      this.selectedValues.forEach((value, index) => {
+        if (index > 0) {
+          const comma: OperatorToken = {
+            type: 'operator',
+            value: ',',
+            displayValue: ','
+          };
+          this.tokens.push(comma);
+        }
+
+        const valueToken: ValueToken = {
+          type: 'value',
+          value: value.value,
+          displayValue: value.label
+        };
+        this.tokens.push(valueToken);
+      });
+
+      const closeBracket: BracketToken = {
+        type: 'bracket',
+        value: ')',
+        displayValue: ')'
+      };
+      this.tokens.push(closeBracket);
+    }
 
     // Reset all states
     this.isMultiSelectMode = false;
@@ -1568,5 +1622,126 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
 
   private isOperandToken(token: FilterToken): token is OperandToken {
     return token.type === 'operand';
+  }
+
+  /**
+   * Gets the display tokens for the current filter
+   * This method handles the collapsing of IN filter values when enabled
+   */
+  get displayTokens(): FilterToken[] {
+    if (!this.collapseInFilterValues) {
+      return this.tokens;
+    }
+
+    const result: FilterToken[] = [];
+    let inClauseStart = -1;
+    let inClauseValues: FilterToken[] = [];
+    let isInClause = false;
+
+    for (let i = 0; i < this.tokens.length; i++) {
+      const token = this.tokens[i];
+
+      if (this.isOperatorToken(token) && (token.value === 'IN' || token.value === 'NOT IN')) {
+        isInClause = true;
+        inClauseStart = result.length;
+        result.push(token);
+        continue;
+      }
+
+      if (isInClause) {
+        if (this.isCloseBracket(token)) {
+          isInClause = false;
+          // Process the collected values
+          if (inClauseValues.length > this.collapsedValueCount) {
+            // Add opening bracket
+            result.push({ type: 'bracket', value: '(', displayValue: '(' });
+            
+            // Add first few values with commas
+            for (let j = 0; j < this.collapsedValueCount; j++) {
+              if (j > 0) {
+                result.push({ type: 'operator', value: ',', displayValue: ',' });
+              }
+              result.push(inClauseValues[j]);
+            }
+
+            // Add the collapsed indicator
+            const remainingCount = inClauseValues.length - this.collapsedValueCount;
+            result.push({
+              type: 'value',
+              value: `...+${remainingCount} more`,
+              displayValue: `...+${remainingCount} more`,
+              isCollapsed: true,
+              fullValues: inClauseValues
+            } as ValueToken);
+
+            // Add closing bracket
+            result.push({ type: 'bracket', value: ')', displayValue: ')' });
+          } else {
+            // If few values, show them all
+            result.push({ type: 'bracket', value: '(', displayValue: '(' });
+            inClauseValues.forEach((v, idx) => {
+              if (idx > 0) {
+                result.push({ type: 'operator', value: ',', displayValue: ',' });
+              }
+              result.push(v);
+            });
+            result.push({ type: 'bracket', value: ')', displayValue: ')' });
+          }
+          inClauseValues = [];
+        } else if (this.isValueToken(token)) {
+          inClauseValues.push(token);
+        }
+        continue;
+      }
+
+      result.push(token);
+    }
+
+    return result;
+  }
+
+  /**
+   * Handles click on a collapsed IN filter value
+   * @param token The token that was clicked
+   */
+  onCollapsedValueClick(token: ValueToken) {
+    if (!token.isCollapsed || !token.fullValues) return;
+
+    // Find the operand for this IN clause
+    let operandToken: OperandToken | null = null;
+    for (let i = this.tokens.length - 1; i >= 0; i--) {
+      if (this.isOperandToken(this.tokens[i])) {
+        operandToken = this.tokens[i] as OperandToken;
+        break;
+      }
+    }
+
+    if (!operandToken) return;
+
+    const operand = this.config.operands.find(op => op.name === operandToken!.value);
+    if (!operand) return;
+
+    // Set up the active IN clause for editing
+    this.activeInClause = {
+      operand,
+      values: token.fullValues.map((v: FilterToken) => ({
+        type: 'value' as const,
+        value: v.value,
+        label: v.displayValue || v.value,
+        displayValue: v.displayValue || v.value
+      }))
+    };
+
+    // Set up multi-select mode
+    this.currentOperand = operand;
+    this.currentOperator = this.config.operators.find(op => op.symbol === 'IN') || null;
+    this.isMultiSelectMode = true;
+    this.isAutocompleteMode = operand.type === 'autocomplete';
+    this.selectedValues = this.activeInClause?.values || [];
+    this.showSuggestions = true;
+    
+    // Update suggestions
+    this.updateSuggestionsForInput('');
+    setTimeout(() => this.updateDropdownPosition());
   }
 } 

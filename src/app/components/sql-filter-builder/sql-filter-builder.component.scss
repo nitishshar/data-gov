@@ -54,6 +54,26 @@
 
       &.value {
         background-color: #26de81;
+
+        &.clickable {
+          cursor: pointer;
+          padding-right: 0.875rem;
+          position: relative;
+
+          &:hover {
+            background-color: darken(#26de81, 5%);
+          }
+
+          &:after {
+            content: '⋯';
+            position: absolute;
+            right: 0.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-weight: bold;
+            font-size: 1rem;
+          }
+        }
       }
 
       &.logical {

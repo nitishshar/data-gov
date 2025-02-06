@@ -2,7 +2,11 @@
   <div class="form-group">
     <div class="input-container">
       <div class="tokens-display" [class.has-error]="validationError">
-        <span *ngFor="let token of tokens" class="token" [ngClass]="token.type">
+        <span *ngFor="let token of displayTokens" 
+              class="token" 
+              [ngClass]="token.type"
+              [class.clickable]="token.type === 'value' && token.isCollapsed"
+              (click)="token.type === 'value' && token.isCollapsed ? onCollapsedValueClick(token) : null">
           {{ token.displayValue || token.value }}
         </span>
         <input

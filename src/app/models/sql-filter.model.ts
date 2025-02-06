@@ -93,6 +93,8 @@ export interface OperatorToken extends BaseFilterToken {
 export interface ValueToken extends BaseFilterToken {
   type: 'value';
   value: string;
+  isCollapsed?: boolean;
+  fullValues?: FilterToken[];
 }
 
 export interface LogicalToken extends BaseFilterToken {
