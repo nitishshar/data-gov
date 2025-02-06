@@ -122,6 +122,12 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   /** Whether the filter builder is in edit mode */
   isEditMode = false;
 
+  /** Whether the SQL has been copied to clipboard */
+  isCopied = false;
+
+  /** Copy timeout reference */
+  private copyTimeout: any;
+
   /**
    * Whether to show the generated SQL preview
    * @returns boolean based on config setting
@@ -204,6 +210,9 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     if (this.subscription) {
       this.subscription.unsubscribe();
+    }
+    if (this.copyTimeout) {
+      clearTimeout(this.copyTimeout);
     }
   }
 
@@ -1947,6 +1956,24 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       } else if (this.isLogicalToken(token)) {
         isInGroup = false;
       }
+    });
+  }
+
+  /** Copies the SQL to clipboard */
+  copySQL(event: MouseEvent) {
+    event.stopPropagation();
+    navigator.clipboard.writeText(this.generatedSql).then(() => {
+      this.isCopied = true;
+      
+      // Clear any existing timeout
+      if (this.copyTimeout) {
+        clearTimeout(this.copyTimeout);
+      }
+      
+      // Reset the copied state after 2 seconds
+      this.copyTimeout = setTimeout(() => {
+        this.isCopied = false;
+      }, 2000);
     });
   }
 } 
