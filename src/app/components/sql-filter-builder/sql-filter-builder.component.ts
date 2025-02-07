@@ -321,6 +321,17 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     this.tokens.push(token);
     this.bracketCount++;
     this.inputValue = '';
+    
+    // Show operand suggestions after opening bracket
+    this.showSuggestions = true;
+    this.suggestions = this.config.operands.map(op => ({
+      type: 'operand' as const,
+      value: op.name,
+      label: op.label,
+      displayValue: op.label,
+      operandType: op.type
+    }));
+    
     this.emitChange();
   }
 
@@ -1027,8 +1038,10 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     const lowercaseInput = input.toLowerCase();
     const lastToken = this.tokens[this.tokens.length - 1];
 
-    // Reset suggestions if we're in a clean state or after a logical operator
-    if (this.tokens.length === 0 || (lastToken && this.isLogicalToken(lastToken))) {
+    // Reset suggestions if we're in a clean state, after a logical operator, or after an opening bracket
+    if (this.tokens.length === 0 || 
+        (lastToken && (this.isLogicalToken(lastToken) || (this.isBracketToken(lastToken) && lastToken.value === '(')))
+    ) {
       this.suggestions = this.config.operands
         .filter(op => op.label.toLowerCase().includes(lowercaseInput))
         .map(op => ({
@@ -1178,6 +1191,12 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     let operatorCount = 0;
     let valueCount = 0;
     let inClauseActive = false;
+
+    // Check if the last token is a logical operator
+    const lastTokenInSequence = this.tokens[this.tokens.length - 1];
+    if (this.isLogicalToken(lastTokenInSequence)) {
+      return 'Expression cannot end with a logical operator';
+    }
 
     for (let i = 0; i < this.tokens.length; i++) {
       const token = this.tokens[i];
