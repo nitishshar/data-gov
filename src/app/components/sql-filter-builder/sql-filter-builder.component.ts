@@ -1812,9 +1812,10 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
    * @param token The token that was clicked
    */
   onCollapsedValueClick(token: ValueToken) {
-    if (!token.isCollapsed || !token.fullValues) return;
+    // If not collapsed and collapseInFilterValues is not enabled, do nothing
+    if (!token.isCollapsed && !this.collapseInFilterValues) return;
 
-    // Find the operand for this IN clause
+    // Find the operand for this value
     let operandToken: OperandToken | null = null;
     for (let i = this.tokens.length - 1; i >= 0; i--) {
       if (this.isOperandToken(this.tokens[i])) {
@@ -1828,15 +1829,47 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     const operand = this.config.operands.find(op => op.name === operandToken!.value);
     if (!operand) return;
 
+    // If the token is not collapsed but collapseInFilterValues is true,
+    // we need to find all values in this IN clause
+    if (!token.isCollapsed && this.collapseInFilterValues) {
+      let inClauseValues: FilterToken[] = [];
+      let foundValue = false;
+      let inClauseActive = false;
+
+      for (let i = 0; i < this.tokens.length; i++) {
+        const t = this.tokens[i];
+        if (this.isOperatorToken(t) && (t.value === 'IN' || t.value === 'NOT IN')) {
+          inClauseActive = true;
+          continue;
+        }
+        if (inClauseActive) {
+          if (this.isValueToken(t)) {
+            if (t === token) {
+              foundValue = true;
+            }
+            if (foundValue) {
+              inClauseValues.push(t);
+            }
+          } else if (this.isCloseBracket(t) && foundValue) {
+            break;
+          }
+        }
+      }
+
+      if (inClauseValues.length > 0) {
+        token.fullValues = inClauseValues;
+      }
+    }
+
     // Set up the active IN clause for editing
     this.activeInClause = {
       operand,
-      values: token.fullValues.map((v: FilterToken) => ({
+      values: token.fullValues?.map((v: FilterToken) => ({
         type: 'value' as const,
         value: v.value,
         label: v.displayValue || v.value,
         displayValue: v.displayValue || v.value
-      }))
+      })) || []
     };
 
     // Set up multi-select mode
