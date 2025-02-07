@@ -2256,6 +2256,16 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
         displayValue: token.displayValue || token.value,
         operandType: token.operandType
       }];
+      
+      // Focus and select the input value immediately with a longer delay
+      setTimeout(() => {
+        if (this.filterInput?.nativeElement) {
+          const input = this.filterInput.nativeElement;
+          input.focus();
+          input.value = token.value; // Ensure the value is set
+          input.setSelectionRange(0, input.value.length); // More reliable way to select text
+        }
+      }, 50); // Increased delay to ensure DOM is ready
     }
     // For select type, show all available options
     else if (token.operandType === 'select' && operand.options) {
@@ -2266,6 +2276,13 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
         displayValue: opt.label,
         operandType: token.operandType
       }));
+      
+      // For select type, just focus without selecting
+      setTimeout(() => {
+        if (this.filterInput?.nativeElement) {
+          this.filterInput.nativeElement.focus();
+        }
+      });
     }
     // For select type with async options
     else if (token.operandType === 'select' && operand.optionsLoader) {
@@ -2286,6 +2303,13 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
           this.isLoading = false;
         }
       );
+      
+      // For select type, just focus without selecting
+      setTimeout(() => {
+        if (this.filterInput?.nativeElement) {
+          this.filterInput.nativeElement.focus();
+        }
+      });
     }
 
     // Position dropdown near the clicked value
@@ -2295,15 +2319,6 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       top: rect.bottom + window.scrollY,
       left: rect.left + window.scrollX
     };
-
-    // Focus the input and select the text
-    setTimeout(() => {
-      if (this.filterInput?.nativeElement) {
-        const input = this.filterInput.nativeElement;
-        input.focus();
-        input.setSelectionRange(0, input.value.length);
-      }
-    });
   }
 
   /** Whether editing is allowed without explicitly entering edit mode */
