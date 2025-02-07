@@ -19,6 +19,7 @@
             </i>
           </div>
           <i class="bi bi-pencil ms-2 cursor-pointer" (click)="toggleEditMode()" [class.active]="isEditMode"></i>
+          <i class="bi bi-x-lg ms-2 cursor-pointer" (click)="clearAllTokens()" title="Clear all filters"></i>
         </div>
         <span *ngFor="let token of displayTokens" 
               class="token"

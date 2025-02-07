@@ -2185,6 +2185,23 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Clears all tokens and resets the filter builder */
+  clearAllTokens() {
+    this.tokens = [];
+    this.currentOperand = null;
+    this.currentOperator = null;
+    this.showSuggestions = false;
+    this.selectedSuggestionIndex = -1;
+    this.isAutocompleteMode = false;
+    this.isMultiSelectMode = false;
+    this.selectedValues = [];
+    this.inputValue = '';
+    this.bracketCount = 0;
+    this.activeValueEdit = null;
+    this.activeInClause = null;
+    this.emitChange();
+  }
+
   /** Handles click on a value token for editing */
   onValueClick(token: ValueToken, event: MouseEvent) {
     if (!this.isEditingAllowed || !token.operandType || !['text', 'number', 'select'].includes(token.operandType)) return;
