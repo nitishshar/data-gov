@@ -2,6 +2,24 @@
   <div class="form-group">
     <div class="input-container">
       <div class="tokens-display" [class.has-error]="validationError">
+        <div *ngIf="showGeneratedSql && tokens.length > 0" class="sql-info">
+          <div class="info-icon">
+            <i class="bi bi-info-circle">
+              <div class="sql-tooltip">
+                <div class="tooltip-content">
+                  <div>Generated SQL:</div>
+                  <div class="sql-code">
+                    {{ generatedSql }}
+                    <button class="copy-button" [class.copied]="isCopied" (click)="copySQL($event)" [title]="isCopied ? 'Copied!' : 'Copy SQL'">
+                      <i class="bi" [class.bi-clipboard]="!isCopied" [class.bi-clipboard-check]="isCopied"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </i>
+          </div>
+          <i class="bi bi-pencil ms-2 cursor-pointer" (click)="toggleEditMode()" [class.active]="isEditMode"></i>
+        </div>
         <span *ngFor="let token of displayTokens" 
               class="token"
               [class.editing]="isEditingAllowed && token.type === 'operand'"
@@ -38,24 +56,6 @@
           <div class="spinner-border spinner-border-sm text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
           </div>
-        </div>
-        <div *ngIf="showGeneratedSql && tokens.length > 0" class="sql-info">
-          <div class="info-icon">
-            <i class="bi bi-info-circle">
-              <div class="sql-tooltip">
-                <div class="tooltip-content">
-                  <div>Generated SQL:</div>
-                  <div class="sql-code">
-                    {{ generatedSql }}
-                    <button class="copy-button" [class.copied]="isCopied" (click)="copySQL($event)" [title]="isCopied ? 'Copied!' : 'Copy SQL'">
-                      <i class="bi" [class.bi-clipboard]="!isCopied" [class.bi-clipboard-check]="isCopied"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </i>
-          </div>
-          <i class="bi bi-pencil ms-2 cursor-pointer" (click)="toggleEditMode()" [class.active]="isEditMode"></i>
         </div>
       </div>
       <div *ngIf="validationError" class="validation-error">
