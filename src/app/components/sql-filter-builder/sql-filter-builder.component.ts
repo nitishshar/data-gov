@@ -486,6 +486,12 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
    * @example Handles selection of operands, operators, and values
    */
   selectSuggestion(suggestion: FilterSuggestion) {
+    // If we're editing an existing operator, handle it differently
+    if (this.currentOperator && this.currentOperand && suggestion.type === 'operator') {
+      this.onOperatorChange(suggestion);
+      return;
+    }
+
     // Handle both IN and NOT IN operators consistently
     if (suggestion.type === 'operator' && (suggestion.value === 'IN' || suggestion.value === 'NOT IN')) {
       this.currentOperator = this.config.operators.find(op => op.symbol === suggestion.value) || null;
