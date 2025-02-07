@@ -2183,7 +2183,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
 
   /** Handles click on a value token for editing */
   onValueClick(token: ValueToken, event: MouseEvent) {
-    if (!this.isEditMode || !token.operandType || !['text', 'number'].includes(token.operandType)) return;
+    if (!this.isEditMode || !token.operandType || !['text', 'number', 'select'].includes(token.operandType)) return;
 
     // Find the operand for this value
     let operandToken: OperandToken | null = null;
@@ -2235,6 +2235,36 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
         displayValue: token.displayValue || token.value,
         operandType: token.operandType
       }];
+    }
+    // For select type, show all available options
+    else if (token.operandType === 'select' && operand.options) {
+      this.suggestions = operand.options.map(opt => ({
+        type: 'value',
+        value: opt.value,
+        label: opt.label,
+        displayValue: opt.label,
+        operandType: token.operandType
+      }));
+    }
+    // For select type with async options
+    else if (token.operandType === 'select' && operand.optionsLoader) {
+      this.isLoading = true;
+      operand.optionsLoader('').subscribe(
+        options => {
+          this.suggestions = options.map(opt => ({
+            type: 'value',
+            value: opt.value,
+            label: opt.label,
+            displayValue: opt.label,
+            operandType: token.operandType
+          }));
+          this.isLoading = false;
+        },
+        error => {
+          console.error('Error loading options:', error);
+          this.isLoading = false;
+        }
+      );
     }
 
     // Position dropdown near the clicked value

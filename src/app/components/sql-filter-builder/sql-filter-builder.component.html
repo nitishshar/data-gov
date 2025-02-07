@@ -5,7 +5,7 @@
         <span *ngFor="let token of displayTokens" 
               class="token"
               [class.editing]="isEditMode && token.type === 'operand'"
-              [class.clickable]="token.type === 'value' && (token.isCollapsed || isEditMode && (token.operandType === 'text' || token.operandType === 'number')) || token.type === 'operator'"
+              [class.clickable]="token.type === 'value' && (token.isCollapsed || isEditMode && (token.operandType === 'text' || token.operandType === 'number' || token.operandType === 'select')) || token.type === 'operator'"
               [class.operand]="token.type === 'operand'"
               [class.operator]="token.type === 'operator'"
               [class.value]="token.type === 'value'"
@@ -13,7 +13,7 @@
               [class.bracket]="token.type === 'bracket'"
               (click)="token.type === 'value' && token.isCollapsed ? onCollapsedValueClick(token) : 
                       token.type === 'operator' ? onOperatorClick(token, $event) : 
-                      token.type === 'value' && isEditMode && (token.operandType === 'text' || token.operandType === 'number') ? onValueClick(token, $event) : null">
+                      token.type === 'value' && isEditMode && (token.operandType === 'text' || token.operandType === 'number' || token.operandType === 'select') ? onValueClick(token, $event) : null">
           <span *ngIf="isEditMode && token.type === 'operand' && token.groupId" class="delete-button" (click)="removeFilterGroup(token.groupId)">
             <i class="bi bi-x"></i>
           </span>
