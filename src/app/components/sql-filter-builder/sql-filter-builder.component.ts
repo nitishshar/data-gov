@@ -128,6 +128,9 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   /** Copy timeout reference */
   private copyTimeout: any;
 
+  /** Currently active value being edited */
+  private activeValueEdit: { index: number, token: ValueToken } | null = null;
+
   /**
    * Whether to show the generated SQL preview
    * @returns boolean based on config setting
@@ -238,6 +241,21 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     const input = (event.target as HTMLInputElement).value;
     this.updateDropdownPosition();
     
+    // If we're editing a value, update suggestions based on the input
+    if (this.activeValueEdit) {
+      this.inputValue = input;
+      if (this.activeValueEdit.token.operandType === 'text' || this.activeValueEdit.token.operandType === 'number') {
+        this.suggestions = [{
+          type: 'value',
+          value: input,
+          label: input,
+          displayValue: input,
+          operandType: this.activeValueEdit.token.operandType
+        }];
+      }
+      return;
+    }
+
     // Handle direct operator input
     if (this.currentOperand && !this.currentOperator) {
       // Check for compound operators (>=, <=, <>, etc.)
@@ -340,6 +358,14 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     const relatedTarget = event.relatedTarget as HTMLElement;
     if (!relatedTarget || !relatedTarget.closest('.suggestions-dropdown')) {
       setTimeout(() => {
+        // If we were editing a value, reset the state
+        if (this.activeValueEdit) {
+          this.activeValueEdit = null;
+          this.showSuggestions = false;
+          this.inputValue = '';
+          return;
+        }
+
         // Reset operator editing state if we were editing an operator
         if (this.currentOperator && this.currentOperand) {
           const lastToken = this.tokens[this.tokens.length - 1];
@@ -429,6 +455,28 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
    * @example Handles navigation and selection in suggestions
    */
   onKeyDown(event: KeyboardEvent) {
+    // If editing a value and Enter is pressed, update the value
+    if (this.activeValueEdit && event.key === 'Enter') {
+      event.preventDefault();
+      this.selectSuggestion({
+        type: 'value',
+        value: this.inputValue,
+        label: this.inputValue,
+        displayValue: this.inputValue,
+        operandType: this.activeValueEdit.token.operandType
+      });
+      return;
+    }
+
+    // If editing a value and Escape is pressed, cancel editing
+    if (this.activeValueEdit && event.key === 'Escape') {
+      event.preventDefault();
+      this.activeValueEdit = null;
+      this.showSuggestions = false;
+      this.inputValue = '';
+      return;
+    }
+
     // Handle parentheses with keyboard
     if (event.key === '(') {
       event.preventDefault();
@@ -486,9 +534,21 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
    * @example Handles selection of operands, operators, and values
    */
   selectSuggestion(suggestion: FilterSuggestion) {
-    // If we're editing an existing operator, handle it differently
-    if (this.currentOperator && this.currentOperand && suggestion.type === 'operator') {
-      this.onOperatorChange(suggestion);
+    // If we're editing a value, update it instead of adding a new one
+    if (this.activeValueEdit && suggestion.type === 'value') {
+      this.tokens[this.activeValueEdit.index] = {
+        type: 'value',
+        value: suggestion.value,
+        displayValue: suggestion.displayValue,
+        operandType: this.currentOperand?.type || suggestion.operandType,
+        groupId: this.activeValueEdit.token.groupId
+      };
+      
+      // Reset state
+      this.activeValueEdit = null;
+      this.showSuggestions = false;
+      this.inputValue = '';
+      this.emitChange();
       return;
     }
 
@@ -536,7 +596,8 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
             type: 'value',
             value: suggestion.value,
             displayValue: suggestion.displayValue,
-            operandType: suggestion.operandType
+            operandType: this.currentOperand.type, // Set operandType from currentOperand
+            groupId: this.tokens[this.tokens.length - 1]?.groupId
           };
           this.tokens.push(token);
           this.inputValue = '';
@@ -562,7 +623,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
           type: 'value',
           value: suggestion.value,
           displayValue: suggestion.displayValue,
-          operandType: suggestion.operandType
+          operandType: this.currentOperand?.type || suggestion.operandType
         };
         break;
       case 'logical':
@@ -1812,10 +1873,9 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
    * @param token The token that was clicked
    */
   onCollapsedValueClick(token: ValueToken) {
-    // If not collapsed and collapseInFilterValues is not enabled, do nothing
-    if (!token.isCollapsed && !this.collapseInFilterValues) return;
+    if (!token.isCollapsed || !token.fullValues) return;
 
-    // Find the operand for this value
+    // Find the operand for this IN clause
     let operandToken: OperandToken | null = null;
     for (let i = this.tokens.length - 1; i >= 0; i--) {
       if (this.isOperandToken(this.tokens[i])) {
@@ -1829,47 +1889,15 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     const operand = this.config.operands.find(op => op.name === operandToken!.value);
     if (!operand) return;
 
-    // If the token is not collapsed but collapseInFilterValues is true,
-    // we need to find all values in this IN clause
-    if (!token.isCollapsed && this.collapseInFilterValues) {
-      let inClauseValues: FilterToken[] = [];
-      let foundValue = false;
-      let inClauseActive = false;
-
-      for (let i = 0; i < this.tokens.length; i++) {
-        const t = this.tokens[i];
-        if (this.isOperatorToken(t) && (t.value === 'IN' || t.value === 'NOT IN')) {
-          inClauseActive = true;
-          continue;
-        }
-        if (inClauseActive) {
-          if (this.isValueToken(t)) {
-            if (t === token) {
-              foundValue = true;
-            }
-            if (foundValue) {
-              inClauseValues.push(t);
-            }
-          } else if (this.isCloseBracket(t) && foundValue) {
-            break;
-          }
-        }
-      }
-
-      if (inClauseValues.length > 0) {
-        token.fullValues = inClauseValues;
-      }
-    }
-
     // Set up the active IN clause for editing
     this.activeInClause = {
       operand,
-      values: token.fullValues?.map((v: FilterToken) => ({
+      values: token.fullValues.map((v: FilterToken) => ({
         type: 'value' as const,
         value: v.value,
         label: v.displayValue || v.value,
         displayValue: v.displayValue || v.value
-      })) || []
+      }))
     };
 
     // Set up multi-select mode
@@ -2131,6 +2159,80 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       this.copyTimeout = setTimeout(() => {
         this.isCopied = false;
       }, 2000);
+    });
+  }
+
+  /** Handles click on a value token for editing */
+  onValueClick(token: ValueToken, event: MouseEvent) {
+    if (!this.isEditMode || !token.operandType || !['text', 'number'].includes(token.operandType)) return;
+
+    // Find the operand for this value
+    let operandToken: OperandToken | null = null;
+    let operatorToken: OperatorToken | null = null;
+    
+    // Find the operand and operator for this value by looking backwards
+    for (let i = this.tokens.findIndex(t => t === token) - 1; i >= 0; i--) {
+      const currentToken = this.tokens[i];
+      if (!operatorToken && this.isOperatorToken(currentToken)) {
+        operatorToken = currentToken;
+      }
+      if (!operandToken && this.isOperandToken(currentToken)) {
+        operandToken = currentToken;
+        break;
+      }
+    }
+
+    if (!operandToken) return;
+
+    const operand = this.config.operands.find(op => op.name === operandToken!.value);
+    if (!operand) return;
+
+    // Find the index of the value token
+    const tokenIndex = this.tokens.findIndex(t => t === token);
+    if (tokenIndex === -1) return;
+
+    // Set up for value editing
+    this.activeValueEdit = {
+      index: tokenIndex,
+      token: token
+    };
+
+    // Set current state
+    this.currentOperand = operand;
+    this.currentOperator = operatorToken ? 
+      this.config.operators.find(op => op.symbol === operatorToken.value) || null : 
+      null;
+
+    // Show the input field with current value
+    this.inputValue = token.value;
+    this.showSuggestions = true;
+
+    // For text/number types, show the current value as a suggestion
+    if (token.operandType === 'text' || token.operandType === 'number') {
+      this.suggestions = [{
+        type: 'value',
+        value: token.value,
+        label: token.displayValue || token.value,
+        displayValue: token.displayValue || token.value,
+        operandType: token.operandType
+      }];
+    }
+
+    // Position dropdown near the clicked value
+    const target = event.target as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    this.dropdownPosition = {
+      top: rect.bottom + window.scrollY,
+      left: rect.left + window.scrollX
+    };
+
+    // Focus the input and select the text
+    setTimeout(() => {
+      if (this.filterInput?.nativeElement) {
+        const input = this.filterInput.nativeElement;
+        input.focus();
+        input.setSelectionRange(0, input.value.length);
+      }
     });
   }
 } 
