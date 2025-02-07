@@ -71,6 +71,7 @@ export interface FilterConfig {
   logicalOperators: LogicalOperator[];
   showGeneratedSql?: boolean;
   outputFormat?: FilterOutputFormat;
+  defaultEditMode?: boolean;
 }
 
 export type TokenType = 'operand' | 'operator' | 'value' | 'logical' | 'bracket';

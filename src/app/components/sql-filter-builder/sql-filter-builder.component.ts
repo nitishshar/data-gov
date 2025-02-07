@@ -1949,6 +1949,8 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
 
   /** Handles click on an operator token */
   onOperatorClick(token: OperatorToken, event: MouseEvent) {
+    if (!this.isEditingAllowed) return;
+
     const operandToken = this.findOperandForOperator(token);
     if (!operandToken) return;
 
@@ -2066,6 +2068,8 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
 
   /** Removes a filter group */
   removeFilterGroup(groupId: string) {
+    if (!this.isEditingAllowed) return;
+
     // Find the start and end indices of the group
     const tokens = [...this.tokens];
     let startIndex = -1;
@@ -2183,7 +2187,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
 
   /** Handles click on a value token for editing */
   onValueClick(token: ValueToken, event: MouseEvent) {
-    if (!this.isEditMode || !token.operandType || !['text', 'number', 'select'].includes(token.operandType)) return;
+    if (!this.isEditingAllowed || !token.operandType || !['text', 'number', 'select'].includes(token.operandType)) return;
 
     // Find the operand for this value
     let operandToken: OperandToken | null = null;
@@ -2283,5 +2287,15 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
         input.setSelectionRange(0, input.value.length);
       }
     });
+  }
+
+  /** Whether editing is allowed without explicitly entering edit mode */
+  get allowDirectEditing(): boolean {
+    return this.config.defaultEditMode ?? false;
+  }
+
+  /** Whether editing is currently allowed */
+  get isEditingAllowed(): boolean {
+    return this.isEditMode || this.allowDirectEditing;
   }
 } 

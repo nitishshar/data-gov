@@ -168,7 +168,8 @@ export class AppComponent implements OnInit {
     logicalOperators: [
       { value: 'AND', label: 'AND' },
       { value: 'OR', label: 'OR' }
-    ]
+    ],
+    defaultEditMode: true
   };
 
   constructor(
