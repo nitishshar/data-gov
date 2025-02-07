@@ -444,10 +444,9 @@
   .info-icon {
     position: relative;
 
-    &:hover {
-      .sql-tooltip {
-        display: block;
-      }
+    &:hover .sql-tooltip,
+    .sql-tooltip:hover {
+      display: block;
     }
 
     i {
