@@ -10,7 +10,7 @@ export class FleetDataService {
     missionStatement: '',
     leadership: '',
     objectives: [],
-    tools: [],
+    tools: [] as any[],
     programs: [],
     squads: [],
     accomplishments: []

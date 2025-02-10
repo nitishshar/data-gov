@@ -6,10 +6,26 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSelectModule } from '@angular/material/select';
-import { MatChipsModule } from '@angular/material/chips';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { FleetDataService } from '../../services/fleet-management.service';
+
+interface Tool {
+  id: string;
+  name: string;
+  description: string;
+  squad: string;
+  color: string;
+  link: string;
+  documentation?: string;
+  support: {
+    type: 'text' | 'link';
+    content: string;
+  };
+  features: string[];
+  technicalDetails: string[];
+}
 
 @Component({
   selector: 'app-tools-edit',
@@ -22,433 +38,483 @@ import { FleetDataService } from '../../services/fleet-management.service';
     MatInputModule,
     MatButtonModule,
     MatIconModule,
-    MatSnackBarModule,
     MatSelectModule,
-    MatChipsModule
+    MatExpansionModule
   ],
   template: `
-    <div class="admin-tools-container">
-      <!-- Intro Section -->
-      <div class="glass-container intro-section">
-        <form [formGroup]="introForm" class="intro-form">
-          <mat-form-field appearance="outline" class="title-field">
-            <mat-label>Page Title</mat-label>
-            <input matInput formControlName="title" placeholder="Enter page title">
-          </mat-form-field>
+    <div class="tools-edit">
+      <mat-card class="header-card">
+        <mat-card-header>
+          <mat-card-title>Tools Administration</mat-card-title>
+          <mat-card-subtitle>Manage and customize your tools details</mat-card-subtitle>
+        </mat-card-header>
+      </mat-card>
 
-          <mat-form-field appearance="outline" class="description-field">
-            <mat-label>Page Description</mat-label>
-            <textarea matInput formControlName="description" 
-                      placeholder="Enter page description" rows="3">
-            </textarea>
-          </mat-form-field>
+      <form [formGroup]="toolForm" (ngSubmit)="saveTool()">
+        <!-- Basic Info Section -->
+        <mat-expansion-panel expanded="true">
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon>info</mat-icon>
+              Basic Information
+            </mat-panel-title>
+          </mat-expansion-panel-header>
 
-          <button mat-raised-button color="primary" 
-                  (click)="saveIntro()"
-                  [disabled]="!introForm.valid">
-            <mat-icon>save</mat-icon>
-            Save Intro
-          </button>
-        </form>
-      </div>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Select Tool</mat-label>
+              <mat-select formControlName="toolId" (selectionChange)="onToolSelect($event)">
+                <mat-option *ngFor="let tool of availableTools" [value]="tool.id">
+                  {{tool.id}} - {{tool.name}}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
 
-      <!-- Tools Edit Form -->
-      <div class="glass-container">
-        <form [formGroup]="toolsForm" class="tools-form">
-          <div formArrayName="tools">
-            <div *ngFor="let tool of toolsArray.controls; let i = index" 
-                 [formGroupName]="i" 
-                 class="tool-edit-card"
-                 [ngClass]="'color-' + (i % 3 + 1)">
-              
-              <div class="card-header">
-                <mat-form-field appearance="outline" class="header-title">
-                  <mat-label>Section Title</mat-label>
-                  <input matInput formControlName="sectionTitle" 
-                         placeholder="Enter section title">
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Tool Name</mat-label>
+              <input matInput formControlName="name" placeholder="Enter tool name">
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Description</mat-label>
+              <textarea matInput formControlName="description" rows="4" placeholder="Enter description"></textarea>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Squad</mat-label>
+              <mat-select formControlName="squad">
+                <mat-option *ngFor="let squad of availableSquads" [value]="squad.id">
+                  {{squad.name}}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Color</mat-label>
+              <input matInput formControlName="color" type="color">
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Link</mat-label>
+              <input matInput formControlName="link" placeholder="Enter tool link">
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Documentation</mat-label>
+              <input matInput formControlName="documentation" placeholder="Enter documentation link">
+            </mat-form-field>
+          </div>
+        </mat-expansion-panel>
+
+        <!-- Support Section -->
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon>support</mat-icon>
+              Support Information
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+
+          <div formGroupName="support">
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>Type</mat-label>
+                <mat-select formControlName="type">
+                  <mat-option value="text">Text</mat-option>
+                  <mat-option value="link">Link</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Content</mat-label>
+                <textarea matInput formControlName="content" rows="4" placeholder="Enter support content"></textarea>
+              </mat-form-field>
+            </div>
+          </div>
+        </mat-expansion-panel>
+
+        <!-- Features Section -->
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon>featured_play_list</mat-icon>
+              Features
+            </mat-panel-title>
+            <mat-panel-description>
+              <button mat-raised-button color="primary" type="button" (click)="$event.stopPropagation(); addFeature()">
+                <mat-icon>add</mat-icon>
+                Add Feature
+              </button>
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+
+          <div formArrayName="features">
+            <div *ngFor="let feature of features.controls; let i = index" class="array-item">
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Feature</mat-label>
+                  <input matInput [formControlName]="i" placeholder="Enter feature">
                 </mat-form-field>
-                <button mat-icon-button color="warn" (click)="removeTool(i)" type="button">
+                <button mat-icon-button color="warn" type="button" (click)="removeFeature(i)">
                   <mat-icon>delete</mat-icon>
                 </button>
               </div>
+            </div>
+          </div>
+        </mat-expansion-panel>
 
-              <div class="form-grid">
-                <mat-form-field appearance="outline">
-                  <mat-label>Tool Name</mat-label>
-                  <input matInput formControlName="name" placeholder="Enter tool name">
-                  <mat-error *ngIf="tool.get('name')?.hasError('required')">
-                    Tool name is required
-                  </mat-error>
+        <!-- Technical Details Section -->
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon>code</mat-icon>
+              Technical Details
+            </mat-panel-title>
+            <mat-panel-description>
+              <button mat-raised-button color="primary" type="button" (click)="$event.stopPropagation(); addTechnicalDetail()">
+                <mat-icon>add</mat-icon>
+                Add Detail
+              </button>
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+
+          <div formArrayName="technicalDetails">
+            <div *ngFor="let detail of technicalDetails.controls; let i = index" class="array-item">
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Technical Detail</mat-label>
+                  <input matInput [formControlName]="i" placeholder="Enter technical detail">
                 </mat-form-field>
-
-                <mat-form-field appearance="outline">
-                  <mat-label>Description</mat-label>
-                  <textarea matInput formControlName="description" 
-                            placeholder="Enter tool description" rows="3">
-                  </textarea>
-                  <mat-error *ngIf="tool.get('description')?.hasError('required')">
-                    Description is required
-                  </mat-error>
-                </mat-form-field>
-
-                <mat-form-field appearance="outline">
-                  <mat-label>Color Theme</mat-label>
-                  <input matInput formControlName="color" type="color">
-                </mat-form-field>
-
-                <mat-form-field appearance="outline">
-                  <mat-label>Tool Link</mat-label>
-                  <input matInput formControlName="link" placeholder="Enter tool link">
-                  <mat-error *ngIf="tool.get('link')?.hasError('required')">
-                    Tool link is required
-                  </mat-error>
-                </mat-form-field>
-
-                <mat-form-field appearance="outline">
-                  <mat-label>Documentation Link</mat-label>
-                  <input matInput formControlName="documentation" placeholder="Enter documentation link">
-                </mat-form-field>
-
-                <mat-form-field appearance="outline">
-                  <mat-label>Managing Squad</mat-label>
-                  <mat-select formControlName="squad">
-                    <mat-option value="Fleet Operations Squad">Fleet Operations Squad</mat-option>
-                    <mat-option value="Technical Squad">Technical Squad</mat-option>
-                    <mat-option value="Innovation Squad">Innovation Squad</mat-option>
-                  </mat-select>
-                </mat-form-field>
-
-                <div class="features-section" formArrayName="features">
-                  <h3>Key Features</h3>
-                  <div class="features-list">
-                    <div *ngFor="let feature of getFeatures(i).controls; let j = index">
-                      <mat-form-field appearance="outline">
-                        <mat-label>Feature {{j + 1}}</mat-label>
-                        <input matInput [formControlName]="j" placeholder="Enter feature">
-                        <button mat-icon-button matSuffix color="warn" 
-                                (click)="removeFeature(i, j)" type="button">
-                          <mat-icon>remove_circle</mat-icon>
-                        </button>
-                      </mat-form-field>
-                    </div>
-                  </div>
-                  <button mat-stroked-button color="primary" 
-                          (click)="addFeature(i)" type="button">
-                    <mat-icon>add</mat-icon>
-                    Add Feature
-                  </button>
-                </div>
+                <button mat-icon-button color="warn" type="button" (click)="removeTechnicalDetail(i)">
+                  <mat-icon>delete</mat-icon>
+                </button>
               </div>
             </div>
           </div>
+        </mat-expansion-panel>
 
-          <div class="section-actions">
-            <button mat-raised-button color="primary" 
-                    (click)="addTool()" type="button">
-              <mat-icon>add</mat-icon>
-              Add New Tool
-            </button>
-            <button mat-raised-button color="accent" 
-                    (click)="saveTools()" 
-                    [disabled]="!toolsForm.valid">
+        <div class="form-actions">
+          <div class="action-buttons">
+            <button mat-stroked-button type="button">Cancel</button>
+            <button mat-flat-button color="primary" type="submit">
               <mat-icon>save</mat-icon>
               Save Changes
             </button>
           </div>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   `,
   styles: [`
-    :host {
-      display: block;
-      min-height: 100vh;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    }
-
-    .admin-tools-container {
-      padding: 2rem 1rem;
+    .tools-edit {
       max-width: 1200px;
-      margin: 0 auto;
+      margin: 2rem auto;
+      padding: 0 2rem;
     }
 
-    .intro-section {
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(5px);
-      border-radius: 0.5rem;
-      padding: 1.5rem;
+    .header-card {
       margin-bottom: 2rem;
-      box-shadow: 0 4px 16px rgba(31, 38, 135, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-
-      .intro-form {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-
-        .title-field {
-          width: 100%;
-          
-          input {
-            font-size: 1.8rem;
-            font-weight: 300;
-            color: #2c3e50;
-          }
-        }
-
-        .description-field {
-          width: 100%;
-
-          textarea {
-            font-size: 1.2rem;
-            line-height: 1.6;
-          }
-        }
-      }
-    }
-
-    .tools-form {
-      display: flex;
-      flex-direction: column;
-      gap: 2rem;
-    }
-
-    .tool-edit-card {
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(5px);
-      border-radius: 0.5rem;
-      margin-bottom: 2rem;
-      box-shadow: 0 4px 16px rgba(31, 38, 135, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-    }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1.5rem 2rem;
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(5px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-
-      .header-title {
-        flex: 1;
-        margin-right: 1rem;
-        
-        input {
-          font-size: 1.8rem;
-          font-weight: 300;
-          color: #2c3e50;
-        }
-      }
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1.5rem;
-      padding: 2rem;
-
-      mat-form-field {
-        width: 100%;
-      }
-    }
-
-    .features-section {
-      grid-column: 1 / -1;
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(5px);
-      padding: 1.5rem;
-      border-radius: 0.5rem;
-      border: 1px solid rgba(255, 255, 255, 0.18);
-
-      h3 {
+      background: #fff;
+      
+      mat-card-title {
+        font-size: 1.75rem;
+        margin-bottom: 0.5rem;
         color: #2c3e50;
-        margin-bottom: 1.5rem;
-        font-weight: 500;
       }
 
-      .features-list {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
+      mat-card-subtitle {
+        color: #6c757d;
       }
     }
 
-    .section-actions {
+    mat-expansion-panel {
+      margin-bottom: 1rem;
+      background: #fff;
+
+      .mat-expansion-panel-header {
+        height: auto;
+        padding: 1rem 1.5rem;
+
+        &.mat-expanded {
+          height: auto;
+        }
+      }
+
+      .mat-expansion-panel-header-title {
+        align-items: center;
+        gap: 0.5rem;
+        color: #2c3e50;
+        font-size: 1.1rem;
+        
+        mat-icon {
+          color: #6c757d;
+        }
+      }
+
+      .mat-expansion-panel-header-description {
+        justify-content: flex-end;
+        align-items: center;
+        margin: 0;
+      }
+    }
+
+    .form-row {
       display: flex;
-      justify-content: flex-end;
       gap: 1rem;
-      padding: 1rem 2rem;
-      background: rgba(255, 255, 255, 0.5);
-      border-top: 1px solid rgba(255, 255, 255, 0.18);
+      margin-bottom: 1rem;
+      align-items: flex-start;
+
+      .mat-mdc-form-field {
+        flex: 1;
+        font-size: 14px;
+      }
+
+      button {
+        margin-top: 0.5rem;
+      }
+    }
+
+    .array-item {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 4px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    .full-width {
+      width: 100%;
     }
 
     .form-actions {
       display: flex;
-      gap: 1rem;
       justify-content: flex-end;
+      gap: 1rem;
       margin-top: 2rem;
-    }
 
-    button {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      min-width: 120px;
-      border-radius: 4px;
-      padding: 0 24px;
-      height: 40px;
-
-      &.mat-mdc-raised-button {
-        background: #1976d2;
-        color: white;
-        
-        &:hover {
-          background: #1565c0;
-        }
-      }
-      
-      &.mat-mdc-outlined-button {
-        border: 1px solid rgba(0, 0, 0, 0.12);
-        background: transparent;
-        
-        &:hover {
-          background: rgba(0, 0, 0, 0.04);
-        }
+      button {
+        min-width: 120px;
       }
     }
 
     ::ng-deep {
-      .mat-mdc-form-field-outline {
-        background: rgba(255, 255, 255, 0.9);
+      .mdc-text-field--outlined {
+        --mdc-outlined-text-field-container-shape: 4px;
+        --mdc-outlined-text-field-outline-color: #dee2e6;
+        --mdc-outlined-text-field-focus-outline-color: #009bda;
       }
 
-      .mat-mdc-text-field-wrapper {
-        background: transparent;
-      }
-    }
+      .mat-expansion-panel {
+        .mat-expansion-panel-header {
+          &.mat-expanded,
+          &:hover {
+            background-color: rgba(0, 155, 218, 0.04);
+          }
+        }
 
-    textarea {
-      min-height: 100px;
-      resize: vertical;
+        .mat-expansion-indicator::after {
+          color: #009bda;
+        }
+      }
+
+      .mat-mdc-raised-button {
+        &.mat-primary {
+          --mdc-protected-button-container-color: #009bda;
+          --mdc-protected-button-label-text-color: #fff;
+
+          &:hover {
+            --mdc-protected-button-container-color: #0089c3;
+          }
+        }
+      }
     }
 
     @media (max-width: 768px) {
-      .form-grid {
-        grid-template-columns: 1fr;
+      .tools-edit {
+        padding: 1rem;
+        margin: 1rem auto;
       }
 
-      .admin-tools-container {
-        padding: 1rem;
+      .form-row {
+        flex-direction: column;
+        gap: 0;
+
+        .mat-mdc-form-field {
+          width: 100%;
+        }
+
+        button {
+          align-self: flex-end;
+        }
       }
 
       .form-actions {
-        flex-direction: column;
+        flex-direction: column-reverse;
         
         button {
           width: 100%;
+        }
+      }
+
+      mat-expansion-panel {
+        .mat-expansion-panel-header-description {
+          display: none;
         }
       }
     }
   `]
 })
 export class ToolsEditComponent implements OnInit {
-  toolsForm: FormGroup;
-  introForm: FormGroup;
+  toolForm!: FormGroup;
+  availableTools: Tool[] = [];
+  availableSquads: any[] = [];
 
   constructor(
     private fb: FormBuilder,
     private fleetService: FleetDataService,
     private snackBar: MatSnackBar
   ) {
-    this.toolsForm = this.fb.group({
-      tools: this.fb.array([])
-    });
-
-    this.introForm = this.fb.group({
-      title: ['Tools Management', Validators.required],
-      description: ['Manage and update the fleet management tools. Add new tools, edit existing ones, or remove outdated tools.', Validators.required]
-    });
+    this.initForm();
   }
 
   ngOnInit() {
-    const currentTools = this.fleetService.getFleetData()().tools;
-    currentTools.forEach((tool: any) => {
-      this.addTool(tool);
+    this.loadTools();
+    this.loadSquads();
+  }
+
+  private initForm() {
+    this.toolForm = this.fb.group({
+      toolId: ['', Validators.required],
+      name: ['', Validators.required],
+      description: ['', Validators.required],
+      squad: ['', Validators.required],
+      color: ['#bae1ff', Validators.required],
+      link: ['', Validators.required],
+      documentation: [''],
+      support: this.fb.group({
+        type: ['text', Validators.required],
+        content: ['', Validators.required]
+      }),
+      features: this.fb.array([]),
+      technicalDetails: this.fb.array([])
     });
   }
 
-  get toolsArray() {
-    return this.toolsForm.get('tools') as FormArray;
+  private loadTools() {
+    const fleetData = this.fleetService.getFleetData()();
+    if (fleetData?.tools) {
+      this.availableTools = fleetData.tools as Tool[];
+    }
   }
 
-  getFeatures(toolIndex: number): FormArray {
-    return this.toolsArray.at(toolIndex).get('features') as FormArray;
+  private loadSquads() {
+    const fleetData = this.fleetService.getFleetData()();
+    if (fleetData?.squads) {
+      this.availableSquads = fleetData.squads;
+    }
   }
 
-  addTool(tool?: any) {
-    const toolGroup = this.fb.group({
-      sectionTitle: [tool?.sectionTitle || `Tool ${this.toolsArray.length + 1}`, Validators.required],
-      name: [tool?.name || '', Validators.required],
-      description: [tool?.description || '', Validators.required],
-      color: [tool?.color || '#bae1ff', Validators.required],
-      link: [tool?.link || '', Validators.required],
-      documentation: [tool?.documentation || ''],
-      squad: [tool?.squad || 'Fleet Operations Squad', Validators.required],
-      features: this.fb.array(
-        tool?.features ? 
-          tool.features.map((f: string) => this.fb.control(f)) : 
-          [this.fb.control('')]
-      )
-    });
+  onToolSelect(event: any) {
+    const selectedTool = this.availableTools.find(tool => tool.id === event.value);
+    if (selectedTool) {
+      this.toolForm.patchValue({
+        name: selectedTool.name,
+        description: selectedTool.description,
+        squad: selectedTool.squad,
+        color: selectedTool.color,
+        link: selectedTool.link,
+        documentation: selectedTool.documentation,
+        support: selectedTool.support
+      });
 
-    this.toolsArray.push(toolGroup);
-  }
+      // Clear existing arrays
+      this.features.clear();
+      this.technicalDetails.clear();
 
-  addFeature(toolIndex: number) {
-    const features = this.getFeatures(toolIndex);
-    features.push(this.fb.control(''));
-  }
+      // Add new values
+      selectedTool.features?.forEach((feature: string) => {
+        this.features.push(this.fb.control(feature));
+      });
 
-  removeFeature(toolIndex: number, featureIndex: number) {
-    const features = this.getFeatures(toolIndex);
-    features.removeAt(featureIndex);
-  }
-
-  removeTool(index: number) {
-    this.toolsArray.removeAt(index);
-  }
-
-  saveIntro() {
-    if (this.introForm.valid) {
-      const currentData = this.fleetService.getFleetData()();
-      const updatedData = {
-        ...currentData,
-        toolsIntro: this.introForm.value
-      };
-      
-      this.fleetService.getFleetData().set(updatedData);
-      
-      this.snackBar.open('Tools intro updated successfully', 'Close', {
-        duration: 3000
+      selectedTool.technicalDetails?.forEach((detail: string) => {
+        this.technicalDetails.push(this.fb.control(detail));
       });
     }
   }
 
-  saveTools() {
-    if (this.toolsForm.valid) {
+  get features() {
+    return this.toolForm.get('features') as FormArray;
+  }
+
+  get technicalDetails() {
+    return this.toolForm.get('technicalDetails') as FormArray;
+  }
+
+  addFeature() {
+    this.features.push(this.fb.control(''));
+  }
+
+  removeFeature(index: number) {
+    this.features.removeAt(index);
+  }
+
+  addTechnicalDetail() {
+    this.technicalDetails.push(this.fb.control(''));
+  }
+
+  removeTechnicalDetail(index: number) {
+    this.technicalDetails.removeAt(index);
+  }
+
+  saveTool() {
+    if (this.toolForm.valid) {
       const currentData = this.fleetService.getFleetData()();
-      const updatedData = {
-        ...currentData,
-        tools: this.toolsForm.value.tools
-      };
+      const toolIndex = (currentData.tools as any[]).findIndex(t => t?.id === this.toolForm.value.toolId);
       
-      this.fleetService.getFleetData().set(updatedData);
-      
-      this.snackBar.open('Tools updated successfully', 'Close', {
-        duration: 3000
-      });
+      if (toolIndex !== -1) {
+        const updatedTool: Tool = {
+          id: this.toolForm.value.toolId,
+          name: this.toolForm.value.name,
+          description: this.toolForm.value.description,
+          squad: this.toolForm.value.squad,
+          color: this.toolForm.value.color,
+          link: this.toolForm.value.link,
+          documentation: this.toolForm.value.documentation,
+          support: this.toolForm.value.support,
+          features: this.toolForm.value.features,
+          technicalDetails: this.toolForm.value.technicalDetails
+        };
+        
+        const updatedTools = [
+          ...currentData.tools.slice(0, toolIndex),
+          updatedTool,
+          ...currentData.tools.slice(toolIndex + 1)
+        ];
+
+        this.fleetService.getFleetData().set({
+          ...currentData,
+          tools: updatedTools
+        });
+        
+        this.snackBar.open('Tool updated successfully', 'Close', {
+          duration: 3000
+        });
+      }
     } else {
       this.snackBar.open('Please fill in all required fields', 'Close', {
         duration: 3000
