@@ -33,7 +33,7 @@ import { FleetDataService } from '../../services/fleet-management.service';
     <div class="programs-edit">
       <mat-card class="header-card">
         <mat-card-header>
-          <mat-card-title>Program Administration</mat-card-title>
+          <mat-card-title>{{ selectedProgramTitle || 'Program Administration' }}</mat-card-title>
           <mat-card-subtitle>Manage and customize your program details</mat-card-subtitle>
         </mat-card-header>
       </mat-card>
@@ -47,6 +47,17 @@ import { FleetDataService } from '../../services/fleet-management.service';
               Basic Information
             </mat-panel-title>
           </mat-expansion-panel-header>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Select Program</mat-label>
+              <mat-select formControlName="programId" (selectionChange)="onProgramSelect($event)">
+                <mat-option *ngFor="let program of availablePrograms" [value]="program.id">
+                  {{program.id}} - {{program.title}}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
 
           <div class="form-row">
             <mat-form-field appearance="outline" class="full-width">
@@ -547,6 +558,8 @@ export class ProgramsEditComponent implements OnInit {
     'Tech Area Lead',
     'Testing -QA Manual'
   ];
+  availablePrograms: any[] = [];
+  selectedProgramTitle: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -558,10 +571,12 @@ export class ProgramsEditComponent implements OnInit {
 
   ngOnInit() {
     this.loadSquads();
+    this.loadPrograms();
   }
 
   private initForm() {
     this.programForm = this.fb.group({
+      programId: ['', Validators.required],
       title: ['', Validators.required],
       missionStatement: ['', Validators.required],
       description: ['', Validators.required],
@@ -578,6 +593,13 @@ export class ProgramsEditComponent implements OnInit {
     const fleetData = this.fleetService.getFleetData()();
     if (fleetData?.squads) {
       this.availableSquads = fleetData.squads;
+    }
+  }
+
+  private loadPrograms() {
+    const fleetData = this.fleetService.getFleetData()();
+    if (fleetData?.programs) {
+      this.availablePrograms = fleetData.programs;
     }
   }
 
@@ -687,6 +709,87 @@ export class ProgramsEditComponent implements OnInit {
 
   removeEvent(index: number) {
     this.events.removeAt(index);
+  }
+
+  onProgramSelect(event: any) {
+    const selectedProgram = this.availablePrograms.find(program => program.id === event.value);
+    if (selectedProgram) {
+      this.selectedProgramTitle = `Program: ${selectedProgram.title}`;
+      this.programForm.patchValue({
+        title: selectedProgram.title,
+        missionStatement: selectedProgram.missionStatement,
+        description: selectedProgram.description,
+        // ... patch other values ...
+      });
+
+      // Clear and repopulate arrays
+      this.milestones.clear();
+      this.leadership.clear();
+      this.documents.clear();
+      this.news.clear();
+      this.squads.clear();
+      this.events.clear();
+
+      // Add milestone values
+      selectedProgram.milestones?.forEach((milestone: any) => {
+        this.milestones.push(this.fb.group({
+          date: [milestone.date],
+          title: [milestone.title],
+          description: [milestone.description]
+        }));
+      });
+
+      // Add leadership values
+      selectedProgram.leadership?.forEach((leader: any) => {
+        this.leadership.push(this.fb.group({
+          userid: [leader.userid],
+          role: [leader.role]
+        }));
+      });
+
+      // Add document values
+      selectedProgram.documents?.forEach((doc: any) => {
+        this.documents.push(this.fb.group({
+          name: [doc.name],
+          squad: [doc.squad],
+          editor: this.fb.group({
+            userid: [doc.editor.userid],
+            role: [doc.editor.role]
+          }),
+          editedAt: [doc.editedAt]
+        }));
+      });
+
+      // Add news values
+      selectedProgram.news?.forEach((item: any) => {
+        this.news.push(this.fb.group({
+          title: [item.title],
+          description: [item.description],
+          link: [item.link],
+          date: [item.date]
+        }));
+      });
+
+      // Add squad values
+      selectedProgram.squads?.forEach((squad: any) => {
+        this.squads.push(this.fb.group({
+          name: [squad.name],
+          description: [squad.description],
+          members: [squad.members],
+          progress: [squad.progress]
+        }));
+      });
+
+      // Add event values
+      selectedProgram.events?.forEach((event: any) => {
+        this.events.push(this.fb.group({
+          title: [event.title],
+          description: [event.description],
+          type: [event.type],
+          date: [event.date]
+        }));
+      });
+    }
   }
 
   saveProgram() {

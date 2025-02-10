@@ -45,7 +45,7 @@ interface Tool {
     <div class="tools-edit">
       <mat-card class="header-card">
         <mat-card-header>
-          <mat-card-title>Tools Administration</mat-card-title>
+          <mat-card-title>{{ selectedToolTitle || 'Tools Administration' }}</mat-card-title>
           <mat-card-subtitle>Manage and customize your tools details</mat-card-subtitle>
         </mat-card-header>
       </mat-card>
@@ -383,6 +383,7 @@ export class ToolsEditComponent implements OnInit {
   toolForm!: FormGroup;
   availableTools: Tool[] = [];
   availableSquads: any[] = [];
+  selectedToolTitle: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -432,6 +433,7 @@ export class ToolsEditComponent implements OnInit {
   onToolSelect(event: any) {
     const selectedTool = this.availableTools.find(tool => tool.id === event.value);
     if (selectedTool) {
+      this.selectedToolTitle = `Tool: ${selectedTool.name}`;
       this.toolForm.patchValue({
         name: selectedTool.name,
         description: selectedTool.description,
