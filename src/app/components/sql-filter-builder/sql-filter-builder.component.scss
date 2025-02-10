@@ -167,7 +167,7 @@
 
     input {
       flex: 1;
-      min-width: 150px;
+      min-width: 100px !important;
       border: none;
       outline: none;
       padding: 0.25rem;
@@ -223,18 +223,18 @@
   max-height: 300px;
   overflow-y: auto;
   background: white;
-  border: 1px solid #e0e4e8;
-  border-radius: 0.375rem;
-  box-shadow: 0 4px 6px -1px rgba(16, 24, 40, 0.1), 
-              0 2px 4px -1px rgba(16, 24, 40, 0.06);
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 
+              0 4px 6px -2px rgba(0, 0, 0, 0.05);
   margin-top: 0.25rem;
-  min-width: 200px;
-  max-width: max-content;
+  min-width: 280px;
+  max-width: 320px;
   width: auto;
 
   .list-group {
-    width: 100%;
-    min-width: 100%;
+    border-radius: 0.5rem;
+    overflow: hidden;
 
     .list-group-item {
       display: flex;
@@ -269,6 +269,42 @@
         }
       }
 
+      &.search-header {
+        background-color: #f8fafc;
+        padding: 0.75rem 1rem;
+        cursor: default;
+
+        &:hover {
+          background-color: #f8fafc;
+        }
+
+        .search-container {
+          position: relative;
+          width: 100%;
+          
+          .bi-search {
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            font-size: 0.875rem;
+          }
+
+          input {
+            width: 100%;
+            padding-left: 32px;
+            font-size: 0.875rem;
+            border-color: #e0e4e8;
+            
+            &:focus {
+              border-color: #4b7bec;
+              box-shadow: 0 0 0 0.2rem rgba(75, 123, 236, 0.25);
+            }
+          }
+        }
+      }
+
       &.multiselect-header {
         background-color: #f8fafc;
         font-weight: 500;
@@ -290,6 +326,30 @@
           &:disabled {
             background-color: #a5b1c2;
             border-color: #a5b1c2;
+          }
+        }
+
+        .search-container {
+          position: relative;
+          
+          .bi-search {
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            font-size: 0.875rem;
+          }
+
+          input {
+            padding-left: 32px;
+            font-size: 0.875rem;
+            border-color: #e0e4e8;
+            
+            &:focus {
+              border-color: #4b7bec;
+              box-shadow: 0 0 0 0.2rem rgba(75, 123, 236, 0.25);
+            }
           }
         }
       }
@@ -369,6 +429,82 @@
 
       &:hover {
         background-color: #f8fafc;
+      }
+
+      &.date-picker-header {
+        background-color: #ffffff;
+        padding: 1rem;
+        cursor: default;
+        border: none;
+        border-bottom: 1px solid #f3f4f6;
+
+        &:hover {
+          background-color: #ffffff;
+        }
+
+        .date-label {
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: #374151;
+          margin-bottom: 0.5rem;
+        }
+
+        .date-container {
+          position: relative;
+          width: 100%;
+          
+          .bi-calendar {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            font-size: 1rem;
+            z-index: 1;
+            pointer-events: none;
+          }
+
+          input[type="date"] {
+            width: 100%;
+            padding: 0.75rem 0.75rem 0.75rem 2.75rem;
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            background-color: #ffffff;
+            cursor: pointer;
+            color: #111827;
+            transition: all 0.15s ease;
+            
+            &::-webkit-calendar-picker-indicator {
+              position: absolute;
+              right: 12px;
+              top: 50%;
+              transform: translateY(-50%);
+              cursor: pointer;
+              padding: 0.5rem;
+              margin: 0;
+              opacity: 0.5;
+              background-color: transparent;
+              transition: opacity 0.15s ease;
+
+              &:hover {
+                opacity: 1;
+              }
+            }
+            
+            &:hover {
+              border-color: #d1d5db;
+              background-color: #f9fafb;
+            }
+            
+            &:focus {
+              border-color: #3b82f6;
+              box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+              outline: none;
+            }
+          }
+        }
       }
     }
   }
@@ -624,5 +760,19 @@
 
   &:hover {
     background: #778ca3;
+  }
+}
+
+// Fix horizontal scroll in tokens display
+.tokens-display {
+  .token {
+    max-width: calc(100% - 120px); // Account for the SQL info width
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  input {
+    min-width: 100px !important; // Reduce minimum width
+    max-width: calc(100% - 120px);
   }
 } 

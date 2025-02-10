@@ -62,6 +62,9 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   /** Reference to the input element for handling cursor position and suggestions */
   @ViewChild('filterInput') filterInput!: ElementRef;
 
+  /** Reference to the date input element for date fields */
+  @ViewChild('dateInput') dateInput!: ElementRef;
+
   /** Current value in the input field */
   inputValue = '';
 
@@ -677,6 +680,16 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       setTimeout(() => this.updateDropdownPosition());
     } else if (suggestion.type === 'operator') {
       this.currentOperator = this.config.operators.find(op => op.symbol === suggestion.value) || null;
+      if (this.currentOperand?.type === 'date') {
+        this.showSuggestions = true;
+        this.suggestions = [];
+        setTimeout(() => {
+          if (this.dateInput?.nativeElement) {
+            this.dateInput.nativeElement.showPicker();
+          }
+        });
+        return;
+      }
       if (this.shouldShowValueSelect) {
         this.showSuggestions = true;
         this.updateSuggestionsForInput('');
@@ -1038,6 +1051,24 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     const lowercaseInput = input.toLowerCase();
     const lastToken = this.tokens[this.tokens.length - 1];
 
+    // For date type fields, create a suggestion with the selected date
+    if (this.currentOperand?.type === 'date' && this.currentOperator) {
+      if (input) {
+        // Format the date as YYYY-MM-DD for SQL
+        const dateValue = new Date(input).toISOString().split('T')[0];
+        this.suggestions = [{
+          type: 'value',
+          value: dateValue,
+          label: dateValue,
+          displayValue: dateValue,
+          operandType: 'date'
+        }];
+      } else {
+        this.suggestions = [];
+      }
+      return;
+    }
+
     // Reset suggestions if we're in a clean state, after a logical operator, or after an opening bracket
     if (this.tokens.length === 0 || 
         (lastToken && (this.isLogicalToken(lastToken) || (this.isBracketToken(lastToken) && lastToken.value === '(')))
@@ -1101,6 +1132,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       // For select/multiselect/autocomplete fields
       if (this.isMultiSelectMode || this.currentOperator.symbol === 'IN' || this.currentOperator.symbol === 'NOT IN') {
         if (this.currentOperand.options) {
+          // Filter options based on input
           this.suggestions = this.currentOperand.options
             .filter(opt => opt.label.toLowerCase().includes(lowercaseInput))
             .map(opt => ({
@@ -1111,7 +1143,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
             }));
         } else if (this.currentOperand.optionsLoader) {
           this.isLoading = true;
-          this.currentOperand.optionsLoader(lowercaseInput).subscribe(
+          this.currentOperand.optionsLoader(input).subscribe(
             options => {
               this.suggestions = options.map(opt => ({
                 type: 'value' as const,
@@ -1132,6 +1164,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
 
       // For non-IN operators with select/autocomplete fields
       if (this.currentOperand.options) {
+        // Filter options based on input
         this.suggestions = this.currentOperand.options
           .filter(opt => opt.label.toLowerCase().includes(lowercaseInput))
           .map(opt => ({
@@ -1143,7 +1176,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       } else if (this.currentOperand.optionsLoader) {
         // Load options for select fields with optionsLoader
         this.isLoading = true;
-        this.currentOperand.optionsLoader(lowercaseInput).subscribe(
+        this.currentOperand.optionsLoader(input).subscribe(
           options => {
             this.suggestions = options.map(opt => ({
               type: 'value' as const,
@@ -1828,42 +1861,30 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       if (isInClause) {
         if (this.isCloseBracket(token)) {
           isInClause = false;
-          // Process the collected values
-          if (inClauseValues.length > this.collapsedValueCount) {
-            // Add opening bracket
-            result.push({ type: 'bracket', value: '(', displayValue: '(' });
-            
-            // Add first few values with commas
-            for (let j = 0; j < this.collapsedValueCount; j++) {
-              if (j > 0) {
-                result.push({ type: 'operator', value: ',', displayValue: ',' });
-              }
-              result.push(inClauseValues[j]);
-            }
+          // Always collapse multiselect values
+          // Add opening bracket
+          result.push({ type: 'bracket', value: '(', displayValue: '(' });
+          
+          // Add first value
+          if (inClauseValues.length > 0) {
+            result.push(inClauseValues[0]);
+          }
 
-            // Add the collapsed indicator
-            const remainingCount = inClauseValues.length - this.collapsedValueCount;
+          // Add the collapsed indicator if there are more values
+          if (inClauseValues.length > 1) {
+            const remainingCount = inClauseValues.length - 1;
             result.push({
               type: 'value',
               value: this.moreValuesText.replace('{count}', remainingCount.toString()),
               displayValue: this.moreValuesText.replace('{count}', remainingCount.toString()),
               isCollapsed: true,
-              fullValues: inClauseValues
+              fullValues: inClauseValues,
+              operandType: 'multiselect'
             } as ValueToken);
-
-            // Add closing bracket
-            result.push({ type: 'bracket', value: ')', displayValue: ')' });
-          } else {
-            // If few values, show them all
-            result.push({ type: 'bracket', value: '(', displayValue: '(' });
-            inClauseValues.forEach((v, idx) => {
-              if (idx > 0) {
-                result.push({ type: 'operator', value: ',', displayValue: ',' });
-              }
-              result.push(v);
-            });
-            result.push({ type: 'bracket', value: ')', displayValue: ')' });
           }
+
+          // Add closing bracket
+          result.push({ type: 'bracket', value: ')', displayValue: ')' });
           inClauseValues = [];
         } else if (this.isValueToken(token)) {
           inClauseValues.push(token);
@@ -2204,7 +2225,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
 
   /** Handles click on a value token for editing */
   onValueClick(token: ValueToken, event: MouseEvent) {
-    if (!this.isEditingAllowed || !token.operandType || !['text', 'number', 'select'].includes(token.operandType)) return;
+    if (!this.isEditingAllowed || !token.operandType) return;
 
     // Find the operand for this value
     let operandToken: OperandToken | null = null;
@@ -2257,18 +2278,35 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
         operandType: token.operandType
       }];
       
-      // Focus and select the input value immediately with a longer delay
+      // Focus and select the input value
       setTimeout(() => {
         if (this.filterInput?.nativeElement) {
           const input = this.filterInput.nativeElement;
           input.focus();
-          input.value = token.value; // Ensure the value is set
-          input.setSelectionRange(0, input.value.length); // More reliable way to select text
+          input.value = token.value;
+          input.setSelectionRange(0, input.value.length);
         }
-      }, 50); // Increased delay to ensure DOM is ready
+      }, 50);
     }
-    // For select type, show all available options
-    else if (token.operandType === 'select' && operand.options) {
+    // For date type, show the date picker with current value
+    else if (token.operandType === 'date') {
+      this.suggestions = [{
+        type: 'value',
+        value: token.value,
+        label: token.value,
+        displayValue: token.value,
+        operandType: 'date'
+      }];
+      
+      // Focus the date input
+      setTimeout(() => {
+        if (this.dateInput?.nativeElement) {
+          this.dateInput.nativeElement.showPicker();
+        }
+      });
+    }
+    // For select/multiselect type, show all available options
+    else if ((token.operandType === 'select' || token.operandType === 'multiselect') && operand.options) {
       this.suggestions = operand.options.map(opt => ({
         type: 'value',
         value: opt.value,
@@ -2284,8 +2322,8 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
         }
       });
     }
-    // For select type with async options
-    else if (token.operandType === 'select' && operand.optionsLoader) {
+    // For select/multiselect type with async options
+    else if ((token.operandType === 'select' || token.operandType === 'multiselect') && operand.optionsLoader) {
       this.isLoading = true;
       operand.optionsLoader('').subscribe(
         options => {

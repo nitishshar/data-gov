@@ -24,7 +24,7 @@
         <span *ngFor="let token of displayTokens" 
               class="token"
               [class.editing]="isEditingAllowed && token.type === 'operand'"
-              [class.clickable]="token.type === 'value' && (token.isCollapsed || isEditingAllowed && (token.operandType === 'text' || token.operandType === 'number' || token.operandType === 'select')) || token.type === 'operator'"
+              [class.clickable]="token.type === 'value' && (token.isCollapsed || isEditingAllowed && (token.operandType === 'text' || token.operandType === 'number' || token.operandType === 'select' || token.operandType === 'multiselect')) || token.type === 'operator'"
               [class.operand]="token.type === 'operand'"
               [class.operator]="token.type === 'operator'"
               [class.value]="token.type === 'value'"
@@ -32,7 +32,7 @@
               [class.bracket]="token.type === 'bracket'"
               (click)="token.type === 'value' && token.isCollapsed ? onCollapsedValueClick(token) : 
                       token.type === 'operator' ? onOperatorClick(token, $event) : 
-                      token.type === 'value' && isEditingAllowed && (token.operandType === 'text' || token.operandType === 'number' || token.operandType === 'select') ? onValueClick(token, $event) : null">
+                      token.type === 'value' && isEditingAllowed && (token.operandType === 'text' || token.operandType === 'number' || token.operandType === 'select' || token.operandType === 'multiselect') ? onValueClick(token, $event) : null">
           <span *ngIf="isEditingAllowed && token.type === 'operand' && token.groupId" class="delete-button" (click)="removeFilterGroup(token.groupId)">
             <i class="bi bi-x"></i>
           </span>
@@ -70,7 +70,7 @@
       <code>{{ generatedSql }}</code>
     </div>
 
-    <div *ngIf="showSuggestions && (suggestions.length > 0 || isLoading)" 
+    <div *ngIf="showSuggestions && (suggestions.length > 0 || isLoading || (currentOperand?.type === 'date' && currentOperator))" 
          class="suggestions-dropdown"
          [style.top.px]="dropdownPosition.top"
          [style.left.px]="dropdownPosition.left">
@@ -81,11 +81,24 @@
         </div>
         <ng-container *ngIf="isMultiSelectMode || isMultiSelectAutocomplete">
           <div class="list-group-item multiselect-header">
-            <div class="d-flex justify-content-between align-items-center">
-              <span>{{ isMultiSelectAutocomplete ? 'Search and select multiple values' : 'Select multiple values' }}</span>
-              <button type="button" class="btn btn-primary btn-sm" (click)="confirmMultiSelect()" [disabled]="selectedValues.length === 0">
-                Add ({{ selectedValues.length }})
-              </button>
+            <div class="d-flex flex-column gap-2">
+              <div class="d-flex justify-content-between align-items-center">
+                <span>{{ isMultiSelectAutocomplete ? 'Select multiple values' : 'Select multiple values' }}</span>
+                <button type="button" class="btn btn-primary btn-sm" (click)="confirmMultiSelect()" [disabled]="selectedValues.length === 0">
+                  Add ({{ selectedValues.length }})
+                </button>
+              </div>
+              <div class="search-container">
+                <i class="bi bi-search"></i>
+                <input
+                  type="text"
+                  class="form-control form-control-sm"
+                  placeholder="Search values..."
+                  [(ngModel)]="inputValue"
+                  (input)="onInput($event)"
+                  (keydown)="$event.stopPropagation()"
+                />
+              </div>
             </div>
           </div>
           <div *ngFor="let suggestion of suggestions" class="list-group-item multiselect-item">
@@ -104,6 +117,27 @@
           </div>
         </ng-container>
         <ng-container *ngIf="!isMultiSelectMode && !isMultiSelectAutocomplete">
+          <ng-container *ngIf="currentOperand?.type === 'date' && currentOperator">
+            <div class="list-group-item date-picker-header">
+              <div class="d-flex flex-column gap-2">
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="date-label">Select date</span>
+                </div>
+                <div class="date-container">
+                  <i class="bi bi-calendar"></i>
+                  <input
+                    #dateInput
+                    type="date"
+                    class="form-control form-control-sm"
+                    [(ngModel)]="inputValue"
+                    (input)="onInput($event)"
+                    (keydown)="$event.stopPropagation()"
+                    (click)="dateInput.showPicker()"
+                  />
+                </div>
+              </div>
+            </div>
+          </ng-container>
           <button
             *ngFor="let suggestion of suggestions; let i = index"
             type="button"

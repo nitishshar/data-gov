@@ -66,6 +66,11 @@ export class AppComponent implements OnInit {
         type: 'number'
       },
       {
+        name: 'reportingDate',
+        label: 'Reporting Date',
+        type: 'date'
+      },
+      {
         name: 'manager',
         label: 'Manager',
         type: 'text',
