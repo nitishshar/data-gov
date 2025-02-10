@@ -9,6 +9,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { HttpClient } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSelectModule } from '@angular/material/select';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { FleetDataService } from '../../services/fleet-management.service';
 
 @Component({
   selector: 'app-squad-details-edit',
@@ -21,54 +23,263 @@ import { MatSelectModule } from '@angular/material/select';
     MatInputModule,
     MatButtonModule,
     MatIconModule,
-    MatSelectModule
+    MatSelectModule,
+    MatExpansionModule
   ],
   template: `
     <div class="squad-details-edit">
+      <mat-card class="header-card">
+        <mat-card-header>
+          <mat-card-title>Squad Details Administration</mat-card-title>
+          <mat-card-subtitle>Manage and customize your squad details</mat-card-subtitle>
+        </mat-card-header>
+      </mat-card>
+
       <form [formGroup]="squadForm" (ngSubmit)="saveSquadDetails()">
-        <div formArrayName="squads">
-          <div *ngFor="let squad of squads.controls; let i = index" [formGroupName]="i">
-            <mat-card class="form-section">
-              <mat-card-header>
-                <mat-card-title>Squad Details</mat-card-title>
-                <button mat-icon-button color="warn" type="button" (click)="removeSquad(i)" *ngIf="squads.length > 1">
+        <!-- Basic Info Section -->
+        <mat-expansion-panel expanded="true">
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon>info</mat-icon>
+              Basic Information
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Select Squad</mat-label>
+              <mat-select formControlName="squadId" (selectionChange)="onSquadSelect($event)">
+                <mat-option *ngFor="let squad of availableSquads" [value]="squad?.id">
+                  {{squad?.id}} - {{squad?.name}}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Squad Name</mat-label>
+              <input matInput formControlName="name" placeholder="Enter squad name">
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Mission Statement</mat-label>
+              <textarea matInput formControlName="missionStatement" rows="4" placeholder="Enter mission statement"></textarea>
+            </mat-form-field>
+          </div>
+        </mat-expansion-panel>
+
+        <!-- Leader Section -->
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon>person</mat-icon>
+              Squad Leader
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+
+          <div formGroupName="leader">
+            <div class="form-row">
+              <mat-form-field appearance="outline">
+                <mat-label>User ID</mat-label>
+                <input matInput formControlName="userid" placeholder="Enter leader's user ID">
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Role</mat-label>
+                <mat-select formControlName="role">
+                  <mat-option *ngFor="let role of roleOptions" [value]="role">
+                    {{role}}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+        </mat-expansion-panel>
+
+        <!-- Objectives Section -->
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon>track_changes</mat-icon>
+              Objectives
+            </mat-panel-title>
+            <mat-panel-description>
+              <button mat-raised-button color="primary" type="button" (click)="$event.stopPropagation(); addObjective()">
+                <mat-icon>add</mat-icon>
+                Add Objective
+              </button>
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+
+          <div formArrayName="objectives">
+            <div *ngFor="let objective of objectives.controls; let i = index" [formGroupName]="i" class="array-item">
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Name</mat-label>
+                  <input matInput formControlName="name" placeholder="Enter objective name">
+                </mat-form-field>
+                <button mat-icon-button color="warn" type="button" (click)="removeObjective(i)">
                   <mat-icon>delete</mat-icon>
                 </button>
-              </mat-card-header>
-              <mat-card-content>
-                <mat-form-field appearance="outline">
-                  <mat-label>Squad Name</mat-label>
-                  <input matInput formControlName="name" placeholder="Enter squad name">
-                  <mat-error *ngIf="squad.get('name')?.hasError('required')">
-                    Squad name is required
-                  </mat-error>
-                </mat-form-field>
-
-                <mat-form-field appearance="outline">
+              </div>
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
                   <mat-label>Description</mat-label>
-                  <textarea matInput formControlName="description" rows="4" placeholder="Enter description"></textarea>
-                  <mat-error *ngIf="squad.get('description')?.hasError('required')">
-                    Description is required
-                  </mat-error>
+                  <textarea matInput formControlName="description" rows="2" placeholder="Enter description"></textarea>
                 </mat-form-field>
-
-                <mat-form-field appearance="outline">
-                  <mat-label>Leader</mat-label>
-                  <input matInput formControlName="leader" placeholder="Enter leader name">
-                  <mat-error *ngIf="squad.get('leader')?.hasError('required')">
-                    Leader name is required
-                  </mat-error>
+              </div>
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Link</mat-label>
+                  <input matInput formControlName="link" placeholder="Enter objective link">
                 </mat-form-field>
-              </mat-card-content>
-            </mat-card>
+              </div>
+            </div>
           </div>
-        </div>
+        </mat-expansion-panel>
+
+        <!-- Members Section -->
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon>group</mat-icon>
+              Members
+            </mat-panel-title>
+            <mat-panel-description>
+              <button mat-raised-button color="primary" type="button" (click)="$event.stopPropagation(); addMember()">
+                <mat-icon>add</mat-icon>
+                Add Member
+              </button>
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+
+          <div formArrayName="members">
+            <div *ngFor="let member of members.controls; let i = index" [formGroupName]="i" class="array-item">
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>User ID</mat-label>
+                  <input matInput formControlName="userid" placeholder="Enter member's user ID">
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Role</mat-label>
+                  <mat-select formControlName="role">
+                    <mat-option *ngFor="let role of roleOptions" [value]="role">
+                      {{role}}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+                <button mat-icon-button color="warn" type="button" (click)="removeMember(i)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </mat-expansion-panel>
+
+        <!-- Recent Documents Section -->
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon>description</mat-icon>
+              Recent Documents
+            </mat-panel-title>
+            <mat-panel-description>
+              <button mat-raised-button color="primary" type="button" (click)="$event.stopPropagation(); addDocument()">
+                <mat-icon>add</mat-icon>
+                Add Document
+              </button>
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+
+          <div formArrayName="recentDocuments">
+            <div *ngFor="let doc of recentDocuments.controls; let i = index" [formGroupName]="i" class="array-item">
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Name</mat-label>
+                  <input matInput formControlName="name" placeholder="Enter document name">
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Type</mat-label>
+                  <input matInput formControlName="type" placeholder="Enter document type">
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>User ID</mat-label>
+                  <input matInput formControlName="userid" placeholder="Enter user ID">
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Time</mat-label>
+                  <input matInput type="datetime-local" formControlName="time">
+                </mat-form-field>
+                <button mat-icon-button color="warn" type="button" (click)="removeDocument(i)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </mat-expansion-panel>
+
+        <!-- Projects Section -->
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon>work</mat-icon>
+              Projects
+            </mat-panel-title>
+            <mat-panel-description>
+              <button mat-raised-button color="primary" type="button" (click)="$event.stopPropagation(); addProject()">
+                <mat-icon>add</mat-icon>
+                Add Project
+              </button>
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+
+          <div formArrayName="projects">
+            <div *ngFor="let project of projects.controls; let i = index" [formGroupName]="i" class="array-item">
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Name</mat-label>
+                  <input matInput formControlName="name" placeholder="Enter project name">
+                </mat-form-field>
+                <button mat-icon-button color="warn" type="button" (click)="removeProject(i)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Description</mat-label>
+                  <textarea matInput formControlName="description" rows="2" placeholder="Enter description"></textarea>
+                </mat-form-field>
+              </div>
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Link</mat-label>
+                  <input matInput formControlName="link" placeholder="Enter project link">
+                </mat-form-field>
+              </div>
+            </div>
+          </div>
+        </mat-expansion-panel>
+
+        <!-- Help and Support Section -->
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon>help</mat-icon>
+              Help and Support
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Help and Support Information</mat-label>
+              <textarea matInput formControlName="helpAndSupport" rows="4" placeholder="Enter help and support information"></textarea>
+            </mat-form-field>
+          </div>
+        </mat-expansion-panel>
 
         <div class="form-actions">
-          <button mat-stroked-button type="button" (click)="addSquad()">
-            <mat-icon>add</mat-icon>
-            Add Squad
-          </button>
           <div class="action-buttons">
             <button mat-stroked-button type="button">Cancel</button>
             <button mat-flat-button color="primary" type="submit">
@@ -81,197 +292,163 @@ import { MatSelectModule } from '@angular/material/select';
     </div>
   `,
   styles: [`
-    :host {
-      display: block;
-      min-height: 100vh;
-      background: linear-gradient(135deg, #f8faff 0%, #ffffff 100%);
-      background-image: 
-        linear-gradient(120deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 100%),
-        repeating-linear-gradient(45deg, rgba(186,225,255,0.05) 0px, rgba(186,225,255,0.05) 10px, transparent 10px, transparent 20px);
-      background-attachment: fixed;
-      color: #2c3e50;
-    }
-
     .squad-details-edit {
-      padding: 2rem;
       max-width: 1200px;
-      margin: 0 auto;
-      perspective: 1000px;
+      margin: 2rem auto;
+      padding: 0 2rem;
     }
 
-    .form-section {
+    .header-card {
       margin-bottom: 2rem;
-      border-radius: 16px;
-      overflow: hidden;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.9);
-      box-shadow: 
-        0 10px 30px rgba(186, 225, 255, 0.3),
-        0 2px 8px rgba(186, 225, 255, 0.2);
-      transform-style: preserve-3d;
-      transition: all 0.3s ease;
-
-      &:hover {
-        transform: translateY(-5px) rotateX(2deg);
-        box-shadow: 
-          0 15px 35px rgba(186, 225, 255, 0.4),
-          0 3px 10px rgba(186, 225, 255, 0.3);
+      background: #fff;
+      
+      mat-card-title {
+        font-size: 1.75rem;
+        margin-bottom: 0.5rem;
+        color: #2c3e50;
       }
 
-      mat-card-header {
-        background: linear-gradient(135deg, rgba(186, 225, 255, 0.2), rgba(255, 255, 255, 0.95));
-        padding: 1.5rem;
-        margin-bottom: 1rem;
-        border-bottom: 1px solid rgba(186, 225, 255, 0.5);
-        backdrop-filter: blur(8px);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+      mat-card-subtitle {
+        color: #6c757d;
+      }
+    }
 
-        mat-card-title {
-          margin: 0;
-          font-size: 1.5rem;
-          font-weight: 500;
-          color: #009bda;
-          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    mat-expansion-panel {
+      margin-bottom: 1rem;
+      background: #fff;
+
+      .mat-expansion-panel-header {
+        height: auto;
+        padding: 1rem 1.5rem;
+
+        &.mat-expanded {
+          height: auto;
         }
       }
 
-      mat-card-content {
-        padding: 1.5rem;
-        background: rgba(255, 255, 255, 0.7);
+      .mat-expansion-panel-header-title {
+        align-items: center;
+        gap: 0.5rem;
+        color: #2c3e50;
+        font-size: 1.1rem;
+        
+        mat-icon {
+          color: #6c757d;
+        }
+      }
+
+      .mat-expansion-panel-header-description {
+        justify-content: flex-end;
+        align-items: center;
+        margin: 0;
       }
     }
 
-    mat-form-field {
-      width: 100%;
+    .form-row {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      align-items: flex-start;
+
+      .mat-mdc-form-field {
+        flex: 1;
+        font-size: 14px;
+      }
+
+      button {
+        margin-top: 0.5rem;
+      }
+    }
+
+    .array-item {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 4px;
+      padding: 1.5rem;
       margin-bottom: 1rem;
 
-      ::ng-deep {
-        .mat-mdc-form-field-flex {
-          background: rgba(255, 255, 255, 0.9) !important;
-          backdrop-filter: blur(4px);
-          border-radius: 8px;
-          border: 1px solid rgba(186, 225, 255, 0.5);
-        }
-
-        .mat-mdc-text-field-wrapper {
-          background: transparent;
-        }
-
-        .mdc-text-field--outlined {
-          --mdc-outlined-text-field-container-shape: 8px;
-        }
+      &:last-child {
+        margin-bottom: 0;
       }
+    }
+
+    .full-width {
+      width: 100%;
     }
 
     .form-actions {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      justify-content: flex-end;
+      gap: 1rem;
       margin-top: 2rem;
-      padding: 1.5rem;
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 12px;
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(186, 225, 255, 0.5);
-      box-shadow: 
-        0 10px 30px rgba(186, 225, 255, 0.3),
-        0 2px 8px rgba(186, 225, 255, 0.2);
-      transform-style: preserve-3d;
-      transition: all 0.3s ease;
-
-      &:hover {
-        transform: translateY(-3px) rotateX(2deg);
-        box-shadow: 
-          0 15px 35px rgba(186, 225, 255, 0.4),
-          0 3px 10px rgba(186, 225, 255, 0.3);
-      }
-
-      .action-buttons {
-        display: flex;
-        gap: 1rem;
-      }
 
       button {
         min-width: 120px;
-        padding: 0.5rem 1.5rem;
-        border-radius: 8px;
-        transform-style: preserve-3d;
-        transition: all 0.3s ease;
-
-        &[color="primary"] {
-          background: linear-gradient(135deg, #009bda, #00b4db);
-          color: white;
-
-          &:hover {
-            transform: translateY(-2px) translateZ(5px);
-            box-shadow: 
-              0 8px 20px rgba(0, 155, 218, 0.3),
-              0 2px 8px rgba(0, 155, 218, 0.2);
-            background: linear-gradient(135deg, #00b4db, #009bda);
-          }
-        }
-
-        mat-icon {
-          margin-right: 8px;
-        }
       }
     }
 
-    // Custom scrollbar
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
+    ::ng-deep {
+      .mdc-text-field--outlined {
+        --mdc-outlined-text-field-container-shape: 4px;
+        --mdc-outlined-text-field-outline-color: #dee2e6;
+        --mdc-outlined-text-field-focus-outline-color: #009bda;
+      }
 
-    ::-webkit-scrollbar-track {
-      background: rgba(186, 225, 255, 0.2);
-      border-radius: 4px;
-    }
+      .mat-expansion-panel {
+        .mat-expansion-panel-header {
+          &.mat-expanded,
+          &:hover {
+            background-color: rgba(0, 155, 218, 0.04);
+          }
+        }
 
-    ::-webkit-scrollbar-thumb {
-      background: rgba(0, 155, 218, 0.2);
-      border-radius: 4px;
-      backdrop-filter: blur(4px);
-      border: 1px solid rgba(186, 225, 255, 0.5);
+        .mat-expansion-indicator::after {
+          color: #009bda;
+        }
+      }
 
-      &:hover {
-        background: rgba(0, 155, 218, 0.3);
+      .mat-mdc-raised-button {
+        &.mat-primary {
+          --mdc-protected-button-container-color: #009bda;
+          --mdc-protected-button-label-text-color: #fff;
+
+          &:hover {
+            --mdc-protected-button-container-color: #0089c3;
+          }
+        }
       }
     }
 
     @media (max-width: 768px) {
       .squad-details-edit {
         padding: 1rem;
+        margin: 1rem auto;
       }
 
-      .form-section {
-        margin-bottom: 1.5rem;
-        border-radius: 12px;
+      .form-row {
+        flex-direction: column;
+        gap: 0;
 
-        mat-card-header {
-          padding: 1rem;
+        .mat-mdc-form-field {
+          width: 100%;
         }
 
-        mat-card-content {
-          padding: 1rem;
+        button {
+          align-self: flex-end;
         }
       }
 
       .form-actions {
-        padding: 1rem;
-        flex-direction: column;
-        gap: 1rem;
+        flex-direction: column-reverse;
         
-        .action-buttons {
-          width: 100%;
-          flex-direction: column;
-        }
-
         button {
           width: 100%;
+        }
+      }
+
+      mat-expansion-panel {
+        .mat-expansion-panel-header-description {
+          display: none;
         }
       }
     }
@@ -279,44 +456,125 @@ import { MatSelectModule } from '@angular/material/select';
 })
 export class SquadDetailsEditComponent implements OnInit {
   squadForm: FormGroup;
+  availableSquads: any[] = [];
+  roleOptions: string[] = [
+    'Application Development',
+    'Business Analyst',
+    'Product Owner',
+    'Scrum Master',
+    'Testing',
+    'UI/UX',
+    'Chapter Lead',
+    'DevOPs champion',
+    'Fleet Lead',
+    'Other',
+    'SME',
+    'Production Management',
+    'Tech Lead',
+    'Tech Area Lead',
+    'Testing -QA Manual'
+  ];
 
   constructor(
     private fb: FormBuilder,
     private http: HttpClient,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private fleetDataService: FleetDataService
   ) {
     this.squadForm = this.fb.group({
-      squads: this.fb.array([])
+      squadId: ['', Validators.required],
+      name: ['', Validators.required],
+      missionStatement: ['', Validators.required],
+      leader: this.fb.group({
+        userid: ['', Validators.required],
+        role: ['', Validators.required]
+      }),
+      objectives: this.fb.array([]),
+      members: this.fb.array([]),
+      recentDocuments: this.fb.array([]),
+      projects: this.fb.array([]),
+      helpAndSupport: ['']
     });
   }
 
   ngOnInit() {
-    this.addSquad();
+    this.loadAvailableSquads();
   }
 
-  get squads() {
-    return this.squadForm.get('squads') as FormArray;
+  private loadAvailableSquads() {
+    const fleetData = this.fleetDataService.getFleetData()();
+    if (fleetData?.squads) {
+      this.availableSquads = fleetData.squads;
+    }
   }
 
-  createSquadGroup() {
-    return this.fb.group({
+  onSquadSelect(event: any) {
+    const selectedSquad = this.availableSquads.find(squad => squad.id === event.value);
+    if (selectedSquad) {
+      this.squadForm.patchValue({
+        name: selectedSquad.name,
+        link: selectedSquad.link
+      });
+    }
+  }
+
+  // Getters for form arrays
+  get objectives() { return this.squadForm.get('objectives') as FormArray; }
+  get members() { return this.squadForm.get('members') as FormArray; }
+  get recentDocuments() { return this.squadForm.get('recentDocuments') as FormArray; }
+  get projects() { return this.squadForm.get('projects') as FormArray; }
+
+  // Add methods
+  addObjective() {
+    this.objectives.push(this.fb.group({
       name: ['', Validators.required],
       description: ['', Validators.required],
-      leader: ['', Validators.required]
+      link: ['', Validators.required]
+    }));
+  }
+
+  addMember() {
+    this.members.push(this.fb.group({
+      userid: ['', Validators.required],
+      role: ['', Validators.required]
+    }));
+  }
+
+  addDocument() {
+    this.recentDocuments.push(this.fb.group({
+      name: ['', Validators.required],
+      type: ['', Validators.required],
+      userid: ['', Validators.required],
+      time: ['', Validators.required]
+    }));
+  }
+
+  addProject() {
+    this.projects.push(this.fb.group({
+      id: [this.getNextProjectId()],
+      name: ['', Validators.required],
+      description: ['', Validators.required],
+      link: ['', Validators.required]
+    }));
+  }
+
+  // Remove methods
+  removeObjective(index: number) { this.objectives.removeAt(index); }
+  removeMember(index: number) { this.members.removeAt(index); }
+  removeDocument(index: number) { this.recentDocuments.removeAt(index); }
+  removeProject(index: number) { this.projects.removeAt(index); }
+
+  private getNextProjectId(): string {
+    let maxId = 0;
+    this.projects.controls.forEach(control => {
+      const id = parseInt(control.get('id')?.value || '0');
+      if (id > maxId) maxId = id;
     });
-  }
-
-  addSquad() {
-    this.squads.push(this.createSquadGroup());
-  }
-
-  removeSquad(index: number) {
-    this.squads.removeAt(index);
+    return (maxId + 1).toString();
   }
 
   saveSquadDetails() {
     if (this.squadForm.valid) {
-      // Replace with your actual API endpoint
       this.http.post('/api/squads', this.squadForm.value).subscribe({
         next: () => {
           this.snackBar.open('Squad details saved successfully', 'Close', {
@@ -328,6 +586,10 @@ export class SquadDetailsEditComponent implements OnInit {
             duration: 3000
           });
         }
+      });
+    } else {
+      this.snackBar.open('Please fill in all required fields', 'Close', {
+        duration: 3000
       });
     }
   }
