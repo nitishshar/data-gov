@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -70,16 +70,15 @@ import { FleetDataService } from '../../services/fleet-management.service';
           <mat-expansion-panel-header>
             <mat-panel-title>
               <mat-icon>track_changes</mat-icon>
-              Fleet Objectives
+              Objectives
             </mat-panel-title>
             <mat-panel-description>
               <button mat-raised-button color="primary" type="button" (click)="$event.stopPropagation(); addObjective()">
-                    <mat-icon>add</mat-icon>
-                    Add Objective
-                  </button>
+                <mat-icon>add</mat-icon>
+                Add Objective
+              </button>
             </mat-panel-description>
           </mat-expansion-panel-header>
-
           <div formArrayName="objectives">
             <div *ngFor="let objective of objectivesArray.controls; let i = index" 
                  [formGroupName]="i" 
@@ -89,21 +88,25 @@ import { FleetDataService } from '../../services/fleet-management.service';
                   <mat-label>Objective Name</mat-label>
                   <input matInput formControlName="name" placeholder="Enter objective name">
                 </mat-form-field>
-                <mat-form-field appearance="outline" class="color-field">
-                  <mat-label>Color</mat-label>
-                  <input matInput type="color" formControlName="color">
-                </mat-form-field>
                 <button mat-icon-button color="warn" type="button" (click)="removeObjective(i)">
                   <mat-icon>delete</mat-icon>
                 </button>
               </div>
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Description</mat-label>
-                <textarea matInput formControlName="description" rows="2" 
-                         placeholder="Enter objective description"></textarea>
-              </mat-form-field>
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Description</mat-label>
+                  <textarea matInput formControlName="description" rows="2" 
+                           placeholder="Enter objective description"></textarea>
+                </mat-form-field>
+              </div>
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Link</mat-label>
+                  <input matInput formControlName="link" placeholder="Enter objective link">
+                </mat-form-field>
+              </div>
             </div>
-                </div>
+          </div>
         </mat-expansion-panel>
 
         <!-- Tools Section -->
@@ -125,17 +128,13 @@ import { FleetDataService } from '../../services/fleet-management.service';
                  [formGroupName]="i" 
                  class="array-item">
               <div class="form-row">
-                    <mat-form-field appearance="outline">
+                <mat-form-field appearance="outline">
                   <mat-label>Tool Name</mat-label>
                   <input matInput formControlName="name" placeholder="Enter tool name">
                 </mat-form-field>
-                <mat-form-field appearance="outline" class="color-field">
-                  <mat-label>Color</mat-label>
-                  <input matInput type="color" formControlName="color">
-                </mat-form-field>
                 <button mat-icon-button color="warn" type="button" (click)="removeTool(i)">
                   <mat-icon>delete</mat-icon>
-                      </button>
+                </button>
               </div>
               <div class="form-row">
                 <mat-form-field appearance="outline" class="full-width">
@@ -148,10 +147,10 @@ import { FleetDataService } from '../../services/fleet-management.service';
                 <mat-form-field appearance="outline" class="full-width">
                   <mat-label>Link</mat-label>
                   <input matInput formControlName="link" placeholder="Enter tool link">
-                    </mat-form-field>
-                  </div>
-                </div>
+                </mat-form-field>
               </div>
+            </div>
+          </div>
         </mat-expansion-panel>
 
         <!-- Programs Section -->
@@ -177,14 +176,10 @@ import { FleetDataService } from '../../services/fleet-management.service';
                   <mat-label>Program Name</mat-label>
                   <input matInput formControlName="name" placeholder="Enter program name">
                 </mat-form-field>
-                <mat-form-field appearance="outline" class="color-field">
-                  <mat-label>Color</mat-label>
-                  <input matInput type="color" formControlName="color">
-                </mat-form-field>
                 <button mat-icon-button color="warn" type="button" (click)="removeProgram(i)">
                   <mat-icon>delete</mat-icon>
-                  </button>
-                </div>
+                </button>
+              </div>
               <div class="form-row">
                 <mat-form-field appearance="outline" class="full-width">
                   <mat-label>Description</mat-label>
@@ -218,21 +213,17 @@ import { FleetDataService } from '../../services/fleet-management.service';
           </mat-expansion-panel-header>
           <div formArrayName="squads">
             <div *ngFor="let squad of squadsArray.controls; let i = index" 
-                           [formGroupName]="i"
+                 [formGroupName]="i"
                  class="array-item">
               <div class="form-row">
                 <mat-form-field appearance="outline">
                   <mat-label>Squad Name</mat-label>
                   <input matInput formControlName="name" placeholder="Enter squad name">
                 </mat-form-field>
-                <mat-form-field appearance="outline" class="color-field">
-                  <mat-label>Color</mat-label>
-                  <input matInput type="color" formControlName="color">
-                </mat-form-field>
                 <button mat-icon-button color="warn" type="button" (click)="removeSquad(i)">
                   <mat-icon>delete</mat-icon>
-                      </button>
-                    </div>
+                </button>
+              </div>
               <div class="form-row">
                 <mat-form-field appearance="outline" class="full-width">
                   <mat-label>Description</mat-label>
@@ -269,37 +260,21 @@ import { FleetDataService } from '../../services/fleet-management.service';
                  [formGroupName]="i" 
                  class="array-item">
               <div class="form-row">
-                      <mat-form-field appearance="outline">
-                        <mat-label>Name</mat-label>
-                  <input matInput formControlName="name" placeholder="Enter leader name">
-                      </mat-form-field>
-                      <mat-form-field appearance="outline">
-                        <mat-label>Title</mat-label>
-                  <input matInput formControlName="title" placeholder="Enter leader title">
-                      </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>User ID</mat-label>
+                  <input matInput formControlName="userid" placeholder="Enter user ID">
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Role</mat-label>
+                  <mat-select formControlName="role">
+                    <mat-option *ngFor="let role of roleOptions" [value]="role">
+                      {{role}}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
                 <button mat-icon-button color="warn" type="button" (click)="removeLeader(i)">
                   <mat-icon>delete</mat-icon>
                 </button>
-              </div>
-              <div class="form-row">
-                      <mat-form-field appearance="outline">
-                        <mat-label>Email</mat-label>
-                  <input matInput formControlName="email" type="email" placeholder="Enter leader email">
-                      </mat-form-field>
-                      <mat-form-field appearance="outline">
-                        <mat-label>Department</mat-label>
-                  <input matInput formControlName="department" placeholder="Enter leader department">
-                      </mat-form-field>
-                    </div>
-              <div class="form-row">
-                <mat-form-field appearance="outline">
-                  <mat-label>Phone</mat-label>
-                  <input matInput formControlName="phone" placeholder="Enter leader phone">
-                </mat-form-field>
-                <div class="image-upload">
-                  <label>Profile Image</label>
-                  <input type="file" (change)="onLeaderImageSelected($event, i)" accept="image/*">
-                </div>
               </div>
             </div>
           </div>
@@ -363,13 +338,10 @@ import { FleetDataService } from '../../services/fleet-management.service';
                   <mat-label>Title</mat-label>
                   <input matInput formControlName="title" placeholder="Enter accomplishment title">
                 </mat-form-field>
-                <mat-form-field appearance="outline" class="color-field">
-                  <mat-label>Color</mat-label>
-                  <input matInput type="color" formControlName="color">
+                <mat-form-field appearance="outline">
+                  <mat-label>Squad</mat-label>
+                  <input matInput formControlName="squad" placeholder="Enter squad name">
                 </mat-form-field>
-                <button mat-icon-button color="warn" type="button" (click)="removeAccomplishment(i)">
-                  <mat-icon>delete</mat-icon>
-                </button>
               </div>
               <div class="form-row">
                 <mat-form-field appearance="outline" class="full-width">
@@ -390,6 +362,94 @@ import { FleetDataService } from '../../services/fleet-management.service';
                   <input matInput formControlName="impact" placeholder="Enter impact or metrics">
                 </mat-form-field>
               </div>
+
+              <!-- Benefits Section -->
+              <div class="sub-section">
+                <div class="sub-section-header">
+                  <h4>Benefits</h4>
+                  <button mat-mini-fab color="primary" type="button" (click)="addBenefit(i)">
+                    <mat-icon>add</mat-icon>
+                  </button>
+                </div>
+                <div formArrayName="benefits">
+                  <div *ngFor="let benefit of getBenefitsArray(accomplishment).controls; let j = index" 
+                       class="form-row">
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>Benefit</mat-label>
+                      <input matInput [formControlName]="j" placeholder="Enter benefit">
+                    </mat-form-field>
+                    <button mat-icon-button color="warn" type="button" (click)="removeBenefit(accomplishment, j)">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Team Members Section -->
+              <div class="sub-section">
+                <div class="sub-section-header">
+                  <h4>Team Members</h4>
+                  <button mat-mini-fab color="primary" type="button" (click)="addTeamMember(i)">
+                    <mat-icon>add</mat-icon>
+                  </button>
+                </div>
+                <div formArrayName="teamMembers">
+                  <div *ngFor="let member of getTeamMembersArray(accomplishment).controls; let j = index" 
+                       [formGroupName]="j"
+                       class="form-row">
+                    <mat-form-field appearance="outline">
+                      <mat-label>User ID</mat-label>
+                      <input matInput formControlName="userid" placeholder="Enter user ID">
+                    </mat-form-field>
+                    <mat-form-field appearance="outline">
+                      <mat-label>Role</mat-label>
+                      <mat-select formControlName="role">
+                        <mat-option *ngFor="let role of roleOptions" [value]="role">
+                          {{role}}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline">
+                      <mat-label>Contribution</mat-label>
+                      <input matInput formControlName="contribution" placeholder="Enter contribution">
+                    </mat-form-field>
+                    <button mat-icon-button color="warn" type="button" (click)="removeTeamMember(accomplishment, j)">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Metrics Section -->
+              <div class="sub-section">
+                <div class="sub-section-header">
+                  <h4>Metrics</h4>
+                  <button mat-mini-fab color="primary" type="button" (click)="addMetric(i)">
+                    <mat-icon>add</mat-icon>
+                  </button>
+                </div>
+                <div formArrayName="metrics">
+                  <div *ngFor="let metric of getMetricsArray(accomplishment).controls; let j = index" 
+                       [formGroupName]="j"
+                       class="form-row">
+                    <mat-form-field appearance="outline">
+                      <mat-label>Label</mat-label>
+                      <input matInput formControlName="label" placeholder="Enter metric label">
+                    </mat-form-field>
+                    <mat-form-field appearance="outline">
+                      <mat-label>Value</mat-label>
+                      <input matInput formControlName="value" placeholder="Enter metric value">
+                    </mat-form-field>
+                    <button mat-icon-button color="warn" type="button" (click)="removeMetric(accomplishment, j)">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <button mat-icon-button color="warn" type="button" (click)="removeAccomplishment(i)" class="remove-button">
+                <mat-icon>delete</mat-icon>
+              </button>
             </div>
           </div>
         </mat-expansion-panel>
@@ -641,6 +701,58 @@ import { FleetDataService } from '../../services/fleet-management.service';
           --mdc-icon-button-icon-color: #dc3545;
         }
       }
+
+      .mat-mdc-select {
+        width: 100%;
+      }
+
+      .mat-mdc-select-panel {
+        background: white;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        max-height: 256px !important;
+      }
+
+      .mat-mdc-option {
+        font-size: 0.875rem;
+        height: 40px !important;
+        line-height: 40px;
+        padding: 0 16px;
+
+        &:hover:not(.mat-mdc-option-disabled) {
+          background: rgba(0, 0, 0, 0.04);
+        }
+
+        &.mat-mdc-option-active {
+          background: rgba(0, 0, 0, 0.08);
+        }
+
+        &.mat-mdc-selected:not(.mat-mdc-option-multiple):not(.mat-mdc-option-disabled) {
+          background: rgba(25, 118, 210, 0.12);
+          
+          .mdc-list-item__primary-text {
+            color: #1976d2;
+          }
+        }
+
+        .mdc-list-item__primary-text {
+          font-size: 0.875rem;
+          color: rgba(0, 0, 0, 0.87);
+        }
+      }
+
+      .mat-mdc-select-value {
+        font-size: 0.875rem;
+        color: rgba(0, 0, 0, 0.87);
+      }
+
+      .mat-mdc-select-arrow {
+        color: rgba(0, 0, 0, 0.54);
+      }
+
+      .mat-mdc-form-field-subscript-wrapper {
+        height: 0;
+      }
     }
 
     mat-expansion-panel {
@@ -691,11 +803,56 @@ import { FleetDataService } from '../../services/fleet-management.service';
       }
     }
 
-    
+    .sub-section {
+      margin: 1rem 0;
+      padding: 1rem;
+      background: #f8f9fa;
+      border-radius: 4px;
+    }
+
+    .sub-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+
+      h4 {
+        margin: 0;
+        color: #2c3e50;
+        font-size: 1.1rem;
+      }
+    }
+
+    .remove-button {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+    }
+
+    .array-item {
+      position: relative;
+    }
   `]
 })
 export class LandingPageAdminComponent implements OnInit {
   landingPageForm: FormGroup;
+  roleOptions: string[] = [
+    'Application Development',
+    'Business Analyst',
+    'Product Owner',
+    'Scrum Master',
+    'Testing',
+    'UI/UX',
+    'Chapter Lead',
+    'DevOPs champion',
+    'Fleet Lead',
+    'Other',
+    'SME',
+    'Production Management',
+    'Tech Lead',
+    'Tech Area Lead',
+    'Testing -QA Manual'
+  ];
 
   constructor(
     private fb: FormBuilder,
@@ -733,51 +890,82 @@ export class LandingPageAdminComponent implements OnInit {
     return this.landingPageForm.get('accomplishments') as FormArray;
   }
 
+  // Helper methods for type-safe form array access
+  getBenefitsArray(accomplishment: AbstractControl): FormArray {
+    return accomplishment.get('benefits') as FormArray;
+  }
+
+  getTeamMembersArray(accomplishment: AbstractControl): FormArray {
+    return accomplishment.get('teamMembers') as FormArray;
+  }
+
+  getMetricsArray(accomplishment: AbstractControl): FormArray {
+    return accomplishment.get('metrics') as FormArray;
+  }
+
+  // Helper methods for removing items from arrays
+  removeBenefit(accomplishment: AbstractControl, index: number): void {
+    const benefitsArray = this.getBenefitsArray(accomplishment);
+    if (benefitsArray) {
+      benefitsArray.removeAt(index);
+    }
+  }
+
+  removeTeamMember(accomplishment: AbstractControl, index: number): void {
+    const teamMembersArray = this.getTeamMembersArray(accomplishment);
+    if (teamMembersArray) {
+      teamMembersArray.removeAt(index);
+    }
+  }
+
+  removeMetric(accomplishment: AbstractControl, index: number): void {
+    const metricsArray = this.getMetricsArray(accomplishment);
+    if (metricsArray) {
+      metricsArray.removeAt(index);
+    }
+  }
+
   // Add methods
   addObjective() {
     this.objectivesArray.push(this.fb.group({
+      id: [this.getNextId(this.objectivesArray), Validators.required],
       name: ['', Validators.required],
       description: ['', Validators.required],
-      color: ['#bae1ff', Validators.required],
-      link: ['']
+      link: ['', Validators.required]
     }));
   }
 
   addTool() {
     this.toolsArray.push(this.fb.group({
+      id: [this.getNextId(this.toolsArray), Validators.required],
       name: ['', Validators.required],
       description: ['', Validators.required],
-      color: ['#bae1ff', Validators.required],
       link: ['', Validators.required]
     }));
   }
 
   addProgram() {
     this.programsArray.push(this.fb.group({
+      id: [this.getNextId(this.programsArray), Validators.required],
       name: ['', Validators.required],
       description: ['', Validators.required],
-      color: ['#bae1ff', Validators.required],
       link: ['', Validators.required]
     }));
   }
 
   addSquad() {
     this.squadsArray.push(this.fb.group({
+      id: [this.getNextId(this.squadsArray), Validators.required],
       name: ['', Validators.required],
       description: ['', Validators.required],
-      color: ['#bae1ff', Validators.required],
       link: ['', Validators.required]
     }));
   }
 
   addLeader() {
     this.leadershipArray.push(this.fb.group({
-      name: ['', Validators.required],
-      title: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      department: ['', Validators.required],
-      phone: ['', Validators.required],
-      image: ['']
+      userid: ['', Validators.required],
+      role: ['', Validators.required]
     }));
   }
 
@@ -790,13 +978,48 @@ export class LandingPageAdminComponent implements OnInit {
 
   addAccomplishment() {
     const accomplishment = this.fb.group({
+      id: [this.getNextId(this.accomplishmentsArray), Validators.required],
       title: ['', Validators.required],
       description: ['', Validators.required],
+      squad: ['', Validators.required],
       date: ['', Validators.required],
-      impact: [''],
-      color: ['#0d6efd', Validators.required]
+      impact: ['', Validators.required],
+      benefits: this.fb.array([]),
+      teamMembers: this.fb.array([]),
+      metrics: this.fb.array([])
     });
     this.accomplishmentsArray.push(accomplishment);
+  }
+
+  addTeamMember(accomplishmentIndex: number) {
+    const teamMembers = (this.accomplishmentsArray.at(accomplishmentIndex).get('teamMembers') as FormArray);
+    teamMembers.push(this.fb.group({
+      userid: ['', Validators.required],
+      role: ['', Validators.required],
+      contribution: ['', Validators.required]
+    }));
+  }
+
+  addBenefit(accomplishmentIndex: number) {
+    const benefits = (this.accomplishmentsArray.at(accomplishmentIndex).get('benefits') as FormArray);
+    benefits.push(this.fb.control('', Validators.required));
+  }
+
+  addMetric(accomplishmentIndex: number) {
+    const metrics = (this.accomplishmentsArray.at(accomplishmentIndex).get('metrics') as FormArray);
+    metrics.push(this.fb.group({
+      label: ['', Validators.required],
+      value: ['', Validators.required]
+    }));
+  }
+
+  private getNextId(formArray: FormArray): string {
+    let maxId = 0;
+    formArray.controls.forEach(control => {
+      const id = parseInt(control.get('id')?.value || '0');
+      if (id > maxId) maxId = id;
+    });
+    return (maxId + 1).toString();
   }
 
   // Remove methods
@@ -828,37 +1051,100 @@ export class LandingPageAdminComponent implements OnInit {
     // Clear and repopulate arrays
     this.objectivesArray.clear();
     data.objectives?.forEach((obj: any) => {
-      this.objectivesArray.push(this.fb.group(obj));
+      this.objectivesArray.push(this.fb.group({
+        id: [obj.id || this.getNextId(this.objectivesArray)],
+        name: [obj.name, Validators.required],
+        description: [obj.description, Validators.required],
+        link: [obj.link, Validators.required]
+      }));
     });
 
     this.toolsArray.clear();
     data.tools?.forEach((tool: any) => {
-      this.toolsArray.push(this.fb.group(tool));
+      this.toolsArray.push(this.fb.group({
+        id: [tool.id || this.getNextId(this.toolsArray)],
+        name: [tool.name, Validators.required],
+        description: [tool.description, Validators.required],
+        link: [tool.link, Validators.required]
+      }));
     });
 
     this.programsArray.clear();
     data.programs?.forEach((program: any) => {
-      this.programsArray.push(this.fb.group(program));
+      this.programsArray.push(this.fb.group({
+        id: [program.id || this.getNextId(this.programsArray)],
+        name: [program.name, Validators.required],
+        description: [program.description, Validators.required],
+        link: [program.link, Validators.required]
+      }));
     });
 
     this.squadsArray.clear();
     data.squads?.forEach((squad: any) => {
-      this.squadsArray.push(this.fb.group(squad));
+      this.squadsArray.push(this.fb.group({
+        id: [squad.id || this.getNextId(this.squadsArray)],
+        name: [squad.name, Validators.required],
+        description: [squad.description, Validators.required],
+        link: [squad.link, Validators.required]
+      }));
     });
 
     this.leadershipArray.clear();
     data.leadership?.forEach((leader: any) => {
-      this.leadershipArray.push(this.fb.group(leader));
+      this.leadershipArray.push(this.fb.group({
+        userid: [leader.userid, Validators.required],
+        role: [leader.role, Validators.required]
+      }));
     });
 
     this.resourcesArray.clear();
     data.resources?.forEach((resource: any) => {
-      this.resourcesArray.push(this.fb.group(resource));
+      this.resourcesArray.push(this.fb.group({
+        name: [resource.name, Validators.required],
+        link: [resource.link, Validators.required]
+      }));
     });
 
     this.accomplishmentsArray.clear();
     data.accomplishments?.forEach((accomplishment: any) => {
-      this.accomplishmentsArray.push(this.fb.group(accomplishment));
+      const accomplishmentGroup = this.fb.group({
+        id: [accomplishment.id || this.getNextId(this.accomplishmentsArray)],
+        title: [accomplishment.title, Validators.required],
+        description: [accomplishment.description, Validators.required],
+        squad: [accomplishment.squad, Validators.required],
+        date: [new Date(accomplishment.date), Validators.required],
+        impact: [accomplishment.impact, Validators.required],
+        benefits: this.fb.array([]),
+        teamMembers: this.fb.array([]),
+        metrics: this.fb.array([])
+      });
+
+      // Add benefits
+      const benefitsArray = accomplishmentGroup.get('benefits') as FormArray;
+      accomplishment.benefits?.forEach((benefit: string) => {
+        benefitsArray.push(this.fb.control(benefit, Validators.required));
+      });
+
+      // Add team members
+      const teamMembersArray = accomplishmentGroup.get('teamMembers') as FormArray;
+      accomplishment.teamMembers?.forEach((member: any) => {
+        teamMembersArray.push(this.fb.group({
+          userid: [member.userid, Validators.required],
+          role: [member.role, Validators.required],
+          contribution: [member.contribution, Validators.required]
+        }));
+      });
+
+      // Add metrics
+      const metricsArray = accomplishmentGroup.get('metrics') as FormArray;
+      accomplishment.metrics?.forEach((metric: any) => {
+        metricsArray.push(this.fb.group({
+          label: [metric.label, Validators.required],
+          value: [metric.value, Validators.required]
+        }));
+      });
+
+      this.accomplishmentsArray.push(accomplishmentGroup);
     });
   }
 
