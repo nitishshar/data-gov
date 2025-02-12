@@ -177,9 +177,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
    * @returns boolean indicating if in multi-select autocomplete mode
    * @example Used for IN operator with autocomplete fields
    */
-  get isMultiSelectAutocomplete(): boolean {
-    return this.shouldShowAutocomplete && this.currentOperator?.symbol === 'IN';
-  }
+  public isMultiSelectAutocomplete: boolean = false;
 
   /**
    * Gets the appropriate placeholder text for the input field
@@ -726,6 +724,9 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       this.showSuggestions = true;
       this.updateSuggestionsForInput('');
       setTimeout(() => this.updateDropdownPosition());
+      // Reset multi-select mode so we don't keep showing multi-select suggestions:
+      this.isMultiSelectMode = false;
+      this.isMultiSelectAutocomplete = false;
     }
 
     if (!this.shouldShowValueSelect && !this.shouldShowAutocomplete) {
@@ -2371,5 +2372,118 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   /** Whether editing is currently allowed */
   get isEditingAllowed(): boolean {
     return this.isEditMode || this.allowDirectEditing;
+  }
+
+  /**
+   * Returns true if this token is a value token for [text|number] and editing is allowed
+   */
+  isValueAndEditable(token: FilterToken): boolean {
+    return token.type === 'value'
+      && (token.operandType === 'text' || token.operandType === 'number')
+      && this.isEditingAllowed;
+  }
+
+  /**
+   * Handle keydown events within tokens so that arrow keys can move
+   * the cursor among tokens and backspace can remove tokens if empty.
+   */
+  onTokenKeyDown(event: KeyboardEvent, token: FilterToken, index: number) {
+    // If user presses ArrowLeft at the beginning of this token, focus previous token
+    if (event.key === 'ArrowLeft') {
+      const selection = window.getSelection();
+      if (selection?.rangeCount) {
+        const range = selection.getRangeAt(0);
+        if (range.startOffset === 0 && range.collapsed) {
+          // Move to previous token if exists
+          if (index > 0) {
+            event.preventDefault();
+            this.focusToken(index - 1, /* placeCursorAtEnd= */ true);
+          }
+        }
+      }
+    }
+    
+    // If user presses ArrowRight at the end of this token, focus next token
+    if (event.key === 'ArrowRight') {
+      const selection = window.getSelection();
+      if (selection?.rangeCount) {
+        const range = selection.getRangeAt(0);
+        // Check if caret is at the end of the token's text
+        const textLength = (event.target as HTMLElement).textContent?.length ?? 0;
+        if (range.startOffset === textLength && range.collapsed) {
+          // Move to next token if exists
+          if (index < this.tokens.length - 1) {
+            event.preventDefault();
+            this.focusToken(index + 1, /* placeCursorAtEnd= */ false);
+          }
+        }
+      }
+    }
+
+    // If user presses Backspace on an empty token, remove that token
+    if (event.key === 'Backspace') {
+      const text = (event.target as HTMLElement).textContent ?? '';
+      if (!text) {
+        event.preventDefault();
+        this.tokens.splice(index, 1);
+        this.emitChange();
+        // Focus the previous token or the input if none remain
+        if (index > 0) {
+          this.focusToken(index - 1, true);
+        } else if (this.tokens.length === 0) {
+          setTimeout(() => {
+            this.filterInput?.nativeElement.focus();
+          });
+        }
+      }
+    }
+  }
+
+  /**
+   * Focus a given token's contenteditable span programmatically
+   */
+  private focusToken(index: number, placeCursorAtEnd: boolean) {
+    const tokenElements = document.querySelectorAll('.tokens-display .token[contenteditable="true"]');
+    const el = tokenElements[index] as HTMLElement | undefined;
+    if (!el) return;
+
+    el.focus();
+    
+    // Optionally place caret at end or start
+    if (placeCursorAtEnd) {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      range.collapse(false); // end
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(range);
+    } else {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      range.collapse(true); // start
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(range);
+    }
+  }
+
+  /**
+   * (Optional) Handle when a token is focused
+   */
+  onTokenFocus(token: FilterToken, index: number) {
+    // You could highlight or store the active index here
+  }
+
+  /**
+   * (Optional) Handle when a token is blurred
+   */
+  onTokenBlur(event: FocusEvent, token: FilterToken, index: number) {
+    // If the user changed this token's text content, update token.value
+    const newText = (event.target as HTMLElement).textContent || '';
+    if (newText !== token.value) {
+      token.value = newText;
+      token.displayValue = newText;
+      this.emitChange();
+    }
   }
 } 

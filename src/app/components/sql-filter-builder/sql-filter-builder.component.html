@@ -21,18 +21,46 @@
           <i class="bi bi-pencil ms-2 cursor-pointer" (click)="toggleEditMode()" [class.active]="isEditMode"></i>
           <i class="bi bi-x-lg ms-2 cursor-pointer" (click)="clearAllTokens()" title="Clear all filters"></i>
         </div>
-        <span *ngFor="let token of displayTokens" 
-              class="token"
-              [class.editing]="isEditingAllowed && token.type === 'operand'"
-              [class.clickable]="token.type === 'value' && (token.isCollapsed || isEditingAllowed && (token.operandType === 'text' || token.operandType === 'number' || token.operandType === 'select' || token.operandType === 'multiselect')) || token.type === 'operator'"
-              [class.operand]="token.type === 'operand'"
-              [class.operator]="token.type === 'operator'"
-              [class.value]="token.type === 'value'"
-              [class.logical]="token.type === 'logical'"
-              [class.bracket]="token.type === 'bracket'"
-              (click)="token.type === 'value' && token.isCollapsed ? onCollapsedValueClick(token) : 
-                      token.type === 'operator' ? onOperatorClick(token, $event) : 
-                      token.type === 'value' && isEditingAllowed && (token.operandType === 'text' || token.operandType === 'number' || token.operandType === 'select' || token.operandType === 'multiselect') ? onValueClick(token, $event) : null">
+        <span 
+          *ngFor="let token of displayTokens; let i = index"
+          class="token"
+          [class.editing]="isEditingAllowed && token.type === 'operand'"
+          [class.clickable]="
+            token.type === 'operator' ||
+            (token.type === 'value' && (isEditingAllowed || token.isCollapsed))
+          "
+          [class.operand]="token.type === 'operand'"
+          [class.operator]="token.type === 'operator'"
+          [class.value]="token.type === 'value'"
+          [class.logical]="token.type === 'logical'"
+          [class.bracket]="token.type === 'bracket'"
+          (click)="
+            token.type === 'operator'
+              ? onOperatorClick(token, $event)
+            : token.type === 'value' && token.isCollapsed
+              ? onCollapsedValueClick(token)
+            : token.type === 'value' &&
+              (token.operandType === 'select' || token.operandType === 'multiselect')
+              ? onValueClick(token, $event)
+            : null
+          "
+          [attr.contenteditable]="isValueAndEditable(token) ? 'true' : null"
+          (keydown)="
+            isValueAndEditable(token)
+              ? onTokenKeyDown($event, token, i)
+              : null
+          "
+          (focus)="
+            isValueAndEditable(token)
+              ? onTokenFocus(token, i)
+              : null
+          "
+          (blur)="
+            isValueAndEditable(token)
+              ? onTokenBlur($event, token, i)
+              : null
+          "
+        >
           <span *ngIf="isEditingAllowed && token.type === 'operand' && token.groupId" class="delete-button" (click)="removeFilterGroup(token.groupId)">
             <i class="bi bi-x"></i>
           </span>
