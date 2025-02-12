@@ -704,6 +704,22 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
         this.showSuggestions = false;
       }
     } else if (suggestion.type === 'value') {
+      // If we're in single-select edit mode, replace the existing value
+      if (this.isSingleSelectSearchMode && this.activeValueEdit) {
+        // Update the existing token instead of adding a new one
+        const token = this.tokens[this.activeValueEdit.index];
+        if (token && token.type === 'value') {
+          token.value = suggestion.value;
+          token.displayValue = suggestion.label;
+          this.showSuggestions = false;
+          this.isSingleSelectSearchMode = false;
+          this.activeValueEdit = null;
+          this.emitChange();
+          return;
+        }
+      }
+
+      // Regular flow for adding new values (not editing)
       this.currentOperand = null;
       this.currentOperator = null;
       this.isAutocompleteMode = false;
@@ -1977,36 +1993,18 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   onOperatorClick(token: OperatorToken, event: MouseEvent) {
     if (!this.isEditingAllowed) return;
 
-    const operandToken = this.findOperandForOperator(token);
-    if (!operandToken) return;
-
-    const operand = this.config.operands.find(op => op.name === operandToken.value);
-    if (!operand) return;
-
-    // Show only IN/NOT IN operators if current operator is IN or NOT IN
-    const isInOperator = token.value === 'IN' || token.value === 'NOT IN';
-    this.suggestions = this.config.operators
-      .filter(op => {
-        if (isInOperator) {
-          // Only show IN and NOT IN operators
-          return op.symbol === 'IN' || op.symbol === 'NOT IN';
-        }
-        // For other operators, show all applicable operators except IN/NOT IN
-        return op.applicableTypes.includes(operand.type) && 
-               op.symbol !== 'IN' && 
-               op.symbol !== 'NOT IN';
-      })
-      .map(op => ({
-        type: 'operator' as const,
-        value: op.symbol,
-        label: op.label,
-        displayValue: op.label,
-        operandType: operand.type
-      }));
-
-    // Set up for operator change
-    this.currentOperand = operand;
-    this.currentOperator = this.config.operators.find(op => op.symbol === token.value) || null;
+    this.showSuggestions = true;
+    this.isSingleSelectSearchMode = false; // Ensure we're not in select mode
+    
+    // Show applicable operators as suggestions
+    const applicableOperators = this.config.operators.map(op => ({
+      type: 'operator' as const,
+      value: op.symbol,
+      label: op.label,
+      displayValue: op.label
+    }));
+    
+    this.suggestions = applicableOperators;
     
     // Position dropdown near the clicked operator
     const target = event.target as HTMLElement;
@@ -2015,8 +2013,30 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       top: rect.bottom + window.scrollY,
       left: rect.left + window.scrollX
     };
-    
+  }
+
+  /** Handles click on a logical operator token */
+  onLogicalOperatorClick(token: LogicalToken, event: MouseEvent) {
+    if (!this.isEditingAllowed) return;
+
     this.showSuggestions = true;
+    this.isSingleSelectSearchMode = false; // Ensure we're not in select mode
+    
+    // Show logical operators as suggestions
+    this.suggestions = this.config.logicalOperators.map(op => ({
+      type: 'logical' as const,
+      value: op.value,
+      label: op.label,
+      displayValue: op.label
+    }));
+    
+    // Position dropdown near the clicked logical operator
+    const target = event.target as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    this.dropdownPosition = {
+      top: rect.bottom + window.scrollY,
+      left: rect.left + window.scrollX
+    };
   }
 
   /** Handles operator change selection */
@@ -2232,12 +2252,27 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   onValueClick(token: ValueToken, event: MouseEvent) {
     if (!this.isEditingAllowed || !token.operandType) return;
 
+    // If it's not a select/multiselect type, don't show the select UI
+    if (token.operandType !== 'select' && token.operandType !== 'multiselect') {
+      return;
+    }
+
+    // Find the index of the value token
+    const tokenIndex = this.tokens.findIndex(t => t === token);
+    if (tokenIndex === -1) return;
+
+    // Set up for value editing
+    this.activeValueEdit = {
+      index: tokenIndex,
+      token: token
+    };
+
     // Find the operand for this value
     let operandToken: OperandToken | null = null;
     let operatorToken: OperatorToken | null = null;
     
     // Find the operand and operator for this value by looking backwards
-    for (let i = this.tokens.findIndex(t => t === token) - 1; i >= 0; i--) {
+    for (let i = tokenIndex - 1; i >= 0; i--) {
       const currentToken = this.tokens[i];
       if (!operatorToken && this.isOperatorToken(currentToken)) {
         operatorToken = currentToken;
@@ -2253,86 +2288,28 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     const operand = this.config.operands.find(op => op.name === operandToken!.value);
     if (!operand) return;
 
-    // Find the index of the value token
-    const tokenIndex = this.tokens.findIndex(t => t === token);
-    if (tokenIndex === -1) return;
-
-    // Set up for value editing
-    this.activeValueEdit = {
-      index: tokenIndex,
-      token: token
-    };
-
     // Set current state
     this.currentOperand = operand;
     this.currentOperator = operatorToken ? 
       this.config.operators.find(op => op.symbol === operatorToken.value) || null : 
       null;
 
-    // Show the input field with current value
-    this.inputValue = token.value;
-    this.showSuggestions = true;
+    // 1) Identify what's being clicked: single select vs. multi select
+    this.isSingleSelectSearchMode = (token.operandType === 'select');
+    this.isMultiSelectMode = (token.operandType === 'multiselect');
 
-    // For text/number types, show the current value as a suggestion
-    if (token.operandType === 'text' || token.operandType === 'number') {
-      this.suggestions = [{
-        type: 'value',
-        value: token.value,
-        label: token.displayValue || token.value,
-        displayValue: token.displayValue || token.value,
-        operandType: token.operandType
-      }];
-      
-      // Focus and select the input value
-      setTimeout(() => {
-        if (this.filterInput?.nativeElement) {
-          const input = this.filterInput.nativeElement;
-          input.focus();
-          input.value = token.value;
-          input.setSelectionRange(0, input.value.length);
-        }
-      }, 50);
-    }
-    // For date type, show the date picker with current value
-    else if (token.operandType === 'date') {
-      this.suggestions = [{
-        type: 'value',
-        value: token.value,
-        label: token.value,
-        displayValue: token.value,
-        operandType: 'date'
-      }];
-      
-      // Focus the date input
-      setTimeout(() => {
-        if (this.dateInput?.nativeElement) {
-          this.dateInput.nativeElement.showPicker();
-        }
-      });
-    }
-    // For select/multiselect type, show all available options
-    else if ((token.operandType === 'select' || token.operandType === 'multiselect') && operand.options) {
-      this.suggestions = operand.options.map(opt => ({
-        type: 'value',
-        value: opt.value,
-        label: opt.label,
-        displayValue: opt.label,
-        operandType: token.operandType
-      }));
-      
-      // For select type, just focus without selecting
-      setTimeout(() => {
-        if (this.filterInput?.nativeElement) {
-          this.filterInput.nativeElement.focus();
-        }
-      });
-    }
-    // For select/multiselect type with async options
-    else if ((token.operandType === 'select' || token.operandType === 'multiselect') && operand.optionsLoader) {
-      this.isLoading = true;
-      operand.optionsLoader('').subscribe(
-        options => {
-          this.suggestions = options.map(opt => ({
+    // 2) DO NOT copy token.value -> this.inputValue. Instead, blank it.
+    this.inputValue = '';
+
+    // 3) Show suggestions with empty search 
+    this.showSuggestions = true;
+    this.isLoading = true;
+    
+    // If operand has .options or .optionsLoader, load them:
+    if (operand.optionsLoader) {
+      operand.optionsLoader('').subscribe({
+        next: loadedOptions => {
+          this.suggestions = loadedOptions.map(opt => ({
             type: 'value',
             value: opt.value,
             label: opt.label,
@@ -2341,27 +2318,26 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
           }));
           this.isLoading = false;
         },
-        error => {
-          console.error('Error loading options:', error);
+        error: err => {
+          console.error('Error loading select options:', err);
           this.isLoading = false;
         }
-      );
-      
-      // For select type, just focus without selecting
-      setTimeout(() => {
-        if (this.filterInput?.nativeElement) {
-          this.filterInput.nativeElement.focus();
-        }
       });
+    } else if (operand.options) {
+      this.suggestions = operand.options.map(opt => ({
+        type: 'value',
+        value: opt.value,
+        label: opt.label,
+        displayValue: opt.label,
+        operandType: token.operandType
+      }));
+      this.isLoading = false;
+    } else {
+      this.isLoading = false;
     }
 
-    // Position dropdown near the clicked value
-    const target = event.target as HTMLElement;
-    const rect = target.getBoundingClientRect();
-    this.dropdownPosition = {
-      top: rect.bottom + window.scrollY,
-      left: rect.left + window.scrollX
-    };
+    // 4) Re-position dropdown near the clicked token
+    setTimeout(() => this.updateDropdownPosition());
   }
 
   /** Whether editing is allowed without explicitly entering edit mode */
@@ -2486,4 +2462,6 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       this.emitChange();
     }
   }
+
+  public isSingleSelectSearchMode = false;
 } 

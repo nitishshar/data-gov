@@ -37,6 +37,8 @@
           (click)="
             token.type === 'operator'
               ? onOperatorClick(token, $event)
+            : token.type === 'logical'
+              ? onLogicalOperatorClick(token, $event)
             : token.type === 'value' && token.isCollapsed
               ? onCollapsedValueClick(token)
             : token.type === 'value' &&
@@ -144,7 +146,7 @@
             </div>
           </div>
         </ng-container>
-        <ng-container *ngIf="!isMultiSelectMode && !isMultiSelectAutocomplete">
+        <ng-container *ngIf="!isMultiSelectMode && !isMultiSelectAutocomplete && !isSingleSelectSearchMode">
           <ng-container *ngIf="currentOperand?.type === 'date' && currentOperator">
             <div class="list-group-item date-picker-header">
               <div class="d-flex flex-column gap-2">
@@ -177,6 +179,36 @@
           >
             <span class="suggestion-type" [class]="suggestion.type">{{ suggestion.type }}</span>
             <span class="suggestion-label">{{ suggestion.label }}</span>
+          </button>
+        </ng-container>
+        <ng-container *ngIf="showSuggestions && isSingleSelectSearchMode && !isMultiSelectMode">
+          <div class="list-group-item single-select-header">
+            <div class="d-flex flex-column gap-2">
+              <div class="d-flex justify-content-between align-items-center">
+                <span>Select a value</span>
+              </div>
+              <div class="search-container">
+                <i class="bi bi-search"></i>
+                <input
+                  type="text"
+                  class="form-control form-control-sm"
+                  placeholder="Search values..."
+                  [(ngModel)]="inputValue"
+                  (input)="onInput($event)"
+                  (keydown)="$event.stopPropagation()"
+                />
+              </div>
+            </div>
+          </div>
+          <button
+            *ngFor="let suggestion of suggestions; let i = index"
+            type="button"
+            class="list-group-item list-group-item-action"
+            [class.active]="i === selectedSuggestionIndex"
+            (click)="selectSuggestion(suggestion)"
+            (mouseover)="selectedSuggestionIndex = i"
+          >
+            {{ suggestion.label }}
           </button>
         </ng-container>
       </div>
