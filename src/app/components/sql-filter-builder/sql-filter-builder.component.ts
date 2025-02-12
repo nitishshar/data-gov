@@ -661,6 +661,25 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       this.suggestions = applicableOperators;
       setTimeout(() => this.updateDropdownPosition());
     } else if (suggestion.type === 'operator') {
+      // If we're editing an existing operator, replace it
+      if (this.currentOperator && this.currentOperand) {
+        // Find the operator token to replace
+        const operatorIndex = this.tokens.findIndex(t => 
+          this.isOperatorToken(t) && 
+          t.value === this.currentOperator?.symbol &&
+          // Look for the operator that's part of the current operand's group
+          this.findOperandForOperator(t as OperatorToken)?.value === this.currentOperand?.name
+        );
+        
+        if (operatorIndex !== -1) {
+          // Replace the existing operator
+          this.tokens[operatorIndex] = {
+            type: 'operator',
+            value: suggestion.value,
+            displayValue: suggestion.label
+          };
+        }
+      }
       this.currentOperator = this.config.operators.find(op => op.symbol === suggestion.value) || null;
       if (this.currentOperand?.type === 'date') {
         this.showSuggestions = true;
@@ -1979,6 +1998,10 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
 
     const operand = this.config.operands.find(op => op.name === operandToken.value);
     if (!operand) return;
+
+    // Set current state to enable proper operator replacement
+    this.currentOperand = operand;
+    this.currentOperator = this.config.operators.find(op => op.symbol === token.value) || null;
 
     this.showSuggestions = true;
     this.isSingleSelectSearchMode = false; // Ensure we're not in select mode
