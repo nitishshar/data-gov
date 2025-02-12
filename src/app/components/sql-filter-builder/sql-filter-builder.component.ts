@@ -418,47 +418,27 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
    * @example Shows suggestions dropdown on focus
    */
   onFocus() {
-    this.updateDropdownPosition();
+    this.showSuggestions = true;
+    // Reset single-select mode when focusing on the main input
+    this.isSingleSelectSearchMode = false;
     
-    // If we were editing an operator, reset the state
-    if (this.currentOperator && this.currentOperand) {
-      const lastToken = this.tokens[this.tokens.length - 1];
-      this.currentOperator = null;
-      this.currentOperand = null;
-      
-      // Show appropriate suggestions based on last token
-      this.showSuggestions = true;
-      if (this.isValueToken(lastToken) || (this.isBracketToken(lastToken) && lastToken.value === ')')) {
-        this.suggestions = this.config.logicalOperators.map(op => ({
-          type: 'logical' as const,
-          value: op.value,
+    if (!this.currentOperand) {
+      // Show operand suggestions
+      this.updateSuggestionsForInput(this.inputValue);
+    } else if (!this.currentOperator) {
+      // Show operator suggestions
+      const applicableOperators = this.config.operators
+        .filter(op => op.applicableTypes.includes(this.currentOperand!.type))
+        .map(op => ({
+          type: 'operator' as const,
+          value: op.symbol,
           label: op.label,
           displayValue: op.label
         }));
-      } else if (this.isLogicalToken(lastToken)) {
-        this.suggestions = this.config.operands.map(op => ({
-          type: 'operand' as const,
-          value: op.name,
-          label: op.label,
-          displayValue: op.label,
-          operandType: op.type
-        }));
-      }
-      return;
+      this.suggestions = applicableOperators;
     }
     
-    this.showSuggestions = true;
-    if (this.shouldShowValueSelect || this.isMultiSelectMode) {
-      this.updateSuggestionsForInput('');
-    } else if (this.shouldShowAutocomplete) {
-      this.isAutocompleteMode = true;
-      if (this.inputValue) {
-        this.updateSuggestionsForInput(this.inputValue);
-      }
-    } else {
-      // Show initial suggestions when no input
-      this.updateSuggestionsForInput('');
-    }
+    setTimeout(() => this.updateDropdownPosition());
   }
 
   /**
@@ -1993,16 +1973,35 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   onOperatorClick(token: OperatorToken, event: MouseEvent) {
     if (!this.isEditingAllowed) return;
 
+    // Find the operand for this operator
+    const operandToken = this.findOperandForOperator(token);
+    if (!operandToken) return;
+
+    const operand = this.config.operands.find(op => op.name === operandToken.value);
+    if (!operand) return;
+
     this.showSuggestions = true;
     this.isSingleSelectSearchMode = false; // Ensure we're not in select mode
     
     // Show applicable operators as suggestions
-    const applicableOperators = this.config.operators.map(op => ({
-      type: 'operator' as const,
-      value: op.symbol,
-      label: op.label,
-      displayValue: op.label
-    }));
+    const isInOperator = token.value === 'IN' || token.value === 'NOT IN';
+    const applicableOperators = this.config.operators
+      .filter(op => {
+        if (isInOperator) {
+          // Only show IN and NOT IN operators
+          return op.symbol === 'IN' || op.symbol === 'NOT IN';
+        }
+        // For other operators, show all applicable operators except IN/NOT IN
+        return op.applicableTypes.includes(operand.type) && 
+               op.symbol !== 'IN' && 
+               op.symbol !== 'NOT IN';
+      })
+      .map(op => ({
+        type: 'operator' as const,
+        value: op.symbol,
+        label: op.label,
+        displayValue: op.label
+      }));
     
     this.suggestions = applicableOperators;
     
