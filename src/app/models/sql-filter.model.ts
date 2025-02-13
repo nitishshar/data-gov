@@ -72,6 +72,7 @@ export interface FilterConfig {
   showGeneratedSql?: boolean;
   outputFormat?: FilterOutputFormat;
   defaultEditMode?: boolean;
+  theme?: 'classic' | 'modern' | 'legacy' | 'business' | 'professional';
 }
 
 export type TokenType = 'operand' | 'operator' | 'value' | 'logical' | 'bracket';

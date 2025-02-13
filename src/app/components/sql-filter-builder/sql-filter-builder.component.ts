@@ -144,6 +144,11 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     return this.config.showGeneratedSql ?? true;
   }
 
+  // Add getter for theme
+  get currentTheme(): 'classic' | 'modern' | 'legacy' | 'business' | 'professional' {
+    return this.config.theme || 'classic'; // Default to classic style
+  }
+
   /**
    * Whether to show value select dropdown
    * @returns boolean indicating if value select should be shown

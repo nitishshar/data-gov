@@ -24,6 +24,11 @@
         <span 
           *ngFor="let token of displayTokens; let i = index"
           class="token"
+          [class.token-classic]="currentTheme === 'classic'"
+          [class.token-modern]="currentTheme === 'modern'"
+          [class.token-legacy]="currentTheme === 'legacy'"
+          [class.token-business]="currentTheme === 'business'"
+          [class.token-professional]="currentTheme === 'professional'"
           [class.editing]="isEditingAllowed && token.type === 'operand'"
           [class.clickable]="
             token.type === 'operator' ||

@@ -22,6 +22,7 @@ export class AppComponent implements OnInit {
   squadData: any = null;
 
   filterConfig: FilterConfig = {
+    theme: 'legacy',
     operands: [
       {
         name: 'division',

@@ -25,7 +25,7 @@
       flex-wrap: wrap;
       align-items: center;
       gap: 0.25rem;
-      
+
       &.editing {
         .token.group-start {
           margin-left: 1.5rem;
@@ -61,7 +61,7 @@
 
     &.has-error {
       border-color: #e74c3c;
-      
+
       &:focus-within {
         border-color: #e74c3c;
         box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.12);
@@ -72,14 +72,335 @@
       position: relative;
       display: inline-flex;
       align-items: center;
-      padding: 0.25rem 0.625rem;
-      font-size: 0.8125rem;
-      font-weight: 500;
-      border-radius: 0.25rem;
       white-space: nowrap;
-      color: white;
       transition: all 0.2s ease;
+      // Classic theme (current style)
+      &.token-classic {
+        padding: 0.25rem 0.625rem;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        border-radius: 0.25rem;
+        margin: 0 2px;
 
+        &.operand {
+          background-color: #e3f2fd;
+          color: #1976d2;
+        }
+
+        &.operator {
+          background-color: #f3e5f5;
+          color: #7b1fa2;
+        }
+
+        &.value {
+          background-color: #e8f5e9;
+          color: #2e7d32;
+        }
+
+        &.logical {
+          background-color: #fff3e0;
+          color: #e65100;
+        }
+
+        &.bracket {
+          background-color: #f5f5f5;
+          color: #616161;
+        }
+      }
+
+      // Modern theme (new badge style)
+      &.token-modern {
+        padding: 0.25rem 0.75rem;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        border-radius: 1rem;
+        margin: 0 3px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+        &.operand {
+          background-color: #2563eb;
+          color: white;
+        }
+
+        &.operator {
+          background-color: #7c3aed;
+          color: white;
+
+          &:hover {
+            background-color: darken(#7c3aed, 5%);
+          }
+        }
+
+        &.value {
+          background-color: #059669;
+          color: white;
+
+          &.clickable:hover {
+            background-color: darken(#059669, 5%);
+          }
+        }
+
+        &.logical {
+          background-color: #d97706;
+          color: white;
+        }
+
+        &.bracket {
+          background-color: #6b7280;
+          color: white;
+        }
+
+        &.clickable {
+          transform: translateY(0);
+          transition: all 0.2s ease;
+
+          &:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          }
+        }
+      }
+
+      // Legacy theme (text style)
+      &.token-legacy {
+        padding: 0.25rem;
+        font-size: 0.875rem;
+        margin: 0 2px;
+
+        &.operand {
+          color: #1976d2;
+          font-weight: normal;
+          background-color: transparent;
+        }
+
+        &.operator {
+          color: #7b1fa2;
+          font-weight: normal;
+          background-color: transparent;
+        }
+
+        &.value {
+          color: #2e7d32;
+          font-weight: normal;
+          background-color: transparent;
+        }
+
+        &.logical {
+          color: #e65100;
+          font-weight: normal;
+          background-color: transparent;
+        }
+
+        &.bracket {
+          color: #616161;
+          font-weight: normal;
+          background-color: transparent;
+        }
+
+        &.clickable:hover {
+          background-color: rgba(0, 0, 0, 0.05);
+          border-radius: 3px;
+        }
+      }
+
+      // Business theme (original style)
+      &.token-business {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        border-radius: 0.25rem;
+        white-space: nowrap;
+        transition: all 0.2s ease;
+        margin: 0 3px;
+        border: 1px solid;
+        box-shadow: 0 2px 0 rgba(0, 0, 0, 0.05);
+
+        &.operand {
+          background: linear-gradient(to bottom, #f0f7ff, #e3f2fd);
+          border-color: #90caf9;
+          color: #1976d2;
+
+          .delete-button {
+            position: absolute;
+            left: 0.25rem;
+            display: none;
+            width: 16px;
+            height: 16px;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: rgba(25, 118, 210, 0.7);
+            transition: color 0.2s ease;
+
+            &:hover {
+              color: #1976d2;
+            }
+
+            i {
+              font-size: 14px;
+            }
+          }
+        }
+
+        &.operator {
+          background: linear-gradient(to bottom, #f8f0fc, #f3e5f5);
+          border-color: #ce93d8;
+          color: #7b1fa2;
+          cursor: pointer;
+
+          &:hover {
+            background: linear-gradient(to bottom, #f3e5f5, #e1bee7);
+            transform: translateY(1px);
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+          }
+        }
+
+        &.value {
+          background: linear-gradient(to bottom, #f1f8f1, #e8f5e9);
+          border-color: #a5d6a7;
+          color: #2e7d32;
+
+          &.clickable {
+            cursor: pointer;
+
+            &:hover {
+              background: linear-gradient(to bottom, #e8f5e9, #c8e6c9);
+              transform: translateY(1px);
+              box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+            }
+          }
+        }
+
+        &.logical {
+          background: linear-gradient(to bottom, #fff7e6, #fff3e0);
+          border-color: #ffcc80;
+          color: #e65100;
+        }
+
+        &.bracket {
+          background: linear-gradient(to bottom, #fafafa, #f5f5f5);
+          border-color: #e0e0e0;
+          color: #616161;
+        }
+
+        &.editing {
+          .delete-button {
+            display: flex;
+          }
+        }
+
+        &:active {
+          transform: translateY(2px);
+          box-shadow: none;
+        }
+      }
+
+      // Professional theme (exact match with provided CSS)
+      &.token-professional {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.625rem;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        border-radius: 0.25rem;
+        white-space: nowrap;
+        color: white;
+        transition: all 0.2s ease;
+
+        &.operand {
+          padding-left: 1.75rem;
+          background-color: #4b7bec;
+
+          .delete-button {
+            position: absolute;
+            left: 0.25rem;
+            display: none;
+            width: 16px;
+            height: 16px;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.7);
+            transition: color 0.2s ease;
+
+            &:hover {
+              color: #ffffff;
+            }
+
+            i {
+              font-size: 14px;
+            }
+          }
+        }
+
+        &.operator {
+          background-color: #45aaf2;
+        }
+
+        &.value {
+          background-color: #26de81;
+        }
+
+        &.logical {
+          background-color: #778ca3;
+        }
+
+        &.bracket {
+          background-color: #a5b1c2;
+        }
+
+        &[contenteditable="true"] {
+          cursor: text;
+          white-space: nowrap;
+        }
+
+        &.clickable::after {
+          content: none;
+        }
+
+        &.editing {
+          .delete-button {
+            display: flex;
+          }
+        }
+      }
+
+      // Common styles for both themes
+      &.clickable {
+        cursor: pointer;
+      }
+
+      // Delete button styles
+      .delete-button {
+        position: absolute;
+        left: 0.25rem;
+        display: none;
+        width: 16px;
+        height: 16px;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: rgba(0, 0, 0, 0.5);
+        transition: color 0.2s ease;
+
+        &:hover {
+          color: #e74c3c;
+        }
+
+        i {
+          font-size: 14px;
+        }
+      }
+
+      &.editing {
+        .delete-button {
+          display: flex;
+        }
+      }
       &.operand {
         padding-left: 1.75rem;
         background-color: #4b7bec;
@@ -214,8 +535,8 @@
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 
-              0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
   margin-top: 0.25rem;
   min-width: 280px;
   max-width: 320px;
@@ -270,7 +591,7 @@
         .search-container {
           position: relative;
           width: 100%;
-          
+
           .bi-search {
             position: absolute;
             left: 8px;
@@ -285,7 +606,7 @@
             padding-left: 32px;
             font-size: 0.875rem;
             border-color: #e0e4e8;
-            
+
             &:focus {
               border-color: #4b7bec;
               box-shadow: 0 0 0 0.2rem rgba(75, 123, 236, 0.25);
@@ -306,7 +627,7 @@
           padding: 0.375rem 0.75rem;
           background-color: #4b7bec;
           border-color: #4b7bec;
-          
+
           &:hover {
             background-color: #3867d6;
             border-color: #3867d6;
@@ -320,7 +641,7 @@
 
         .search-container {
           position: relative;
-          
+
           .bi-search {
             position: absolute;
             left: 8px;
@@ -334,7 +655,7 @@
             padding-left: 32px;
             font-size: 0.875rem;
             border-color: #e0e4e8;
-            
+
             &:focus {
               border-color: #4b7bec;
               box-shadow: 0 0 0 0.2rem rgba(75, 123, 236, 0.25);
@@ -441,7 +762,7 @@
         .date-container {
           position: relative;
           width: 100%;
-          
+
           .bi-calendar {
             position: absolute;
             left: 12px;
@@ -464,7 +785,7 @@
             cursor: pointer;
             color: #111827;
             transition: all 0.15s ease;
-            
+
             &::-webkit-calendar-picker-indicator {
               position: absolute;
               right: 12px;
@@ -481,12 +802,12 @@
                 opacity: 1;
               }
             }
-            
+
             &:hover {
               border-color: #d1d5db;
               background-color: #f9fafb;
             }
-            
+
             &:focus {
               border-color: #3b82f6;
               box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
@@ -501,13 +822,13 @@
 
 .tokens-preview {
   min-height: 38px;
-  
+
   .badge {
     display: inline-flex;
     align-items: center;
     padding: 0.5rem 0.75rem;
     font-size: 0.875rem;
-    
+
     &.bg-operand {
       background-color: #0d6efd;
     }
@@ -527,13 +848,13 @@
     &.bg-bracket {
       background-color: #6c757d;
     }
-    
+
     .btn-close {
       font-size: 0.75rem;
       padding: 0.25rem;
       margin-left: 0.5rem;
       opacity: 0.7;
-      
+
       &:hover {
         opacity: 1;
       }
@@ -543,7 +864,7 @@
 
 .sql-preview {
   pre {
-    background: rgba(0,0,0,0.05);
+    background: rgba(0, 0, 0, 0.05);
     padding: 1rem;
     border-radius: 0.25rem;
     margin: 0;
@@ -568,7 +889,7 @@
   }
 
   code {
-    font-family: 'Monaco', 'Consolas', monospace;
+    font-family: "Monaco", "Consolas", monospace;
     background-color: #ffffff;
     padding: 0.25rem 0.5rem;
     border-radius: 0.25rem;
@@ -659,7 +980,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        
+
         &:hover {
           color: #0d6efd;
         }
@@ -676,7 +997,7 @@
       }
 
       &::before {
-        content: '';
+        content: "";
         position: absolute;
         top: -6px;
         right: 8px;
@@ -764,4 +1085,4 @@
     min-width: 100px !important; // Reduce minimum width
     max-width: calc(100% - 120px);
   }
-} 
+}
