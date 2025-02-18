@@ -20,6 +20,8 @@ import {
 } from '../../models/sql-filter.model';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { FilterOptionsService } from '../../services/filter-options.service';
+import { FilterOption } from '../../models/sql-filter.model';
 
 /**
  * SQL Filter Builder Component
@@ -158,7 +160,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     return !!(
       this.currentOperand &&
       this.currentOperator &&
-      (this.currentOperand.options || this.currentOperand.optionsLoader) &&
+      this.currentOperand.optionsConfig &&
       this.currentOperand.type === 'select'
     );
   }
@@ -172,7 +174,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     return !!(
       this.currentOperand &&
       this.currentOperator &&
-      (this.currentOperand.options || this.currentOperand.optionsLoader) &&
+      this.currentOperand.optionsConfig &&
       this.currentOperand.type === 'autocomplete'
     );
   }
@@ -1055,13 +1057,15 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       this.selectedValues = [];
       this.showSuggestions = true;
       // Show value suggestions for IN/NOT IN operator
-      if (this.currentOperand.options) {
-        this.suggestions = this.currentOperand.options.map(opt => ({
-          type: 'value' as const,
-          value: opt.value,
-          label: opt.label,
-          displayValue: opt.label
-        }));
+      if (this.currentOperand.optionsConfig) {
+        this.filterOptionsService.loadOptions(this.currentOperand).subscribe(options => {
+          this.suggestions = options.map((opt: FilterOption) => ({
+            type: 'value' as const,
+            value: opt.value,
+            label: opt.label,
+            displayValue: opt.label
+          }));
+        });
       }
     }
   }
@@ -1155,20 +1159,10 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       }
 
       // For select/multiselect/autocomplete fields
-      if (this.isMultiSelectMode || this.currentOperator.symbol === 'IN' || this.currentOperator.symbol === 'NOT IN') {
-        if (this.currentOperand.options) {
-          // Filter options based on input
-          this.suggestions = this.currentOperand.options
-            .filter(opt => opt.label.toLowerCase().includes(lowercaseInput))
-            .map(opt => ({
-              type: 'value' as const,
-              value: opt.value,
-              label: opt.label,
-              displayValue: opt.label
-            }));
-        } else if (this.currentOperand.optionsLoader) {
+      if (this.isMultiSelectMode || this.currentOperator?.symbol === 'IN' || this.currentOperator?.symbol === 'NOT IN') {
+        if (this.currentOperand.optionsConfig) {
           this.isLoading = true;
-          this.currentOperand.optionsLoader(input).subscribe(
+          this.filterOptionsService.loadOptions(this.currentOperand, input).subscribe(
             options => {
               this.suggestions = options.map(opt => ({
                 type: 'value' as const,
@@ -1188,22 +1182,11 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       }
 
       // For non-IN operators with select/autocomplete fields
-      if (this.currentOperand.options) {
-        // Filter options based on input
-        this.suggestions = this.currentOperand.options
-          .filter(opt => opt.label.toLowerCase().includes(lowercaseInput))
-          .map(opt => ({
-            type: 'value' as const,
-            value: opt.value,
-            label: opt.label,
-            displayValue: opt.label
-          }));
-      } else if (this.currentOperand.optionsLoader) {
-        // Load options for select fields with optionsLoader
+      if (this.currentOperand.optionsConfig) {
         this.isLoading = true;
-        this.currentOperand.optionsLoader(input).subscribe(
-          options => {
-            this.suggestions = options.map(opt => ({
+        this.filterOptionsService.loadOptions(this.currentOperand, lowercaseInput).subscribe({
+          next: (options: FilterOption[]) => {
+            this.suggestions = options.map((opt: FilterOption) => ({
               type: 'value' as const,
               value: opt.value,
               label: opt.label,
@@ -1211,11 +1194,13 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
             }));
             this.isLoading = false;
           },
-          error => {
+          error: (error: Error) => {
             console.error('Error loading options:', error);
             this.isLoading = false;
           }
-        );
+        });
+      } else {
+        this.isLoading = false;
       }
       return;
     }
@@ -2332,11 +2317,12 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
     this.showSuggestions = true;
     this.isLoading = true;
     
-    // If operand has .options or .optionsLoader, load them:
-    if (operand.optionsLoader) {
-      operand.optionsLoader('').subscribe({
-        next: loadedOptions => {
-          this.suggestions = loadedOptions.map(opt => ({
+    // If operand has options config, load them:
+    if (operand.optionsConfig) {
+      this.isLoading = true;
+      this.filterOptionsService.loadOptions(operand, '').subscribe({
+        next: (loadedOptions: FilterOption[]) => {
+          this.suggestions = loadedOptions.map((opt: FilterOption) => ({
             type: 'value',
             value: opt.value,
             label: opt.label,
@@ -2345,20 +2331,11 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
           }));
           this.isLoading = false;
         },
-        error: err => {
-          console.error('Error loading select options:', err);
+        error: (error: Error) => {
+          console.error('Error loading select options:', error);
           this.isLoading = false;
         }
       });
-    } else if (operand.options) {
-      this.suggestions = operand.options.map(opt => ({
-        type: 'value',
-        value: opt.value,
-        label: opt.label,
-        displayValue: opt.label,
-        operandType: token.operandType
-      }));
-      this.isLoading = false;
     } else {
       this.isLoading = false;
     }
@@ -2491,4 +2468,6 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   }
 
   public isSingleSelectSearchMode = false;
+
+  constructor(private filterOptionsService: FilterOptionsService) {}
 } 

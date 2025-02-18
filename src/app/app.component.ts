@@ -28,23 +28,21 @@ export class AppComponent implements OnInit {
         name: 'division',
         label: 'Division',
         type: 'text',
-        optionsLoader: (search: string) => this.mockDataService.getDivisions(search).pipe(
-          map(divisions => divisions.map(div => ({
-            value: div,
-            label: div
-          })))
-        )
+        optionsConfig: {
+          url: '/api/divisions',
+          method: 'GET',
+          searchParam: 'search'
+        }
       },
       {
         name: 'cost_center',
         label: 'Cost Center',
         type: 'select',
-        optionsLoader: (search: string) => this.mockDataService.getCostCenters(search).pipe(
-          map(centers => centers.map(center => ({
-            value: center.id,
-            label: `${center.id} - ${center.name}`
-          })))
-        )
+        optionsConfig: {
+          url: '/api/cost-centers',
+          method: 'GET',
+          searchParam: 'search'
+        }
       },
       {
         name: 'description',
@@ -75,34 +73,70 @@ export class AppComponent implements OnInit {
         name: 'manager',
         label: 'Manager',
         type: 'text',
-        optionsLoader: (search: string) => this.mockDataService.getManagers(search).pipe(
-          map(managers => managers.map(manager => ({
-            value: manager,
-            label: manager
-          })))
-        )
+        optionsConfig: {
+          url: '/api/managers',
+          method: 'GET',
+          searchParam: 'search'
+        }
       },
       {
         name: 'location',
         label: 'Location',
         type: 'text',
-        optionsLoader: (search: string) => this.mockDataService.getLocations(search).pipe(
-          map(locations => locations.map(location => ({
-            value: location,
-            label: location
-          })))
-        )
+        optionsConfig: {
+          url: '/api/locations',
+          method: 'GET',
+          searchParam: 'search'
+        }
       },
       {
         name: 'project_status',
         label: 'Project Status',
         type: 'select',
-        options: [
-          { value: 'active', label: 'Active' },
-          { value: 'completed', label: 'Completed' },
-          { value: 'on_hold', label: 'On Hold' },
-          { value: 'cancelled', label: 'Cancelled' }
-        ]
+        optionsConfig: {
+          url: '/api/project-statuses',
+          staticOptions: [
+            { value: 'active', label: 'Active' },
+            { value: 'completed', label: 'Completed' },
+            { value: 'on_hold', label: 'On Hold' },
+            { value: 'cancelled', label: 'Cancelled' }
+          ]
+        }
+      },
+      {
+        name: 'status',
+        label: 'Status',
+        type: 'select',
+        optionsConfig: {
+          url: '/api/statuses',
+          searchParam: 'query',
+          method: 'GET'
+        }
+      },
+      {
+        name: 'user',
+        label: 'User',
+        type: 'autocomplete',
+        optionsConfig: {
+          url: '/api/users',
+          searchParam: 'search',
+          method: 'POST',
+          valueField: 'id',
+          labelField: 'name'
+        }
+      },
+      {
+        name: 'role',
+        label: 'Role',
+        type: 'select',
+        optionsConfig: {
+          url: '/api/roles',
+          staticOptions: [
+            { value: 'admin', label: 'Admin' },
+            { value: 'user', label: 'User' },
+            { value: 'guest', label: 'Guest' }
+          ]
+        }
       }
     ],
     operators: [

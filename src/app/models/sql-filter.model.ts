@@ -9,8 +9,14 @@ export interface FilterOperand {
   name: string;
   label: string;
   type: 'text' | 'number' | 'date' | 'select' | 'multiselect' | 'autocomplete';
-  options?: FilterOption[];
-  optionsLoader?: (search: string) => Observable<FilterOption[]>;
+  optionsConfig?: {
+    url: string;
+    searchParam?: string;
+    method?: 'GET' | 'POST';
+    valueField?: string;
+    labelField?: string;
+    staticOptions?: FilterOption[];
+  };
 }
 
 export interface FilterOperator {
@@ -73,6 +79,12 @@ export interface FilterConfig {
   outputFormat?: FilterOutputFormat;
   defaultEditMode?: boolean;
   theme?: 'classic' | 'modern' | 'legacy' | 'business' | 'professional';
+  apiConfig?: {
+    baseUrl?: string;
+    headers?: Record<string, string>;
+    defaultMethod?: 'GET' | 'POST';
+    role?: string;
+  };
 }
 
 export type TokenType = 'operand' | 'operator' | 'value' | 'logical' | 'bracket';
