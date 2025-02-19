@@ -1162,6 +1162,7 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
       if (this.isMultiSelectMode || this.currentOperator?.symbol === 'IN' || this.currentOperator?.symbol === 'NOT IN') {
         if (this.currentOperand.optionsConfig) {
           this.isLoading = true;
+          this.updateLoadingState(true);
           this.filterOptionsService.loadOptions(this.currentOperand, input).subscribe(
             options => {
               this.suggestions = options.map(opt => ({
@@ -1171,10 +1172,13 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
                 displayValue: opt.label
               }));
               this.isLoading = false;
+              this.updateSearchStatus(options.length);
             },
             error => {
               console.error('Error loading options:', error);
               this.isLoading = false;
+              this.searchStatus = 'error';
+              this.statusMessage = 'Error loading options: ' + error.message;
             }
           );
         }
@@ -2470,4 +2474,28 @@ export class SqlFilterBuilderComponent implements OnInit, OnDestroy {
   public isSingleSelectSearchMode = false;
 
   constructor(private filterOptionsService: FilterOptionsService) {}
+
+  searchStatus: 'success' | 'warning' | 'error' | null = null;
+  statusMessage: string = '';
+
+  private updateSearchStatus(resultCount: number) {
+    if (resultCount === 0) {
+      this.searchStatus = 'error';
+      this.statusMessage = 'No results found';
+    } else if (resultCount >= 10) {
+      this.searchStatus = 'warning';
+      this.statusMessage = 'Add more search text to refine results';
+    } else {
+      this.searchStatus = 'success';
+      this.statusMessage = `Found ${resultCount} results`;
+    }
+  }
+
+  // Update loading status
+  private updateLoadingState(isLoading: boolean) {
+    if (isLoading) {
+      this.searchStatus = 'warning';
+      this.statusMessage = 'Loading options...';
+    }
+  }
 } 

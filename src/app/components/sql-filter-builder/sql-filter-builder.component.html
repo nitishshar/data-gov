@@ -119,9 +119,25 @@
             <div class="d-flex flex-column gap-2">
               <div class="d-flex justify-content-between align-items-center">
                 <span>{{ isMultiSelectAutocomplete ? 'Select multiple values' : 'Select multiple values' }}</span>
-                <button type="button" class="btn btn-primary btn-sm" (click)="confirmMultiSelect()" [disabled]="selectedValues.length === 0">
-                  Add ({{ selectedValues.length }})
-                </button>
+                <div class="d-flex align-items-center gap-2">
+                  <button type="button" class="btn btn-primary btn-sm" (click)="confirmMultiSelect()" [disabled]="selectedValues.length === 0">
+                    Add ({{ selectedValues.length }})
+                  </button>
+                  <div class="status-container">
+                    <div *ngIf="isLoading" class="spinner-border spinner-border-sm" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <i *ngIf="!isLoading" 
+                       class="bi status-icon" 
+                       [ngClass]="{
+                         'bi-check-circle-fill text-success': searchStatus === 'success',
+                         'bi-exclamation-triangle-fill text-warning': searchStatus === 'warning',
+                         'bi-exclamation-triangle-fill text-danger': searchStatus === 'error'
+                       }"
+                       [title]="statusMessage">
+                    </i>
+                  </div>
+                </div>
               </div>
               <div class="search-container">
                 <i class="bi bi-search"></i>

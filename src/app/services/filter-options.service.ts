@@ -138,7 +138,7 @@ export class FilterOptionsService {
       setTimeout(() => {
         subscriber.next(data);
         subscriber.complete();
-      }, 300);
+      }, 2000); // 2 second delay
     });
   }
 } 

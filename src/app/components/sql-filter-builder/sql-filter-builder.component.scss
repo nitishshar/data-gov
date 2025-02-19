@@ -622,6 +622,41 @@
         width: 100%;
         padding: 0.75rem 1rem;
 
+        .d-flex.align-items-center.gap-2 {
+          display: flex;
+          align-items: center;
+          gap: 8px !important;
+
+          .status-container {
+            display: flex;
+            align-items: center;
+            height: 24px;
+
+            .spinner-border {
+              width: 1rem;
+              height: 1rem;
+              color: #ffc107;  // Warning color while loading
+            }
+
+            .status-icon {
+              font-size: 1.1rem;
+              cursor: help;
+
+              &.text-success {
+                color: #198754 !important;  // Bootstrap success green
+              }
+
+              &.text-warning {
+                color: #ffc107 !important;  // Bootstrap warning yellow
+              }
+
+              &.text-danger {
+                color: #dc3545 !important;  // Bootstrap danger red
+              }
+            }
+          }
+        }
+
         .btn {
           font-size: 0.8125rem;
           padding: 0.375rem 0.75rem;
