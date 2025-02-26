@@ -33,16 +33,27 @@ import { ColDef, ValueFormatterParams } from 'ag-grid-community';
   styles: [`
     :host {
       display: block;
+      max-height: 90vh;
     }
 
     mat-dialog-content {
       max-height: none !important;
-      padding: 20px;
+      overflow: hidden;
     }
 
     h2 {
       text-align: center;
-      margin-bottom: 20px;
+      margin: 0;
+      padding: 20px 20px 0;
+      background: #f5f5f5;
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    ag-grid-angular {
+      height: 65vh !important;
+      width: 100%;
     }
   `]
 })

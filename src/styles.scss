@@ -53,3 +53,26 @@ body {
 // Add any other global styles here
 
 @import "bootstrap-icons/font/bootstrap-icons.css";
+
+.preview-dialog {
+  mat-dialog-container {
+    padding: 0 !important;
+  }
+  
+  .mat-mdc-dialog-container {
+    padding: 0;
+    display: block !important;
+  }
+  
+  .mat-mdc-dialog-content {
+    margin: 0;
+    padding: 20px;
+    max-height: 85vh !important;
+  }
+  
+  .mat-mdc-dialog-actions {
+    padding: 20px;
+    margin-bottom: 0;
+    border-top: 1px solid #e0e0e0;
+  }
+}

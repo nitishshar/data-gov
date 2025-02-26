@@ -36,6 +36,7 @@ import { PreviewDialogComponent } from './preview-dialog/preview-dialog.componen
         [pagination]="true"
         [paginationPageSize]="10"
         [modules]="modules"
+        style="margin-top: 60px;"
       >
       </ag-grid-angular>
     </div>
@@ -45,6 +46,7 @@ import { PreviewDialogComponent } from './preview-dialog/preview-dialog.componen
       height: 100%;
       width: 100%;
       position: relative;
+      padding-top: 20px;
     }
 
     .import-button {
@@ -55,9 +57,8 @@ import { PreviewDialogComponent } from './preview-dialog/preview-dialog.componen
     }
 
     ag-grid-angular {
-      height: calc(100% - 20px);
+      height: calc(100% - 60px);
       width: 100%;
-      margin-top: 20px;
     }
   `]
 })
@@ -95,9 +96,14 @@ export class ExcelImportComponent {
         // Open preview dialog
         this.dialog.open(PreviewDialogComponent, {
           data: { rowData: data, columnDefs: this.columnDefs },
-          width: '80%',
-          height: '80%',
-          position: { top: '50px' }
+          width: '90%',
+          maxWidth: '1200px',
+          panelClass: 'preview-dialog',
+          hasBackdrop: true,
+          disableClose: true,
+          position: {
+            top: '5vh'
+          }
         }).afterClosed().subscribe(result => {
           if (result) {
             this.rowData = data;
