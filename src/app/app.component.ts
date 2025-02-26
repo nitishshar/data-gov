@@ -6,6 +6,7 @@ import { ConfigBuilderComponent } from './config-builder/config-builder.componen
 import { LandingPageComponent } from './landing-page/landing-page.component';
 import { SquadDetailsComponent } from './squad-details/squad-details.component';
 import { SqlFilterBuilderComponent } from './components/sql-filter-builder/sql-filter-builder.component';
+import { ExcelImportComponent } from './components/excel-import/excel-import.component';
 import { FilterConfig, FilterOperand, AgGridCompositeFilterModel } from './models/sql-filter.model';
 import { Observable, map } from 'rxjs';
 import { MockDataService } from './services/mock-data.service';
@@ -13,7 +14,15 @@ import { MockDataService } from './services/mock-data.service';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, FormBuilderComponent, ConfigBuilderComponent, LandingPageComponent, SquadDetailsComponent, SqlFilterBuilderComponent],
+  imports: [
+    RouterOutlet, 
+    FormBuilderComponent, 
+    ConfigBuilderComponent, 
+    LandingPageComponent, 
+    SquadDetailsComponent, 
+    SqlFilterBuilderComponent,
+    ExcelImportComponent
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
