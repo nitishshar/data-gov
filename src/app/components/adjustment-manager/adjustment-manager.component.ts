@@ -174,8 +174,63 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
                     </div>
                     
                     <div class="report-list">
-                      <!-- Report list will be added in the next step -->
-                      <div class="placeholder-text">Report list will be displayed here</div>
+                      <!-- Capital Reports Folder -->
+                      <div class="report-folder" [class.expanded]="expandedFolders.includes('capital')">
+                        <div class="folder-header" (click)="toggleFolder('capital')">
+                          <span class="folder-toggle">{{ expandedFolders.includes('capital') ? '▼' : '▶' }}</span>
+                          <span class="folder-icon">📁</span>
+                          <span class="folder-name">Capital Reports (7)</span>
+                        </div>
+                        <div class="folder-content" *ngIf="expandedFolders.includes('capital')">
+                          <div class="report-item" *ngFor="let report of capitalReports" 
+                               [class.selected]="selectedReport === report.id"
+                               (click)="selectReport(report.id)">
+                            <span class="report-icon">📊</span>
+                            <span class="report-name">{{ report.name }}</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <!-- Investigation Folder -->
+                      <div class="report-folder" [class.expanded]="expandedFolders.includes('investigation')">
+                        <div class="folder-header" (click)="toggleFolder('investigation')">
+                          <span class="folder-toggle">{{ expandedFolders.includes('investigation') ? '▼' : '▶' }}</span>
+                          <span class="folder-icon">📁</span>
+                          <span class="folder-name">Investigation</span>
+                        </div>
+                        <div class="folder-content" *ngIf="expandedFolders.includes('investigation')">
+                          <!-- Investigation reports would go here -->
+                        </div>
+                      </div>
+                      
+                      <!-- BU Allocation Folder -->
+                      <div class="report-folder" [class.expanded]="expandedFolders.includes('bu')">
+                        <div class="folder-header" (click)="toggleFolder('bu')">
+                          <span class="folder-toggle">{{ expandedFolders.includes('bu') ? '▼' : '▶' }}</span>
+                          <span class="folder-icon">📁</span>
+                          <span class="folder-name">BU allocation (10)</span>
+                        </div>
+                        <div class="folder-content" *ngIf="expandedFolders.includes('bu')">
+                          <div class="report-item" *ngFor="let report of buReports" 
+                               [class.selected]="selectedReport === report.id"
+                               (click)="selectReport(report.id)">
+                            <span class="report-icon">📊</span>
+                            <span class="report-name">{{ report.name }}</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <!-- My Reports Folder -->
+                      <div class="report-folder" [class.expanded]="expandedFolders.includes('my')">
+                        <div class="folder-header" (click)="toggleFolder('my')">
+                          <span class="folder-toggle">{{ expandedFolders.includes('my') ? '▼' : '▶' }}</span>
+                          <span class="folder-icon">📁</span>
+                          <span class="folder-name">My Reports</span>
+                        </div>
+                        <div class="folder-content" *ngIf="expandedFolders.includes('my')">
+                          <!-- My reports would go here -->
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -625,6 +680,83 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
         padding: 0;
       }
     }
+    
+    /* Report List Styles */
+    .report-list {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background-color: white;
+      height: 300px;
+      overflow-y: auto;
+      padding: 0;
+    }
+    
+    .report-folder {
+      border-bottom: 1px solid #eee;
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      &.expanded {
+        background-color: #f8f9fa;
+      }
+    }
+    
+    .folder-header {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      cursor: pointer;
+      
+      &:hover {
+        background-color: #f0f0f0;
+      }
+    }
+    
+    .folder-toggle {
+      color: #666;
+      font-size: 12px;
+      margin-right: 8px;
+      width: 12px;
+      text-align: center;
+    }
+    
+    .folder-icon {
+      margin-right: 8px;
+    }
+    
+    .folder-name {
+      font-weight: 500;
+    }
+    
+    .folder-content {
+      padding-left: 32px;
+    }
+    
+    .report-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      cursor: pointer;
+      
+      &:hover {
+        background-color: #f0f0f0;
+      }
+      
+      &.selected {
+        background-color: #e8f0fe;
+      }
+    }
+    
+    .report-icon {
+      margin-right: 8px;
+      color: #d32f2f;
+    }
+    
+    .report-name {
+      font-size: 14px;
+    }
   `]
 })
 export class AdjustmentManagerComponent implements OnInit {
@@ -637,6 +769,8 @@ export class AdjustmentManagerComponent implements OnInit {
   // Report launcher properties
   mode: 'adjustment' | 'report' = 'adjustment';
   activePanel: string = 'select'; // Default active panel
+  expandedFolders: string[] = ['capital', 'bu']; // Default expanded folders
+  selectedReport: string | null = null;
   
   adjustmentTypes = [
     { value: 'required_capital', label: 'Required Capital Adjustment' },
@@ -669,6 +803,30 @@ export class AdjustmentManagerComponent implements OnInit {
     minWidth: 100,
     resizable: true
   };
+  
+  // Report data
+  capitalReports = [
+    { id: 'cap1', name: 'Capital Flash' },
+    { id: 'cap2', name: 'Capital Flash New' },
+    { id: 'cap3', name: 'Capital Flash Metric View' },
+    { id: 'cap4', name: 'Capital Flash Standard' },
+    { id: 'cap5', name: 'Capital By Component' },
+    { id: 'cap6', name: 'Capital By Component Standard' },
+    { id: 'cap7', name: 'Supplemental Leverage Report' }
+  ];
+  
+  buReports = [
+    { id: 'bu1', name: 'BU Variance' },
+    { id: 'bu2', name: 'B3 Allocation Percent' },
+    { id: 'bu3', name: 'PB FXEM Netting Groups' },
+    { id: 'bu4', name: 'LGD 100%' },
+    { id: 'bu5', name: 'Bu Alloc Managed View' },
+    { id: 'bu6', name: 'Bu Alloc Metric View' },
+    { id: 'bu7', name: 'RFM Product Totals' },
+    { id: 'bu8', name: 'CVA Addon Business Variance' },
+    { id: 'bu9', name: 'Trade Capital B3' },
+    { id: 'bu10', name: 'Netting Group Combined' }
+  ];
   
   constructor() {}
   
@@ -777,5 +935,17 @@ export class AdjustmentManagerComponent implements OnInit {
     this.adjustmentType = 'required_capital';
     this.rcAdjustmentType = 'reverse';
     alert('Adjustment cancelled!');
+  }
+  
+  toggleFolder(folder: string): void {
+    if (this.expandedFolders.includes(folder)) {
+      this.expandedFolders = this.expandedFolders.filter(f => f !== folder);
+    } else {
+      this.expandedFolders.push(folder);
+    }
+  }
+  
+  selectReport(reportId: string): void {
+    this.selectedReport = reportId;
   }
 } 
