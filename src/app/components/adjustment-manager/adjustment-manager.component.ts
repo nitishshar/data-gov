@@ -76,40 +76,16 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
             
             <div class="form-group">
               <label>Adjustment Type:</label>
-              <div class="custom-select" (click)="toggleAdjustmentTypeDropdown()">
-                <div class="select-value">{{ getAdjustmentTypeLabel() }}</div>
-                <span class="select-arrow">▼</span>
-              </div>
-              <div class="select-dropdown" *ngIf="showAdjustmentTypeDropdown">
-                <div 
-                  *ngFor="let type of adjustmentTypes" 
-                  class="select-option" 
-                  [class.selected]="adjustmentType === type.value"
-                  (click)="selectAdjustmentType(type.value)"
-                >
-                  {{ type.label }}
-                  <span class="check-icon" *ngIf="adjustmentType === type.value">✓</span>
-                </div>
-              </div>
+              <select class="form-select" [(ngModel)]="adjustmentType">
+                <option *ngFor="let type of adjustmentTypes" [value]="type.value">{{ type.label }}</option>
+              </select>
             </div>
             
             <div class="form-group" *ngIf="adjustmentType === 'required_capital'">
               <label>RC Adjustment Type:</label>
-              <div class="custom-select" (click)="toggleRcAdjustmentTypeDropdown()">
-                <div class="select-value">{{ getRcAdjustmentTypeLabel() }}</div>
-                <span class="select-arrow">▼</span>
-              </div>
-              <div class="select-dropdown" *ngIf="showRcAdjustmentTypeDropdown">
-                <div 
-                  *ngFor="let type of rcAdjustmentTypes" 
-                  class="select-option" 
-                  [class.selected]="rcAdjustmentType === type.value"
-                  (click)="selectRcAdjustmentType(type.value)"
-                >
-                  {{ type.label }}
-                  <span class="check-icon" *ngIf="rcAdjustmentType === type.value">✓</span>
-                </div>
-              </div>
+              <select class="form-select" [(ngModel)]="rcAdjustmentType">
+                <option *ngFor="let type of rcAdjustmentTypes" [value]="type.value">{{ type.label }}</option>
+              </select>
             </div>
             
             <div class="action-buttons">
@@ -163,17 +139,17 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
                     <div class="form-row">
                       <div class="form-group">
                         <label>Repository:</label>
-                        <div class="custom-select">
-                          <div class="select-value">Required Capital</div>
-                          <span class="select-arrow">▼</span>
-                        </div>
+                        <select class="form-select" [(ngModel)]="repository">
+                          <option *ngFor="let type of adjustmentTypes" [value]="type.value">{{ type.label }}</option>
+                        </select>
                       </div>
                       <div class="form-group">
                         <label>Environment:</label>
-                        <div class="custom-select">
-                          <div class="select-value">UAT</div>
-                          <span class="select-arrow">▼</span>
-                        </div>
+                        <select class="form-select" [(ngModel)]="environment">
+                          <option value="uat">UAT</option>
+                          <option value="prod">Production</option>
+                          <option value="dev">Development</option>
+                        </select>
                       </div>
                     </div>
                     
@@ -321,10 +297,12 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
                       
                       <div class="version-group" *ngIf="paramConfig.showVersion1">
                         <label>Version</label>
-                        <div class="custom-select">
-                          <div class="select-value">{{ reportParams.version1 }}</div>
-                          <span class="select-arrow">▼</span>
-                        </div>
+                        <select class="form-select" [(ngModel)]="reportParams.version1">
+                          <option value="Flash">Flash</option>
+                          <option value="Final">Final</option>
+                          <option value="Preliminary">Preliminary</option>
+                          <option value="Draft">Draft</option>
+                        </select>
                       </div>
                     </div>
                     
@@ -350,10 +328,12 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
                       
                       <div class="version-group" *ngIf="paramConfig.showVersion2">
                         <label>Version</label>
-                        <div class="custom-select">
-                          <div class="select-value">{{ reportParams.version2 }}</div>
-                          <span class="select-arrow">▼</span>
-                        </div>
+                        <select class="form-select" [(ngModel)]="reportParams.version2">
+                          <option value="Flash">Flash</option>
+                          <option value="Final">Final</option>
+                          <option value="Preliminary">Preliminary</option>
+                          <option value="Draft">Draft</option>
+                        </select>
                       </div>
                     </div>
                     
@@ -379,10 +359,12 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
                       
                       <div class="version-group" *ngIf="paramConfig.showVersion3">
                         <label>Version</label>
-                        <div class="custom-select">
-                          <div class="select-value">{{ reportParams.version3 }}</div>
-                          <span class="select-arrow">▼</span>
-                        </div>
+                        <select class="form-select" [(ngModel)]="reportParams.version3">
+                          <option value="Flash">Flash</option>
+                          <option value="Final">Final</option>
+                          <option value="Preliminary">Preliminary</option>
+                          <option value="Draft">Draft</option>
+                        </select>
                       </div>
                     </div>
                   </div>
@@ -392,29 +374,23 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
                     <!-- Business Area -->
                     <div class="form-group compact" *ngIf="paramConfig.showBusinessArea">
                       <label>Business Area</label>
-                      <div class="input-with-options">
-                        <div class="custom-select">
-                          <div class="select-value">{{ reportParams.businessArea }}</div>
-                          <span class="select-arrow">▼</span>
-                        </div>
-                        <button class="options-button" *ngIf="paramConfig.showBusinessAreaOptions">
-                          <span class="options-icon">⋯</span>
-                        </button>
-                      </div>
+                      <select class="form-select" [(ngModel)]="reportParams.businessArea">
+                        <option value="MORGAN STANLEY BUS UNITS">MORGAN STANLEY BUS UNITS</option>
+                        <option value="INSTITUTIONAL SECURITIES">INSTITUTIONAL SECURITIES</option>
+                        <option value="WEALTH MANAGEMENT">WEALTH MANAGEMENT</option>
+                        <option value="INVESTMENT MANAGEMENT">INVESTMENT MANAGEMENT</option>
+                      </select>
                     </div>
                     
                     <!-- Region -->
                     <div class="form-group compact" *ngIf="paramConfig.showRegion">
                       <label>Region</label>
-                      <div class="input-with-options">
-                        <div class="custom-select">
-                          <div class="select-value">{{ reportParams.region }}</div>
-                          <span class="select-arrow">▼</span>
-                        </div>
-                        <button class="options-button" *ngIf="paramConfig.showRegionOptions">
-                          <span class="options-icon">⋯</span>
-                        </button>
-                      </div>
+                      <select class="form-select" [(ngModel)]="reportParams.region">
+                        <option value="GLOBAL">GLOBAL</option>
+                        <option value="AMERICAS">AMERICAS</option>
+                        <option value="EMEA">EMEA</option>
+                        <option value="ASIA">ASIA</option>
+                      </select>
                     </div>
                   </div>
                   
@@ -444,10 +420,11 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
                   <!-- JV View -->
                   <div class="form-group compact" *ngIf="paramConfig.showJvView">
                     <label>JV View</label>
-                    <div class="custom-select">
-                      <div class="select-value">{{ reportParams.jvView }}</div>
-                      <span class="select-arrow">▼</span>
-                    </div>
+                    <select class="form-select" [(ngModel)]="reportParams.jvView">
+                      <option value="Post-JV">Post-JV</option>
+                      <option value="Pre-JV">Pre-JV</option>
+                      <option value="Both">Both</option>
+                    </select>
                   </div>
                   
                   <!-- Output Options -->
@@ -457,18 +434,22 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
                       <div class="output-options-row">
                         <div class="form-group no-margin">
                           <label>Display in</label>
-                          <div class="custom-select">
-                            <div class="select-value">{{ reportParams.displayIn }}</div>
-                            <span class="select-arrow">▼</span>
-                          </div>
+                          <select class="form-select" [(ngModel)]="reportParams.displayIn">
+                            <option value="Millions">Millions</option>
+                            <option value="Thousands">Thousands</option>
+                            <option value="Billions">Billions</option>
+                            <option value="Actual">Actual</option>
+                          </select>
                         </div>
                         
                         <div class="form-group no-margin">
                           <label>Output format</label>
-                          <div class="custom-select">
-                            <div class="select-value">{{ reportParams.outputFormat }}</div>
-                            <span class="select-arrow">▼</span>
-                          </div>
+                          <select class="form-select" [(ngModel)]="reportParams.outputFormat">
+                            <option value="Excel">Excel</option>
+                            <option value="PDF">PDF</option>
+                            <option value="CSV">CSV</option>
+                            <option value="HTML">HTML</option>
+                          </select>
                         </div>
                       </div>
                     </div>
@@ -556,7 +537,7 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
     }
     
     .adjustment-panel {
-      width: 23rem;
+      width: 25rem;
       background-color: rgba(255, 255, 255, 0.8);
       backdrop-filter: blur(10px);
       border-right: 1px solid rgba(255, 255, 255, 0.5);
@@ -580,7 +561,7 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
       
       .custom-select {
         position: relative;
-        width: 92%;
+        width: 100%;
         height: 40px;
         background-color: white;
         border: 1px solid #ccc;
@@ -615,6 +596,8 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
         z-index: 100;
         margin-top: 4px;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        left: 0;
+        top: 100%;
       }
       
       .select-option {
@@ -1106,7 +1089,7 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
     
     /* Parameters Form Styles */
     .parameters-content {
-      padding: 12px;
+      padding: 12px 16px;
     }
     
     .form-group.compact {
@@ -1128,10 +1111,12 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
       display: flex;
       gap: 12px;
       align-items: flex-start;
+      width: 100%;
     }
     
     .date-group {
       flex: 3;
+      max-width: 65%;
       
       label {
         display: block;
@@ -1143,6 +1128,7 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
     
     .version-group {
       flex: 2;
+      min-width: 120px;
       
       label {
         display: block;
@@ -1170,9 +1156,10 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
       display: flex;
       align-items: center;
       position: relative;
+      width: 100%;
       
       .form-input {
-        flex: 1;
+        width: 100%;
         height: 36px;
         padding: 6px 10px;
         border: 1px solid #ccc;
@@ -1182,11 +1169,10 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
         &.date-native {
           border-top-right-radius: 0;
           border-bottom-right-radius: 0;
-          padding-right: 36px; /* Make room for the calendar button */
+          padding-right: 36px;
           position: relative;
           z-index: 1;
           
-          /* Hide the native calendar icon */
           &::-webkit-calendar-picker-indicator {
             opacity: 0;
             width: 36px;
@@ -1215,7 +1201,7 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
         position: absolute;
         right: 0;
         z-index: 2;
-        pointer-events: none; /* Allow clicks to pass through to the date input */
+        pointer-events: none;
         
         .calendar-icon {
           font-size: 12px;
@@ -1314,6 +1300,7 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
       padding: 0 10px;
       cursor: pointer;
       font-size: 14px;
+      min-width: 100px;
     }
     
     .readonly-field {
@@ -1452,6 +1439,26 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
     .cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
       opacity: 0.5 !important;
     }
+    
+    .form-select {
+      width: 100%;
+      height: 36px;
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 0 10px;
+      font-size: 14px;
+      min-width: 100px;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      background-size: 16px;
+      padding-right: 30px;
+    }
   `]
 })
 export class AdjustmentManagerComponent implements OnInit {
@@ -1588,6 +1595,9 @@ export class AdjustmentManagerComponent implements OnInit {
     maxDate3String: '2025-12-31',
     disableDate3: false
   };
+  
+  repository: string = 'required_capital';
+  environment: string = 'uat';
   
   constructor() {}
   
