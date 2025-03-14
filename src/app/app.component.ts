@@ -10,7 +10,7 @@ import { ExcelImportComponent } from './components/excel-import/excel-import.com
 import { FilterConfig, FilterOperand, AgGridCompositeFilterModel } from './models/sql-filter.model';
 import { Observable, map } from 'rxjs';
 import { MockDataService } from './services/mock-data.service';
-
+import { AdjustmentManagerComponent } from './components/adjustment-manager/adjustment-manager.component';
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -21,7 +21,8 @@ import { MockDataService } from './services/mock-data.service';
     LandingPageComponent, 
     SquadDetailsComponent, 
     SqlFilterBuilderComponent,
-    ExcelImportComponent
+    ExcelImportComponent, 
+    AdjustmentManagerComponent
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
