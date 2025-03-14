@@ -11,6 +11,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AgGridModule } from 'ag-grid-angular';
 import { ClientSideRowModelModule } from 'ag-grid-community';
 import { ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
+import { trigger, state, style, animate, transition } from '@angular/animations';
 
 @Component({
   selector: 'app-adjustment-manager',
@@ -28,6 +29,23 @@ import { ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
     ReactiveFormsModule,
     AgGridModule
   ],
+  animations: [
+    trigger('expandCollapse', [
+      state('collapsed', style({
+        height: '0',
+        overflow: 'hidden',
+        opacity: '0',
+        padding: '0'
+      })),
+      state('expanded', style({
+        height: '*',
+        opacity: '1'
+      })),
+      transition('collapsed <=> expanded', [
+        animate('200ms ease-in-out')
+      ])
+    ])
+  ],
   template: `
     <div class="adjustment-manager-container">
       <mat-toolbar color="primary" class="toolbar">
@@ -35,11 +53,18 @@ import { ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
           <mat-icon>{{ sidenavOpen ? 'menu_open' : 'menu' }}</mat-icon>
         </button>
         <span>Adjustment Manager</span>
+        
+        <!-- Toggle between adjustment and report launcher -->
+        <div class="toolbar-actions">
+          <button mat-button (click)="setMode('adjustment')" [class.active]="mode === 'adjustment'">Adjustment</button>
+          <button mat-button (click)="setMode('report')" [class.active]="mode === 'report'">Report Launcher</button>
+        </div>
       </mat-toolbar>
 
       <mat-sidenav-container class="sidenav-container">
         <mat-sidenav #sidenav mode="side" [opened]="sidenavOpen" class="adjustment-panel">
-          <div class="panel-content">    
+          <!-- Adjustment Panel -->
+          <div class="panel-content" *ngIf="mode === 'adjustment'">    
             
             <div class="form-group">
               <label>Adjustment Type:</label>
@@ -100,6 +125,75 @@ import { ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
               </button>
             </div>
           </div>
+          
+          <!-- Report Launcher Panel -->
+          <div class="panel-content report-launcher" *ngIf="mode === 'report'">
+            <h2>Report Launcher</h2>
+            
+            <!-- RC Adjustment Section -->
+            <div class="report-section">
+              <div class="section-header" (click)="toggleReportSection('rc')">
+                <span>RC Adjustments</span>
+                <span class="section-indicator">{{ expandedSections.includes('rc') ? '▼' : '▲' }}</span>
+              </div>
+              <div class="section-content" [@expandCollapse]="expandedSections.includes('rc') ? 'expanded' : 'collapsed'">
+                <div class="report-option" [class.selected]="selectedReportOption === 'reverse_rc'" (click)="selectReportOption('reverse_rc')">
+                  <span>Reverse RC Adjustment</span>
+                  <span class="check-icon" *ngIf="selectedReportOption === 'reverse_rc'">✓</span>
+                </div>
+                <div class="report-option" [class.selected]="selectedReportOption === 'standard_rc'" (click)="selectReportOption('standard_rc')">
+                  <span>Standard RC Adjustment</span>
+                  <span class="check-icon" *ngIf="selectedReportOption === 'standard_rc'">✓</span>
+                </div>
+                <div class="report-option" [class.selected]="selectedReportOption === 'special_rc'" (click)="selectReportOption('special_rc')">
+                  <span>Special RC Adjustment</span>
+                  <span class="check-icon" *ngIf="selectedReportOption === 'special_rc'">✓</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Required Capital Section -->
+            <div class="report-section">
+              <div class="section-header" (click)="toggleReportSection('required')">
+                <span>Required Capital</span>
+                <span class="section-indicator">{{ expandedSections.includes('required') ? '▼' : '▲' }}</span>
+              </div>
+              <div class="section-content" [@expandCollapse]="expandedSections.includes('required') ? 'expanded' : 'collapsed'">
+                <div class="report-option" [class.selected]="selectedReportOption === 'required_capital'" (click)="selectReportOption('required_capital')">
+                  <span>Required Capital Adjustment</span>
+                  <span class="check-icon" *ngIf="selectedReportOption === 'required_capital'">✓</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Regulatory Section -->
+            <div class="report-section">
+              <div class="section-header" (click)="toggleReportSection('regulatory')">
+                <span>Regulatory</span>
+                <span class="section-indicator">{{ expandedSections.includes('regulatory') ? '▼' : '▲' }}</span>
+              </div>
+              <div class="section-content" [@expandCollapse]="expandedSections.includes('regulatory') ? 'expanded' : 'collapsed'">
+                <div class="report-option" [class.selected]="selectedReportOption === 'regulatory'" (click)="selectReportOption('regulatory')">
+                  <span>Regulatory Adjustment</span>
+                  <span class="check-icon" *ngIf="selectedReportOption === 'regulatory'">✓</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Manual Section -->
+            <div class="report-section">
+              <div class="section-header" (click)="toggleReportSection('manual')">
+                <span>Manual</span>
+                <span class="section-indicator">{{ expandedSections.includes('manual') ? '▼' : '▲' }}</span>
+              </div>
+              <div class="section-content" [@expandCollapse]="expandedSections.includes('manual') ? 'expanded' : 'collapsed'">
+                <div class="report-option" [class.selected]="selectedReportOption === 'manual'" (click)="selectReportOption('manual')">
+                  <span>Manual Adjustment</span>
+                  <span class="check-icon" *ngIf="selectedReportOption === 'manual'">✓</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </mat-sidenav>
         
         <mat-sidenav-content class="content">
@@ -140,6 +234,24 @@ import { ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
       color: white;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       z-index: 10;
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    .toolbar-actions {
+      display: flex;
+      gap: 8px;
+      
+      button {
+        color: white;
+        opacity: 0.7;
+        
+        &.active {
+          opacity: 1;
+          font-weight: 500;
+          border-bottom: 2px solid white;
+        }
+      }
     }
     
     .sidenav-container {
@@ -233,6 +345,67 @@ import { ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
       .check-icon {
         font-weight: bold;
         color: #4a69bd;
+      }
+    }
+    
+    /* Report Launcher Styles */
+    .report-launcher {
+      height: 100%;
+      overflow-y: auto;
+    }
+    
+    .report-section {
+      margin-bottom: 8px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background-color: #f5f5f5;
+      cursor: pointer;
+      font-weight: 500;
+      
+      &:hover {
+        background-color: #e8f0fe;
+      }
+      
+      .section-indicator {
+        font-size: 12px;
+        color: #666;
+      }
+    }
+    
+    .section-content {
+      background-color: white;
+    }
+    
+    .report-option {
+      padding: 12px 16px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #f0f0f0;
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      &:nth-child(odd) {
+        background-color: #f8f9fa;
+      }
+      
+      &:hover {
+        background-color: #e8f0fe;
+      }
+      
+      &.selected {
+        background-color: #e8f0fe;
       }
     }
     
@@ -390,6 +563,11 @@ export class AdjustmentManagerComponent implements OnInit {
   showAdjustmentTypeDropdown: boolean = false;
   showRcAdjustmentTypeDropdown: boolean = false;
   
+  // Report launcher properties
+  mode: 'adjustment' | 'report' = 'adjustment';
+  expandedSections: string[] = [];
+  selectedReportOption: string | null = null;
+  
   adjustmentTypes = [
     { value: 'required_capital', label: 'Required Capital Adjustment' },
     { value: 'regulatory', label: 'Regulatory Adjustment' },
@@ -435,6 +613,28 @@ export class AdjustmentManagerComponent implements OnInit {
         this.showRcAdjustmentTypeDropdown = false;
       }
     });
+  }
+  
+  setMode(mode: 'adjustment' | 'report'): void {
+    this.mode = mode;
+    
+    // Reset expanded sections when switching to report mode
+    if (mode === 'report' && this.expandedSections.length === 0) {
+      // Initially expand the RC section
+      this.expandedSections = ['rc'];
+    }
+  }
+  
+  toggleReportSection(section: string): void {
+    if (this.expandedSections.includes(section)) {
+      this.expandedSections = this.expandedSections.filter(s => s !== section);
+    } else {
+      this.expandedSections.push(section);
+    }
+  }
+  
+  selectReportOption(option: string): void {
+    this.selectedReportOption = option;
   }
   
   getAdjustmentTypeLabel(): string {
