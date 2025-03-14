@@ -7,6 +7,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AgGridModule } from 'ag-grid-angular';
 import { ClientSideRowModelModule } from 'ag-grid-community';
@@ -25,6 +29,10 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
     MatFormFieldModule,
     MatInputModule,
     MatDividerModule,
+    MatCheckboxModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatExpansionModule,
     FormsModule,
     ReactiveFormsModule,
     AgGridModule
@@ -280,9 +288,190 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
                 <div class="accordion-header" (click)="togglePanel('parameters')">
                   <span>Define parameters</span>
                 </div>
-                <div class="accordion-content" [@expandCollapse]="activePanel === 'parameters' ? 'expanded' : 'collapsed'">
-                  <div class="parameters-content">
-                    <div class="placeholder-text">Parameter configuration will be displayed here</div>
+                <div class="accordion-content parameters-content" [@expandCollapse]="activePanel === 'parameters' ? 'expanded' : 'collapsed'">
+                  <!-- Selected Report -->
+                  <div class="form-group compact" *ngIf="paramConfig.showSelectedReport">
+                    <label>Selected report:</label>
+                    <div class="readonly-field">
+                      {{ getSelectedReportName() }}
+                    </div>
+                  </div>
+                  
+                  <!-- Reporting Dates Section -->
+                  <div class="dates-section">
+                    <!-- Reporting Date 1 -->
+                    <div class="date-row" *ngIf="paramConfig.showReportingDate1">
+                      <div class="date-group">
+                        <label>Reporting Date 1</label>
+                        <div class="date-input-container">
+                          <input 
+                            type="date" 
+                            class="form-input date-native" 
+                            [(ngModel)]="reportParams.reportingDate1String"
+                            [min]="dateConfig.minDate1String"
+                            [max]="dateConfig.maxDate1String"
+                            [disabled]="dateConfig.disableDate1"
+                            (change)="onDateChange('reportingDate1')"
+                          >
+                          <button class="calendar-button">
+                            <span class="calendar-icon">15</span>
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <div class="version-group" *ngIf="paramConfig.showVersion1">
+                        <label>Version</label>
+                        <div class="custom-select">
+                          <div class="select-value">{{ reportParams.version1 }}</div>
+                          <span class="select-arrow">▼</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Reporting Date 2 -->
+                    <div class="date-row" *ngIf="paramConfig.showReportingDate2">
+                      <div class="date-group">
+                        <label>Reporting Date 2</label>
+                        <div class="date-input-container">
+                          <input 
+                            type="date" 
+                            class="form-input date-native" 
+                            [(ngModel)]="reportParams.reportingDate2String"
+                            [min]="dateConfig.minDate2String"
+                            [max]="dateConfig.maxDate2String"
+                            [disabled]="dateConfig.disableDate2"
+                            (change)="onDateChange('reportingDate2')"
+                          >
+                          <button class="calendar-button">
+                            <span class="calendar-icon">15</span>
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <div class="version-group" *ngIf="paramConfig.showVersion2">
+                        <label>Version</label>
+                        <div class="custom-select">
+                          <div class="select-value">{{ reportParams.version2 }}</div>
+                          <span class="select-arrow">▼</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Reporting Date 3 -->
+                    <div class="date-row" *ngIf="paramConfig.showReportingDate3">
+                      <div class="date-group">
+                        <label>Reporting Date 3</label>
+                        <div class="date-input-container">
+                          <input 
+                            type="date" 
+                            class="form-input date-native" 
+                            [(ngModel)]="reportParams.reportingDate3String"
+                            [min]="dateConfig.minDate3String"
+                            [max]="dateConfig.maxDate3String"
+                            [disabled]="dateConfig.disableDate3"
+                            (change)="onDateChange('reportingDate3')"
+                          >
+                          <button class="calendar-button">
+                            <span class="calendar-icon">15</span>
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <div class="version-group" *ngIf="paramConfig.showVersion3">
+                        <label>Version</label>
+                        <div class="custom-select">
+                          <div class="select-value">{{ reportParams.version3 }}</div>
+                          <span class="select-arrow">▼</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Business Area and Region Section -->
+                  <div class="business-section">
+                    <!-- Business Area -->
+                    <div class="form-group compact" *ngIf="paramConfig.showBusinessArea">
+                      <label>Business Area</label>
+                      <div class="input-with-options">
+                        <div class="custom-select">
+                          <div class="select-value">{{ reportParams.businessArea }}</div>
+                          <span class="select-arrow">▼</span>
+                        </div>
+                        <button class="options-button" *ngIf="paramConfig.showBusinessAreaOptions">
+                          <span class="options-icon">⋯</span>
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <!-- Region -->
+                    <div class="form-group compact" *ngIf="paramConfig.showRegion">
+                      <label>Region</label>
+                      <div class="input-with-options">
+                        <div class="custom-select">
+                          <div class="select-value">{{ reportParams.region }}</div>
+                          <span class="select-arrow">▼</span>
+                        </div>
+                        <button class="options-button" *ngIf="paramConfig.showRegionOptions">
+                          <span class="options-icon">⋯</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Report Options -->
+                  <div class="report-options-panel compact" *ngIf="paramConfig.showReportOptions">
+                    <div class="report-options-header">Report Options</div>
+                    <div class="report-options-content">
+                      <div class="checkbox-group">
+                        <label class="checkbox-container">
+                          <input type="checkbox" [(ngModel)]="reportParams.includeThirdReportingDate">
+                          <span class="checkbox-label">Include Third Reporting Date</span>
+                        </label>
+                        
+                        <label class="checkbox-container">
+                          <input type="checkbox" [(ngModel)]="reportParams.includeBrmReclass">
+                          <span class="checkbox-label">Include BRM Reclass</span>
+                        </label>
+                        
+                        <label class="checkbox-container">
+                          <input type="checkbox" [(ngModel)]="reportParams.historicalStructure">
+                          <span class="checkbox-label">Historical Structure</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- JV View -->
+                  <div class="form-group compact" *ngIf="paramConfig.showJvView">
+                    <label>JV View</label>
+                    <div class="custom-select">
+                      <div class="select-value">{{ reportParams.jvView }}</div>
+                      <span class="select-arrow">▼</span>
+                    </div>
+                  </div>
+                  
+                  <!-- Output Options -->
+                  <div class="output-options-panel compact" *ngIf="paramConfig.showOutputOptions">
+                    <div class="output-options-header">Output options</div>
+                    <div class="output-options-content">
+                      <div class="output-options-row">
+                        <div class="form-group no-margin">
+                          <label>Display in</label>
+                          <div class="custom-select">
+                            <div class="select-value">{{ reportParams.displayIn }}</div>
+                            <span class="select-arrow">▼</span>
+                          </div>
+                        </div>
+                        
+                        <div class="form-group no-margin">
+                          <label>Output format</label>
+                          <div class="custom-select">
+                            <div class="select-value">{{ reportParams.outputFormat }}</div>
+                            <span class="select-arrow">▼</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -514,32 +703,42 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
     }
     
     .accordion-section {
-      border: 1px solid #ccc;
+      border: 1px solid rgba(204, 204, 204, 0.5);
       border-radius: 4px;
       overflow: hidden;
+      margin-bottom: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
       
       &.active {
         .accordion-header {
-          background-color: #f5a623;
+          background: linear-gradient(to right, rgba(245, 166, 35, 0.9), rgba(245, 166, 35, 0.7));
           color: white;
+          backdrop-filter: blur(5px);
+          -webkit-backdrop-filter: blur(5px);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.2);
         }
       }
     }
     
     .accordion-header {
       padding: 12px 16px;
-      background-color: #e0e0e0;
+      background: rgba(224, 224, 224, 0.7);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
       cursor: pointer;
       font-weight: 500;
+      transition: all 0.2s ease;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
       
       &:hover {
-        background-color: #d0d0d0;
+        background: rgba(208, 208, 208, 0.8);
       }
     }
     
     .accordion-content {
-      background-color: #f8f9fa;
+      background-color: rgba(248, 249, 250, 0.9);
       padding: 16px;
+      border-top: 1px solid rgba(0, 0, 0, 0.05);
     }
     
     .form-row {
@@ -556,7 +755,10 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
       font-weight: 500;
       margin-bottom: 8px;
       padding: 8px;
-      background-color: #e0e0e0;
+      background: rgba(224, 224, 224, 0.7);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      border-radius: 4px;
     }
     
     .report-list {
@@ -565,6 +767,97 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
       background-color: white;
       height: 300px;
       overflow-y: auto;
+      padding: 0;
+    }
+    
+    .report-folder {
+      border-bottom: 1px solid #eee;
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      &.expanded {
+        background-color: #f8f9fa;
+      }
+    }
+    
+    .folder-header {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      cursor: pointer;
+      
+      &:hover {
+        background-color: #f0f0f0;
+      }
+    }
+    
+    .folder-toggle {
+      color: #666;
+      font-size: 12px;
+      margin-right: 8px;
+      width: 12px;
+      text-align: center;
+    }
+    
+    .folder-icon {
+      margin-right: 8px;
+    }
+    
+    .folder-name {
+      font-weight: 500;
+    }
+    
+    .folder-content {
+      padding-left: 16px;
+    }
+    
+    .report-subfolder {
+      margin-left: 16px;
+      
+      &.expanded {
+        background-color: #f8f9fa;
+      }
+    }
+    
+    .subfolder-header {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      cursor: pointer;
+      
+      &:hover {
+        background-color: #f0f0f0;
+      }
+    }
+    
+    .subfolder-content {
+      padding-left: 16px;
+    }
+    
+    .report-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      cursor: pointer;
+      
+      &:hover {
+        background-color: #f0f0f0;
+      }
+      
+      &.selected {
+        background-color: #e8f0fe;
+      }
+    }
+    
+    .report-icon {
+      margin-right: 8px;
+      color: #d32f2f;
+    }
+    
+    .report-name {
+      font-size: 14px;
     }
     
     .placeholder-text {
@@ -718,106 +1011,446 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
       .mat-mdc-form-field-wrapper {
         padding: 0;
       }
+      
+      .calendar-toggle {
+        margin-left: -36px;
+        
+        .mat-datepicker-toggle-default-icon {
+          display: none;
+        }
+        
+        .calendar-icon {
+          font-size: 12px;
+          font-weight: bold;
+          color: #333;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+        }
+        
+        .mat-mdc-icon-button.mat-mdc-button-base {
+          width: 36px;
+          height: 36px;
+          padding: 0;
+          background-color: #f0f0f0;
+          border: 1px solid #ccc;
+          border-left: none;
+          border-top-right-radius: 4px;
+          border-bottom-right-radius: 4px;
+          
+          &:hover {
+            background-color: #e0e0e0;
+          }
+        }
+      }
+      
+      // Fix datepicker panel positioning and appearance
+      .mat-datepicker-content {
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2) !important;
+        border-radius: 8px !important;
+        overflow: hidden !important;
+        
+        .mat-calendar {
+          width: 296px !important;
+          height: auto !important;
+        }
+      }
+      
+      // Ensure datepicker appears in the correct position
+      .cdk-overlay-container {
+        z-index: 1060 !important;
+      }
+      
+      .cdk-overlay-pane {
+        transform: none !important;
+      }
+      
+      // Fix calendar header
+      .mat-calendar-header {
+        padding: 8px !important;
+        background-color: #f5f5f5 !important;
+      }
+      
+      // Fix calendar table
+      .mat-calendar-table {
+        width: 100% !important;
+      }
+      
+      // Fix calendar cells
+      .mat-calendar-body-cell {
+        height: 36px !important;
+        width: 36px !important;
+      }
+      
+      // Fix calendar cell content
+      .mat-calendar-body-cell-content {
+        border-radius: 50% !important;
+        height: 32px !important;
+        width: 32px !important;
+        line-height: 32px !important;
+      }
+      
+      // Fix selected date
+      .mat-calendar-body-selected {
+        background-color: var(--primary-blue, #1976d2) !important;
+        color: white !important;
+      }
+      
+      // Fix today's date
+      .mat-calendar-body-today:not(.mat-calendar-body-selected) {
+        border-color: var(--primary-blue, #1976d2) !important;
+      }
     }
     
-    /* Report List Styles */
-    .report-list {
+    /* Parameters Form Styles */
+    .parameters-content {
+      padding: 12px;
+    }
+    
+    .form-group.compact {
+      margin-bottom: 12px;
+    }
+    
+    .form-group.no-margin {
+      margin-bottom: 0;
+    }
+    
+    .dates-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    
+    .date-row {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    
+    .date-group {
+      flex: 3;
+      
+      label {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 14px;
+        color: #333;
+      }
+    }
+    
+    .version-group {
+      flex: 2;
+      
+      label {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 14px;
+        color: #333;
+      }
+    }
+    
+    .business-section {
+      margin-bottom: 12px;
+    }
+    
+    .input-with-options {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      
+      .custom-select {
+        flex: 1;
+      }
+    }
+    
+    .date-input-container {
+      display: flex;
+      align-items: center;
+      position: relative;
+      
+      .form-input {
+        flex: 1;
+        height: 36px;
+        padding: 6px 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+        
+        &.date-native {
+          border-top-right-radius: 0;
+          border-bottom-right-radius: 0;
+          padding-right: 36px; /* Make room for the calendar button */
+          position: relative;
+          z-index: 1;
+          
+          /* Hide the native calendar icon */
+          &::-webkit-calendar-picker-indicator {
+            opacity: 0;
+            width: 36px;
+            height: 36px;
+            position: absolute;
+            right: 0;
+            top: 0;
+            cursor: pointer;
+            z-index: 3;
+          }
+        }
+      }
+      
+      .calendar-button {
+        width: 36px;
+        height: 36px;
+        background-color: #f0f0f0;
+        border: 1px solid #ccc;
+        border-left: none;
+        border-top-right-radius: 4px;
+        border-bottom-right-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        position: absolute;
+        right: 0;
+        z-index: 2;
+        pointer-events: none; /* Allow clicks to pass through to the date input */
+        
+        .calendar-icon {
+          font-size: 12px;
+          font-weight: bold;
+          color: #333;
+        }
+      }
+    }
+    
+    .options-button {
+      width: 24px;
+      height: 36px;
+      background-color: #f0f0f0;
       border: 1px solid #ccc;
       border-radius: 4px;
-      background-color: white;
-      height: 300px;
-      overflow-y: auto;
-      padding: 0;
-    }
-    
-    .report-folder {
-      border-bottom: 1px solid #eee;
-      
-      &:last-child {
-        border-bottom: none;
-      }
-      
-      &.expanded {
-        background-color: #f8f9fa;
-      }
-    }
-    
-    .folder-header {
       display: flex;
       align-items: center;
-      padding: 8px 12px;
+      justify-content: center;
       cursor: pointer;
       
       &:hover {
-        background-color: #f0f0f0;
+        background-color: #e0e0e0;
+      }
+      
+      .options-icon {
+        font-size: 14px;
+        color: #333;
       }
     }
     
-    .folder-toggle {
-      color: #666;
-      font-size: 12px;
-      margin-right: 8px;
-      width: 12px;
-      text-align: center;
+    .report-options-panel, .output-options-panel {
+      margin-bottom: 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      overflow: hidden;
+      
+      &.compact {
+        margin-bottom: 12px;
+      }
     }
     
-    .folder-icon {
-      margin-right: 8px;
-    }
-    
-    .folder-name {
+    .report-options-header, .output-options-header {
+      padding: 8px 12px;
+      background-color: #f5f5f5;
       font-weight: 500;
-    }
-    
-    .folder-content {
-      padding-left: 16px;
-    }
-    
-    .report-subfolder {
-      margin-left: 16px;
-      
-      &.expanded {
-        background-color: #f8f9fa;
-      }
-    }
-    
-    .subfolder-header {
-      display: flex;
-      align-items: center;
-      padding: 8px 12px;
-      cursor: pointer;
-      
-      &:hover {
-        background-color: #f0f0f0;
-      }
-    }
-    
-    .subfolder-content {
-      padding-left: 16px;
-    }
-    
-    .report-item {
-      display: flex;
-      align-items: center;
-      padding: 8px 12px;
-      cursor: pointer;
-      
-      &:hover {
-        background-color: #f0f0f0;
-      }
-      
-      &.selected {
-        background-color: #e8f0fe;
-      }
-    }
-    
-    .report-icon {
-      margin-right: 8px;
-      color: #d32f2f;
-    }
-    
-    .report-name {
+      border-bottom: 1px solid #ddd;
       font-size: 14px;
+    }
+    
+    .report-options-content, .output-options-content {
+      padding: 10px 12px;
+      background-color: #fff;
+    }
+    
+    .output-options-row {
+      display: flex;
+      gap: 12px;
+      
+      .form-group {
+        flex: 1;
+      }
+    }
+    
+    .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      
+      input[type="checkbox"] {
+        margin-right: 8px;
+        cursor: pointer;
+      }
+      
+      .checkbox-label {
+        font-size: 14px;
+        color: #333;
+      }
+    }
+    
+    .custom-select {
+      position: relative;
+      width: 100%;
+      height: 36px;
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .readonly-field {
+      width: 100%;
+      height: 36px;
+      padding: 6px 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: #f5f5f5;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      color: #666;
+    }
+    
+    // Custom calendar button styling
+    .calendar-button {
+      width: 36px;
+      height: 36px;
+      background-color: #f0f0f0;
+      border: 1px solid #ccc;
+      border-left: none;
+      border-top-right-radius: 4px;
+      border-bottom-right-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+      
+      &:hover {
+        background-color: #e0e0e0;
+      }
+      
+      .calendar-icon {
+        font-size: 12px;
+        font-weight: bold;
+        color: #333;
+      }
+    }
+    
+    // Fix the datepicker panel
+    .custom-datepicker-panel {
+      position: fixed !important;
+      top: 50% !important;
+      left: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      max-height: 80vh !important;
+      overflow: auto !important;
+      
+      .mat-datepicker-content {
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3) !important;
+        border-radius: 8px !important;
+        
+        .mat-calendar {
+          width: 300px !important;
+          height: auto !important;
+        }
+      }
+    }
+    
+    // Fix the calendar header
+    .mat-calendar-header {
+      padding: 8px 16px !important;
+      background-color: #f5f5f5 !important;
+      border-bottom: 1px solid #e0e0e0 !important;
+      
+      .mat-calendar-controls {
+        margin: 0 !important;
+      }
+    }
+    
+    // Fix the calendar body
+    .mat-calendar-body {
+      min-width: 280px !important;
+      padding: 8px !important;
+    }
+    
+    // Fix the calendar table
+    .mat-calendar-table {
+      width: 100% !important;
+    }
+    
+    // Fix the calendar cells
+    .mat-calendar-body-cell {
+      height: 36px !important;
+      width: 36px !important;
+    }
+    
+    // Fix the calendar cell content
+    .mat-calendar-body-cell-content {
+      border-radius: 50% !important;
+      height: 32px !important;
+      width: 32px !important;
+      line-height: 32px !important;
+    }
+    
+    // Fix the selected date
+    .mat-calendar-body-selected {
+      background-color: var(--primary-blue, #1976d2) !important;
+      color: white !important;
+    }
+    
+    // Fix today's date
+    .mat-calendar-body-today:not(.mat-calendar-body-selected) {
+      border-color: var(--primary-blue, #1976d2) !important;
+    }
+    
+    // Fix the weekday headers
+    .mat-calendar-table-header th {
+      font-size: 12px !important;
+      font-weight: 500 !important;
+      color: #666 !important;
+      padding: 0 0 8px 0 !important;
+    }
+    
+    // Fix the month/year view
+    .mat-calendar-body-label {
+      font-weight: 500 !important;
+      color: #333 !important;
+    }
+    
+    // Fix the month/year buttons
+    .mat-calendar-period-button,
+    .mat-calendar-previous-button,
+    .mat-calendar-next-button {
+      color: #333 !important;
+    }
+    
+    // Fix the overlay container
+    .cdk-overlay-container {
+      z-index: 1060 !important;
+    }
+    
+    // Fix the overlay backdrop
+    .cdk-overlay-backdrop.cdk-overlay-backdrop-showing {
+      opacity: 0.5 !important;
     }
   `]
 })
@@ -897,11 +1530,75 @@ export class AdjustmentManagerComponent implements OnInit {
     { id: 'bu10', name: 'Netting Group Combined' }
   ];
   
+  // Report parameters
+  reportParams = {
+    selectedReport: 'Capital By Component Standard',
+    reportingDate1: new Date('2025-01-08'),
+    reportingDate1String: '2025-01-08',
+    version1: 'Flash',
+    reportingDate2: new Date('2025-01-07'),
+    reportingDate2String: '2025-01-07',
+    version2: 'Flash',
+    reportingDate3: new Date('2025-01-06'),
+    reportingDate3String: '2025-01-06',
+    version3: 'Flash',
+    businessArea: 'MORGAN STANLEY BUS UNITS',
+    region: 'GLOBAL',
+    includeThirdReportingDate: false,
+    includeBrmReclass: true,
+    historicalStructure: false,
+    jvView: 'Post-JV',
+    displayIn: 'Millions',
+    outputFormat: 'Excel'
+  };
+  
+  // Parameter visibility configuration
+  paramConfig = {
+    showSelectedReport: true,
+    showReportingDate1: true,
+    showVersion1: true,
+    showReportingDate2: true,
+    showVersion2: true,
+    showReportingDate3: true,
+    showVersion3: true,
+    showBusinessArea: true,
+    showBusinessAreaOptions: true,
+    showRegion: true,
+    showRegionOptions: true,
+    showReportOptions: true,
+    showJvView: true,
+    showOutputOptions: true
+  };
+  
+  // Date configuration with string versions for native date inputs
+  dateConfig = {
+    minDate1: new Date('2024-01-01'),
+    minDate1String: '2024-01-01',
+    maxDate1: new Date('2025-12-31'),
+    maxDate1String: '2025-12-31',
+    disableDate1: false,
+    minDate2: new Date('2024-01-01'),
+    minDate2String: '2024-01-01',
+    maxDate2: new Date('2025-12-31'),
+    maxDate2String: '2025-12-31',
+    disableDate2: false,
+    minDate3: new Date('2024-01-01'),
+    minDate3String: '2024-01-01',
+    maxDate3: new Date('2025-12-31'),
+    maxDate3String: '2025-12-31',
+    disableDate3: false
+  };
+  
   constructor() {}
   
   ngOnInit(): void {
     // Load sample data
     this.loadSampleData();
+    
+    // Initialize date strings
+    this.reportParams.reportingDate1String = this.formatDateForInput(this.reportParams.reportingDate1);
+    this.reportParams.reportingDate2String = this.formatDateForInput(this.reportParams.reportingDate2);
+    this.reportParams.reportingDate3String = this.formatDateForInput(this.reportParams.reportingDate3);
     
     // Close dropdowns when clicking outside
     document.addEventListener('click', (event) => {
@@ -1016,5 +1713,39 @@ export class AdjustmentManagerComponent implements OnInit {
   
   selectReport(reportId: string): void {
     this.selectedReport = reportId;
+  }
+  
+  getSelectedReportName(): string {
+    if (this.selectedReport) {
+      const capitalReport = this.capitalReports.find(r => r.id === this.selectedReport);
+      if (capitalReport) return capitalReport.name;
+      
+      const topPositionsReport = this.topPositionsReports.find(r => r.id === this.selectedReport);
+      if (topPositionsReport) return topPositionsReport.name;
+      
+      const buReport = this.buReports.find(r => r.id === this.selectedReport);
+      if (buReport) return buReport.name;
+    }
+    
+    return this.reportParams.selectedReport;
+  }
+  
+  onDateChange(dateField: string): void {
+    // Convert the string date to a Date object
+    if (dateField === 'reportingDate1' && this.reportParams.reportingDate1String) {
+      this.reportParams.reportingDate1 = new Date(this.reportParams.reportingDate1String);
+    } else if (dateField === 'reportingDate2' && this.reportParams.reportingDate2String) {
+      this.reportParams.reportingDate2 = new Date(this.reportParams.reportingDate2String);
+    } else if (dateField === 'reportingDate3' && this.reportParams.reportingDate3String) {
+      this.reportParams.reportingDate3 = new Date(this.reportParams.reportingDate3String);
+    }
+  }
+  
+  formatDateForInput(date: Date): string {
+    if (!date) return '';
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 } 
