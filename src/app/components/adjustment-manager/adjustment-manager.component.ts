@@ -52,7 +52,7 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
         <button mat-icon-button (click)="toggleSidenav()">
           <mat-icon>{{ sidenavOpen ? 'menu_open' : 'menu' }}</mat-icon>
         </button>
-        <span>Adjustment Manager</span>
+        <span>{{ mode === 'adjustment' ? 'Adjustment Manager' : 'Report Launcher' }}</span>
         
         <!-- Toggle between adjustment and report launcher -->
         <div class="toolbar-actions">
@@ -128,68 +128,80 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
           
           <!-- Report Launcher Panel -->
           <div class="panel-content report-launcher" *ngIf="mode === 'report'">
-            <h2>Report Launcher</h2>
-            
-            <!-- RC Adjustment Section -->
-            <div class="report-section">
-              <div class="section-header" (click)="toggleReportSection('rc')">
-                <span>RC Adjustments</span>
-                <span class="section-indicator">{{ expandedSections.includes('rc') ? '▼' : '▲' }}</span>
-              </div>
-              <div class="section-content" [@expandCollapse]="expandedSections.includes('rc') ? 'expanded' : 'collapsed'">
-                <div class="report-option" [class.selected]="selectedReportOption === 'reverse_rc'" (click)="selectReportOption('reverse_rc')">
-                  <span>Reverse RC Adjustment</span>
-                  <span class="check-icon" *ngIf="selectedReportOption === 'reverse_rc'">✓</span>
-                </div>
-                <div class="report-option" [class.selected]="selectedReportOption === 'standard_rc'" (click)="selectReportOption('standard_rc')">
-                  <span>Standard RC Adjustment</span>
-                  <span class="check-icon" *ngIf="selectedReportOption === 'standard_rc'">✓</span>
-                </div>
-                <div class="report-option" [class.selected]="selectedReportOption === 'special_rc'" (click)="selectReportOption('special_rc')">
-                  <span>Special RC Adjustment</span>
-                  <span class="check-icon" *ngIf="selectedReportOption === 'special_rc'">✓</span>
-                </div>
-              </div>
+            <div class="report-actions">
+              <button class="action-btn execute-btn">
+                <span class="icon">▶</span>
+                <span>Execute</span>
+              </button>
+              <button class="action-btn cancel-btn">
+                <span class="icon">⊗</span>
+                <span>Cancel</span>
+              </button>
+              <button class="action-btn view-btn">
+                <span class="icon">👁</span>
+                <span>View</span>
+              </button>
             </div>
             
-            <!-- Required Capital Section -->
-            <div class="report-section">
-              <div class="section-header" (click)="toggleReportSection('required')">
-                <span>Required Capital</span>
-                <span class="section-indicator">{{ expandedSections.includes('required') ? '▼' : '▲' }}</span>
-              </div>
-              <div class="section-content" [@expandCollapse]="expandedSections.includes('required') ? 'expanded' : 'collapsed'">
-                <div class="report-option" [class.selected]="selectedReportOption === 'required_capital'" (click)="selectReportOption('required_capital')">
-                  <span>Required Capital Adjustment</span>
-                  <span class="check-icon" *ngIf="selectedReportOption === 'required_capital'">✓</span>
+            <!-- Collapsible Panels -->
+            <div class="report-accordion">
+              <!-- Select Report Panel -->
+              <div class="accordion-section" [class.active]="activePanel === 'select'">
+                <div class="accordion-header" (click)="togglePanel('select')">
+                  <span>Select report</span>
+                </div>
+                <div class="accordion-content" [@expandCollapse]="activePanel === 'select' ? 'expanded' : 'collapsed'">
+                  <div class="select-report-content">
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label>Repository:</label>
+                        <div class="custom-select">
+                          <div class="select-value">Required Capital</div>
+                          <span class="select-arrow">▼</span>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label>Environment:</label>
+                        <div class="custom-select">
+                          <div class="select-value">UAT</div>
+                          <span class="select-arrow">▼</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="report-list-header">
+                      Select Report
+                    </div>
+                    
+                    <div class="report-list">
+                      <!-- Report list will be added in the next step -->
+                      <div class="placeholder-text">Report list will be displayed here</div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-            
-            <!-- Regulatory Section -->
-            <div class="report-section">
-              <div class="section-header" (click)="toggleReportSection('regulatory')">
-                <span>Regulatory</span>
-                <span class="section-indicator">{{ expandedSections.includes('regulatory') ? '▼' : '▲' }}</span>
-              </div>
-              <div class="section-content" [@expandCollapse]="expandedSections.includes('regulatory') ? 'expanded' : 'collapsed'">
-                <div class="report-option" [class.selected]="selectedReportOption === 'regulatory'" (click)="selectReportOption('regulatory')">
-                  <span>Regulatory Adjustment</span>
-                  <span class="check-icon" *ngIf="selectedReportOption === 'regulatory'">✓</span>
+              
+              <!-- Define Parameters Panel -->
+              <div class="accordion-section" [class.active]="activePanel === 'parameters'">
+                <div class="accordion-header" (click)="togglePanel('parameters')">
+                  <span>Define parameters</span>
+                </div>
+                <div class="accordion-content" [@expandCollapse]="activePanel === 'parameters' ? 'expanded' : 'collapsed'">
+                  <div class="parameters-content">
+                    <div class="placeholder-text">Parameter configuration will be displayed here</div>
+                  </div>
                 </div>
               </div>
-            </div>
-            
-            <!-- Manual Section -->
-            <div class="report-section">
-              <div class="section-header" (click)="toggleReportSection('manual')">
-                <span>Manual</span>
-                <span class="section-indicator">{{ expandedSections.includes('manual') ? '▼' : '▲' }}</span>
-              </div>
-              <div class="section-content" [@expandCollapse]="expandedSections.includes('manual') ? 'expanded' : 'collapsed'">
-                <div class="report-option" [class.selected]="selectedReportOption === 'manual'" (click)="selectReportOption('manual')">
-                  <span>Manual Adjustment</span>
-                  <span class="check-icon" *ngIf="selectedReportOption === 'manual'">✓</span>
+              
+              <!-- Additional Information Panel -->
+              <div class="accordion-section" [class.active]="activePanel === 'additional'">
+                <div class="accordion-header" (click)="togglePanel('additional')">
+                  <span>Additional information</span>
+                </div>
+                <div class="accordion-content" [@expandCollapse]="activePanel === 'additional' ? 'expanded' : 'collapsed'">
+                  <div class="additional-content">
+                    <div class="placeholder-text">Additional information will be displayed here</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -352,61 +364,120 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
     .report-launcher {
       height: 100%;
       overflow-y: auto;
+      display: flex;
+      flex-direction: column;
     }
     
-    .report-section {
-      margin-bottom: 8px;
-      border: 1px solid #e0e0e0;
+    .report-actions {
+      display: flex;
+      gap: 8px;
+      padding: 10px 0;
+      border-bottom: 1px solid #e0e0e0;
+      margin-bottom: 16px;
+    }
+    
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background-color: #f5f5f5;
+      cursor: pointer;
+      
+      &:hover {
+        background-color: #e8f0fe;
+      }
+      
+      .icon {
+        font-size: 16px;
+      }
+    }
+    
+    .execute-btn {
+      .icon {
+        color: green;
+      }
+    }
+    
+    .cancel-btn {
+      .icon {
+        color: red;
+      }
+    }
+    
+    .view-btn {
+      .icon {
+        color: blue;
+      }
+    }
+    
+    .report-accordion {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    
+    .accordion-section {
+      border: 1px solid #ccc;
       border-radius: 4px;
       overflow: hidden;
+      
+      &.active {
+        .accordion-header {
+          background-color: #f5a623;
+          color: white;
+        }
+      }
     }
     
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .accordion-header {
       padding: 12px 16px;
-      background-color: #f5f5f5;
+      background-color: #e0e0e0;
       cursor: pointer;
       font-weight: 500;
       
       &:hover {
-        background-color: #e8f0fe;
-      }
-      
-      .section-indicator {
-        font-size: 12px;
-        color: #666;
+        background-color: #d0d0d0;
       }
     }
     
-    .section-content {
-      background-color: white;
+    .accordion-content {
+      background-color: #f8f9fa;
+      padding: 16px;
     }
     
-    .report-option {
-      padding: 12px 16px;
-      cursor: pointer;
+    .form-row {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #f0f0f0;
+      gap: 16px;
+      margin-bottom: 16px;
       
-      &:last-child {
-        border-bottom: none;
+      .form-group {
+        flex: 1;
       }
-      
-      &:nth-child(odd) {
-        background-color: #f8f9fa;
-      }
-      
-      &:hover {
-        background-color: #e8f0fe;
-      }
-      
-      &.selected {
-        background-color: #e8f0fe;
-      }
+    }
+    
+    .report-list-header {
+      font-weight: 500;
+      margin-bottom: 8px;
+      padding: 8px;
+      background-color: #e0e0e0;
+    }
+    
+    .report-list {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background-color: white;
+      height: 300px;
+      overflow-y: auto;
+    }
+    
+    .placeholder-text {
+      padding: 16px;
+      color: #666;
+      font-style: italic;
+      text-align: center;
     }
     
     .action-buttons {
@@ -565,8 +636,7 @@ export class AdjustmentManagerComponent implements OnInit {
   
   // Report launcher properties
   mode: 'adjustment' | 'report' = 'adjustment';
-  expandedSections: string[] = [];
-  selectedReportOption: string | null = null;
+  activePanel: string = 'select'; // Default active panel
   
   adjustmentTypes = [
     { value: 'required_capital', label: 'Required Capital Adjustment' },
@@ -618,23 +688,14 @@ export class AdjustmentManagerComponent implements OnInit {
   setMode(mode: 'adjustment' | 'report'): void {
     this.mode = mode;
     
-    // Reset expanded sections when switching to report mode
-    if (mode === 'report' && this.expandedSections.length === 0) {
-      // Initially expand the RC section
-      this.expandedSections = ['rc'];
+    if (mode === 'report') {
+      // Set the default active panel for report launcher
+      this.activePanel = 'select';
     }
   }
   
-  toggleReportSection(section: string): void {
-    if (this.expandedSections.includes(section)) {
-      this.expandedSections = this.expandedSections.filter(s => s !== section);
-    } else {
-      this.expandedSections.push(section);
-    }
-  }
-  
-  selectReportOption(option: string): void {
-    this.selectedReportOption = option;
+  togglePanel(panel: string): void {
+    this.activePanel = this.activePanel === panel ? '' : panel;
   }
   
   getAdjustmentTypeLabel(): string {
