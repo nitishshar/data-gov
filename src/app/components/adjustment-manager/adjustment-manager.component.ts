@@ -199,7 +199,46 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
                           <span class="folder-name">Investigation</span>
                         </div>
                         <div class="folder-content" *ngIf="expandedFolders.includes('investigation')">
-                          <!-- Investigation reports would go here -->
+                          <!-- Top Movements Subfolder -->
+                          <div class="report-subfolder" [class.expanded]="expandedFolders.includes('top_movements')">
+                            <div class="subfolder-header" (click)="toggleFolder('top_movements'); $event.stopPropagation()">
+                              <span class="folder-toggle">{{ expandedFolders.includes('top_movements') ? '▼' : '▶' }}</span>
+                              <span class="folder-icon">📁</span>
+                              <span class="folder-name">Top Movements (6)</span>
+                            </div>
+                            <div class="subfolder-content" *ngIf="expandedFolders.includes('top_movements')">
+                              <!-- Top Movements reports would go here -->
+                            </div>
+                          </div>
+                          
+                          <!-- Top Positions Subfolder -->
+                          <div class="report-subfolder" [class.expanded]="expandedFolders.includes('top_positions')">
+                            <div class="subfolder-header" (click)="toggleFolder('top_positions'); $event.stopPropagation()">
+                              <span class="folder-toggle">{{ expandedFolders.includes('top_positions') ? '▼' : '▶' }}</span>
+                              <span class="folder-icon">📁</span>
+                              <span class="folder-name">Top Positions (4)</span>
+                            </div>
+                            <div class="subfolder-content" *ngIf="expandedFolders.includes('top_positions')">
+                              <div class="report-item" *ngFor="let report of topPositionsReports" 
+                                   [class.selected]="selectedReport === report.id"
+                                   (click)="selectReport(report.id)">
+                                <span class="report-icon">📊</span>
+                                <span class="report-name">{{ report.name }}</span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <!-- Other Subfolder -->
+                          <div class="report-subfolder" [class.expanded]="expandedFolders.includes('other')">
+                            <div class="subfolder-header" (click)="toggleFolder('other'); $event.stopPropagation()">
+                              <span class="folder-toggle">{{ expandedFolders.includes('other') ? '▼' : '▶' }}</span>
+                              <span class="folder-icon">📁</span>
+                              <span class="folder-name">Other (5)</span>
+                            </div>
+                            <div class="subfolder-content" *ngIf="expandedFolders.includes('other')">
+                              <!-- Other reports would go here -->
+                            </div>
+                          </div>
                         </div>
                       </div>
                       
@@ -731,7 +770,30 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
     }
     
     .folder-content {
-      padding-left: 32px;
+      padding-left: 16px;
+    }
+    
+    .report-subfolder {
+      margin-left: 16px;
+      
+      &.expanded {
+        background-color: #f8f9fa;
+      }
+    }
+    
+    .subfolder-header {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      cursor: pointer;
+      
+      &:hover {
+        background-color: #f0f0f0;
+      }
+    }
+    
+    .subfolder-content {
+      padding-left: 16px;
     }
     
     .report-item {
@@ -769,7 +831,7 @@ export class AdjustmentManagerComponent implements OnInit {
   // Report launcher properties
   mode: 'adjustment' | 'report' = 'adjustment';
   activePanel: string = 'select'; // Default active panel
-  expandedFolders: string[] = ['capital', 'bu']; // Default expanded folders
+  expandedFolders: string[] = ['capital', 'investigation', 'top_positions', 'bu']; // Default expanded folders
   selectedReport: string | null = null;
   
   adjustmentTypes = [
@@ -813,6 +875,13 @@ export class AdjustmentManagerComponent implements OnInit {
     { id: 'cap5', name: 'Capital By Component' },
     { id: 'cap6', name: 'Capital By Component Standard' },
     { id: 'cap7', name: 'Supplemental Leverage Report' }
+  ];
+  
+  topPositionsReports = [
+    { id: 'pos1', name: 'Loans Top Positions' },
+    { id: 'pos2', name: 'OTC Top Positions' },
+    { id: 'pos3', name: 'SLB Top Positions' },
+    { id: 'pos4', name: 'REPO Top Positions' }
   ];
   
   buReports = [
