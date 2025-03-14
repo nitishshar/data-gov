@@ -464,7 +464,76 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
                 </div>
                 <div class="accordion-content" [@expandCollapse]="activePanel === 'additional' ? 'expanded' : 'collapsed'">
                   <div class="additional-content">
-                    <div class="placeholder-text">Additional information will be displayed here</div>
+                    <div class="info-row">
+                      <div class="info-label">Version:</div>
+                      <div class="info-value">{{ additionalInfo.version }}</div>
+                    </div>
+                    
+                    <div class="info-row">
+                      <div class="info-label">Request preparation time:</div>
+                      <div class="info-value">{{ additionalInfo.requestPrepTime }}</div>
+                    </div>
+                    
+                    <div class="info-row">
+                      <div class="info-label">Query execution time:</div>
+                      <div class="info-value">{{ additionalInfo.queryExecTime }}</div>
+                    </div>
+                    
+                    <div class="info-row">
+                      <div class="info-label">Build resultset time:</div>
+                      <div class="info-value">{{ additionalInfo.buildResultTime }}</div>
+                    </div>
+                    
+                    <div class="info-row">
+                      <div class="info-label">Format output time:</div>
+                      <div class="info-value">{{ additionalInfo.formatOutputTime }}</div>
+                    </div>
+                    
+                    <div class="info-row">
+                      <div class="info-label">Modify data time:</div>
+                      <div class="info-value">{{ additionalInfo.modifyDataTime }}</div>
+                    </div>
+                    
+                    <div class="info-row">
+                      <div class="info-label">Content generation time:</div>
+                      <div class="info-value">{{ additionalInfo.contentGenTime }}</div>
+                    </div>
+                    
+                    <div class="options-section">
+                      <div class="checkbox-row">
+                        <label class="checkbox-container">
+                          <input type="checkbox" [(ngModel)]="additionalInfo.workOffline">
+                          <span class="checkbox-label">Work offline</span>
+                        </label>
+                        
+                        <label class="checkbox-container">
+                          <input type="checkbox" [(ngModel)]="additionalInfo.createMockData">
+                          <span class="checkbox-label">Create mock data</span>
+                        </label>
+                      </div>
+                      
+                      <div class="checkbox-row">
+                        <label class="checkbox-container">
+                          <input type="checkbox" [(ngModel)]="additionalInfo.disableRedirect">
+                          <span class="checkbox-label">Disable Redirect</span>
+                        </label>
+                      </div>
+                      
+                      <div class="checkbox-row">
+                        <label class="checkbox-container">
+                          <input type="checkbox" [(ngModel)]="additionalInfo.enableQueryTrace">
+                          <span class="checkbox-label">Enable query trace</span>
+                        </label>
+                        
+                        <button class="copy-query-btn">Copy query to clipboard</button>
+                      </div>
+                    </div>
+                    
+                    <div class="query-trace-area">
+                      <div class="query-trace-content">
+                        <!-- Query trace content would appear here when enabled -->
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1459,6 +1528,80 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
       background-size: 16px;
       padding-right: 30px;
     }
+    
+    .additional-content {
+      padding: 10px;
+      color: #333;
+    }
+    
+    .info-row {
+      display: flex;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+    
+    .info-label {
+      flex: 0 0 200px;
+      font-weight: normal;
+    }
+    
+    .info-value {
+      flex: 1;
+    }
+    
+    .options-section {
+      margin-top: 10px;
+    }
+    
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      margin-right: 20px;
+      cursor: pointer;
+      
+      input[type="checkbox"] {
+        margin-right: 8px;
+        cursor: pointer;
+      }
+    }
+    
+    .copy-query-btn {
+      background-color: #e0e0e0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 12px;
+      cursor: pointer;
+      
+      &:hover {
+        background-color: #d0d0d0;
+      }
+    }
+    
+    .query-trace-area {
+      margin-top: 10px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      min-height: 200px;
+      background-color: #f9f9f9;
+      padding: 8px;
+    }
+    
+    .query-trace-content {
+      width: 100%;
+      height: 100%;
+      min-height: 180px;
+      font-family: monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      overflow-y: auto;
+    }
   `]
 })
 export class AdjustmentManagerComponent implements OnInit {
@@ -1598,6 +1741,20 @@ export class AdjustmentManagerComponent implements OnInit {
   
   repository: string = 'required_capital';
   environment: string = 'uat';
+  
+  additionalInfo = {
+    version: '1.0.1.4',
+    requestPrepTime: '',
+    queryExecTime: '',
+    buildResultTime: '',
+    formatOutputTime: '',
+    modifyDataTime: '',
+    contentGenTime: '',
+    workOffline: false,
+    createMockData: false,
+    disableRedirect: false,
+    enableQueryTrace: false
+  };
   
   constructor() {}
   
